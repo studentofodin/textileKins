@@ -13,7 +13,7 @@ class AbstractSafetyWrapper(ABC):
         pass
 
     @abstractmethod
-    def calculate_clipped_state(self) -> :
+    def calculate_clipped_state(self) :
         pass
 
     @abstractmethod

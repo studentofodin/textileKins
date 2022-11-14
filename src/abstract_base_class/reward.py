@@ -3,9 +3,6 @@ import numpy as np
 
 class AbstractReward(ABC):
 
-    def __init__(self, ITA_requirements):
-        self._ITA_requirements = ITA_requirements
-        self._reward_value = 0.0
 
     @property
     @abstractmethod
@@ -17,9 +14,14 @@ class AbstractReward(ABC):
     def reward_value(self) -> float :
         pass
 
-    @ITA_requirements.setter
+    # @ITA_requirements.setter
+    # @abstractmethod
+    # def ITA_requirements(self, requirements:dict) :
+    #     pass
+
+    @reward_value.setter
     @abstractmethod
-    def ITA_requirements(self, requirements:dict) :
+    def reward_value(self, reward_value:float):
         pass
 
     @abstractmethod
@@ -33,6 +35,11 @@ class AbstractReward(ABC):
 
 class Reward(AbstractReward):
 
+
+    def __init__(self, ITA_requirements, reward_value=0.0):
+        self._ITA_requirements = ITA_requirements
+        self._reward_value = reward_value
+
     @property
     def ITA_requirements(self) -> dict :
         return self._ITA_requirements
@@ -45,7 +52,9 @@ class Reward(AbstractReward):
     def ITA_requirements(self, requirements:dict) :
         self._ITA_requirements = requirements
 
-
+    @reward_value.setter
+    def reward_value(self, reward_value:float):
+        self._reward_value = reward_value
 
     def calculate_reward(self, current_state: np.array, current_model_output: np.array, safety_flag: bool) -> float:
         print("Calculating reward")
@@ -58,8 +67,10 @@ class Reward(AbstractReward):
 def main():
     requirements = {'a': 1, 'b': 2}
     reward = Reward(requirements)
+    reward.reward_value=5
     print(reward.ITA_requirements)
     print(reward.penalty())
     print(reward.reward_value)
+    print(reward._reward_value)
 
 main()

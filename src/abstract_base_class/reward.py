@@ -19,5 +19,5 @@ class AbstractReward(ABC):
         pass
 
     @abstractmethod
-    def penalty(self) -> float :
+    def calculate_penalty(self) -> float :
         pass

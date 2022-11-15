@@ -40,7 +40,7 @@ class AbstractITAEnvironment(ABC, gym.Env):
 
     @property
     @abstractmethod
-    def current_state(self) -> bool:
+    def current_state(self) -> np.array:
         pass
 
     # @abstractmethod

@@ -10,30 +10,30 @@ class AbstractConfiguration(ABC):
 
     @property
     @abstractmethod
-    def actor_constraints(self) -> dict:
+    def actorConstraints(self) -> dict:
         pass
 
     @property
     @abstractmethod
-    def production_scenario(self) -> dict:
+    def productionScenario(self) -> dict:
         pass
 
     @property
     @abstractmethod
-    def action_params(self) -> dict:
+    def actionParams(self) -> dict:
         pass
 
     @property
     @abstractmethod
-    def state_params(self) -> dict:
+    def stateParams(self) -> dict:
         pass
 
     @property
     @abstractmethod
-    def steps_until_lab_data_available(self) -> int:
+    def stepsUntilLabDataAvailable(self) -> int:
         pass
 
     @property
     @abstractmethod
-    def observation_params(self) -> dict:
+    def observationParams(self) -> dict:
         pass  

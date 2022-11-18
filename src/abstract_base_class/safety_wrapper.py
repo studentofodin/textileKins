@@ -9,13 +9,13 @@ class AbstractSafetyWrapper(ABC):
         pass
 
     @abstractmethod
-    def is_within_constraints(self) -> bool:
+    def isWithinConstraints(self) -> bool:
         pass
 
     @abstractmethod
-    def calculate_clipped_state(self) :
+    def calculateClippedState(self) :
         pass
 
     @abstractmethod
-    def load_constraints(self, config_file):
+    def loadConstraints(self, configFile):
         pass

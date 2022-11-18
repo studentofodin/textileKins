@@ -10,13 +10,13 @@ class ModelWrapper(ABC):
         pass
 
     @abstractmethod
-    def map_actions_to_inputs(self, action:np.array) -> np.array:
+    def mapActionsToInputs(self, action:np.array) -> np.array:
         pass
 
     @abstractmethod
-    def interpret_model_outputs(self, mean:np.array, lower_confidence:np.array, upper_confidence:np.array) -> np.array:
+    def interpretModelOutputs(self, mean:np.array, lowerConfidence:np.array, upperConfidence:np.array) -> np.array:
         pass
 
     @abstractmethod
-    def call_machine_model(self, input:np.array) -> [np.array, np.array, np.array]:
+    def callMachineModel(self, input:np.array) -> [np.array, np.array, np.array]:
         pass

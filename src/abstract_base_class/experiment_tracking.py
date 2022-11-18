@@ -9,7 +9,7 @@ class AbstractExperimentTracking(ABC):
         pass
 
     @abstractmethod
-    def plot_reward(self, reward_value) -> bool:
+    def plotReward(self, rewardValue) -> bool:
         pass
 
 class ExperimentTracking(AbstractExperimentTracking):
@@ -17,7 +17,7 @@ class ExperimentTracking(AbstractExperimentTracking):
     def __init__(self, metric):
         self._metric = metric     
 
-    def plot_reward(self, reward_value:float):
+    def plotReward(self, rewardValue:float):
         return True
 
     @property
@@ -27,7 +27,7 @@ class ExperimentTracking(AbstractExperimentTracking):
 def main():
     e= ExperimentTracking({'speed':4, 'speed2':5})
     print(e.metric)
-    print(e.plot_reward(5.0))
+    print(e.plotReward(5.0))
 
 main()
         

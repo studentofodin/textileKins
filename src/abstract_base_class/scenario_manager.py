@@ -5,18 +5,18 @@ class AbstractScenarioManager(ABC):
 
     @property
     @abstractmethod
-    def disturbance_setting(self) -> dict:
+    def disturbanceSetting(self) -> dict:
         pass
 
     @property
     @abstractmethod
-    def fibre_setting(self) -> dict:
+    def fibreSetting(self) -> dict:
         pass
 
     @abstractmethod
-    def set_disturbance(self, disturbance_setting):
+    def setDisturbance(self, disturbanceSetting):
         pass
 
     @abstractmethod
-    def set_fibre_mixture(self, fibre_setting):
+    def setFibreMixture(self, fibreSetting):
         pass

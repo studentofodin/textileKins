@@ -6,18 +6,18 @@ class AbstractReward(ABC):
 
     @property
     @abstractmethod
-    def ITA_requirements(self) -> dict :
+    def ITARequirements(self) -> dict :
         pass
 
     @property
     @abstractmethod
-    def reward_value(self) -> float :
+    def rewardValue(self) -> float :
         pass
 
     @abstractmethod
-    def calculate_reward(self, current_state:np.array, current_model_output:np.array, safety_flag:bool) -> float :
+    def calculateReward(self, currentState:np.array, currentModelOutput:np.array, safetyFlag:bool) -> float :
         pass
 
     @abstractmethod
-    def calculate_penalty(self) -> float :
+    def calculatePenalty(self) -> float :
         pass

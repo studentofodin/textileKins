@@ -27,6 +27,6 @@ class ModelInterfaces(ModelInterface):
     def predict_f(self, X:np.array):
         return np.ones(3)
 
-    def calc_mean_and_std(self, X: np.array, latent: bool) -> [np.array, np.array, np.array]:
+    def calc_mean_and_std(self, X: np.array, latent: bool) -> list[np.array, np.array, np.array]:
         return [np.ones(3), np.ones(2), np.ones(5)]
 

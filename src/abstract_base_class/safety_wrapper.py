@@ -13,9 +13,6 @@ class AbstractSafetyWrapper(ABC):
         pass
 
     @abstractmethod
-    def calculateClippedState(self) :
+    def calculateClippedState(self) -> np.array:
         pass
 
-    @abstractmethod
-    def loadConstraints(self, configFile):
-        pass

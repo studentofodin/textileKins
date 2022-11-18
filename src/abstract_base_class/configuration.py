@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import numpy as np
 
 class AbstractConfiguration(ABC):
 
@@ -36,4 +35,39 @@ class AbstractConfiguration(ABC):
     @property
     @abstractmethod
     def observationParams(self) -> dict:
-        pass  
+        pass
+    
+    @requirements.setter
+    @abstractmethod
+    def requirements(self, requirements):
+        pass
+
+    @actorConstraints.setter
+    @abstractmethod
+    def actorConstraints(self, actorConstraints):
+        pass
+
+    @productionScenario.setter
+    @abstractmethod
+    def productionScenario(self, productionScenario):
+        pass
+
+    @actionParams.setter
+    @abstractmethod
+    def actionParams(self, actionParams):
+        pass
+
+    @stateParams.setter
+    @abstractmethod
+    def stateParams(self, stateParams):
+        pass
+
+    @stepsUntilLabDataAvailable.setter
+    @abstractmethod
+    def stepsUntilLabDataAvailable(self, stepsUntilLabDataAvailable):
+        pass
+
+    @observationParams.setter
+    @abstractmethod
+    def observationParams(self, observationParams):
+        pass

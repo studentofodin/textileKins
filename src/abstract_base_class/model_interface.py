@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 
-class ModelInterface(ABC):
+class AbstractModelInterface(ABC):
     @property
     @abstractmethod
     def model_properties(self) -> dict:
@@ -29,5 +29,5 @@ class ModelInterface(ABC):
         pass
 
     @abstractmethod
-    def calc_mean_and_std(self, X: np.array, latent: bool) -> [np.array, np.array, np.array]:
+    def calc_mean_and_std(self, X: np.array, latent: bool) -> list[np.array, np.array, np.array]:
         pass

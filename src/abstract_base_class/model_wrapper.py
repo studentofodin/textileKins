@@ -2,11 +2,13 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-class ModelWrapper(ABC):
+from src.base_classes.model_interface_class import ModelInterface
+
+class AbstractModelWrapper(ABC):
 
     @property
     @abstractmethod
-    def wrapper(self) -> any:
+    def machineModel(self) -> ModelInterface:
         pass
 
     @abstractmethod
@@ -18,5 +20,9 @@ class ModelWrapper(ABC):
         pass
 
     @abstractmethod
-    def callMachineModel(self, input:np.array) -> [np.array, np.array, np.array]:
+    def callMachineModel(self, input:np.array) -> list[np.array, np.array, np.array]:
+        pass
+
+    @abstractmethod
+    def getOutput(self, action:np.array) -> np.array:
         pass

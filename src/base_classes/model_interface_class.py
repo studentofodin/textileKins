@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 
-from src.abstract_base_class.interfaces import ModelInterface
+from src.abstract_base_class.model_interface import AbstractModelInterface
 
-class ModelInterfaces(ModelInterface):
+class ModelInterface(AbstractModelInterface):
     def __init__(self, model_properties, model=True, feature_importance:pd.DataFrame({'col1': [1, 2], 'col2': [3, 4]})):
         self._model_properties=model_properties
         self._model=model
@@ -28,5 +28,5 @@ class ModelInterfaces(ModelInterface):
         return np.ones(3)
 
     def calc_mean_and_std(self, X: np.array, latent: bool) -> list[np.array, np.array, np.array]:
-        return [np.ones(3), np.ones(2), np.ones(5)]
+        return [np.ones(3), np.ones(3), np.ones(3)]
 

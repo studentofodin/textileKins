@@ -1,13 +1,18 @@
 from abc import ABC, abstractmethod
 import numpy as np
 
-class AbstractExperimentTracking(ABC):
+class AbstractExperimentTracker(ABC):
 
     @property
     @abstractmethod
-    def metric(self) -> dict:
+    def metrics(self) -> dict:
         pass
 
+    @metrics.setter
+    @abstractmethod
+    def metrics(self, metrics):
+        pass
+        
     @abstractmethod
     def plotReward(self, rewardValue) -> bool:
         pass

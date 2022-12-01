@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 import numpy as np
 
-from experiment_tracking import AbstractExperimentTracking
-from reward import AbstractReward
-from interfaces import AbstractModelInterface
-from src.base_classes.model_wrapper_class import ModelWrapperClass
+from abstract_base_class.experiment_tracker import AbstractExperimentTracker
+from abstract_base_class.reward import AbstractReward
+from abstract_base_class.model_wrapper import AbstractModelWrapper
 
 
 
@@ -17,12 +16,12 @@ class AbstractITAEnvironment(ABC):
 
     @property
     @abstractmethod
-    def experimentTracker(self) -> AbstractExperimentTracking:
+    def experimentTracker(self) -> AbstractExperimentTracker:
         pass
 
     @property
     @abstractmethod
-    def machine(self) -> ModelWrapperClass:
+    def machine(self) -> AbstractModelWrapper:
         pass
 
     @property
@@ -66,7 +65,7 @@ class AbstractITAEnvironment(ABC):
         pass
 
     @abstractmethod
-    def step(self, action: ActType) -> Tuple[ObsType, float, bool, bool, dict]:
+    def step(self, action) -> tuple[np.array, float, bool, bool, dict]:
         pass
 
     @abstractmethod
@@ -74,7 +73,7 @@ class AbstractITAEnvironment(ABC):
         pass
 
     @abstractmethod
-    def render(self) -> AbstractExperimentTracking:
+    def render(self) -> AbstractExperimentTracker:
         pass
 
     @abstractmethod

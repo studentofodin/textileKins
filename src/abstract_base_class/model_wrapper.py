@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from src.base_classes.model_interface_class import ModelInterface
+from base_classes.model_interface_class import ModelInterface
 
 class AbstractModelWrapper(ABC):
 

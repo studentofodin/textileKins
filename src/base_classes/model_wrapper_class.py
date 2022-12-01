@@ -1,9 +1,9 @@
 import numpy as np
-from src.abstract_base_class.model_wrapper import AbstractModelWrapper
-from src.base_classes.model_interface_class import ModelInterface
+from abstract_base_class.model_wrapper import AbstractModelWrapper
+from base_classes.model_interface_class import ModelInterface
 
 
-class ModelWrapperClass(AbstractModelWrapper):
+class ModelWrapper(AbstractModelWrapper):
 
     @property
     def machineModel(self) -> ModelInterface:

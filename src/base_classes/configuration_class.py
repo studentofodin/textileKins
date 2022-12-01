@@ -1,7 +1,7 @@
-from src.abstract_base_class.configuration import AbstractConfiguration
+from abstract_base_class.configuration import AbstractConfiguration
 
 
-class ConfigurationClass(AbstractConfiguration):
+class Configuration(AbstractConfiguration):
     @property
     def requirements(self) -> dict:
         return self._requirements
@@ -114,3 +114,17 @@ class ConfigurationClass(AbstractConfiguration):
         self.stateParams = stateParams
         self.stepsUntilLabDataAvailable = stepsUntilLabDataAvailable
         self.observationParams = observationParams
+
+    def readConfigFile(self, pathToFile):
+        pass
+    
+    def __str__(self) -> str:
+        print("Configuration Manager ----")
+        print("Requirements : ",self.requirements)
+        print("Actor Constraints : ", self.actorConstraints)
+        print("Production Scenario : ",self.productionScenario)
+        print("Action Parameters : ",self.actionParams)
+        print("State Parameters : ",self.stateParams)
+        print("Steps Left : ",self.stepsUntilLabDataAvailable)
+        print("Observation Parameters : ", self.observationParams)
+        return " "

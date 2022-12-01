@@ -3,7 +3,7 @@ import numpy as np
 from src.abstract_base_class.safety_wrapper import AbstractSafetyWrapper
 
 
-class SafetyWrapperClass(AbstractSafetyWrapper):
+class SafetyWrapper(AbstractSafetyWrapper):
 
     @property
     def constraints(self) -> dict:

@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
 
-from src.abstract_base_class.model_interface import AbstractModelInterface
+from abstract_base_class.model_interface import AbstractModelInterface
 
 class ModelInterface(AbstractModelInterface):
-    def __init__(self, model_properties, model=True, feature_importance:pd.DataFrame({'col1': [1, 2], 'col2': [3, 4]})):
+    def __init__(self, model_properties, model=True, feature_importance=pd.DataFrame({'col1': [1, 2], 'col2': [3, 4]})):
         self._model_properties=model_properties
         self._model=model
         self._feature_importance=feature_importance

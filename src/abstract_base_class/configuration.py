@@ -36,6 +36,11 @@ class AbstractConfiguration(ABC):
     @abstractmethod
     def observationParams(self) -> dict:
         pass
+
+    @property
+    @abstractmethod
+    def maxSteps(self) -> int:
+        pass
     
     @requirements.setter
     @abstractmethod
@@ -70,4 +75,9 @@ class AbstractConfiguration(ABC):
     @observationParams.setter
     @abstractmethod
     def observationParams(self, observationParams):
+        pass
+
+    @maxSteps.setter
+    @abstractmethod
+    def maxStep(self, maxStep):
         pass

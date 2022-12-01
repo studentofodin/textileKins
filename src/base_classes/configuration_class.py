@@ -30,6 +30,10 @@ class Configuration(AbstractConfiguration):
     def observationParams(self) -> dict:
         return self._observationParams
 
+    @property
+    def maxSteps(self) -> int:
+        return self.maxStep
+
     @requirements.setter
     def requirements(self, requirements):
         if type(requirements) == dict:  # type check for dict
@@ -97,6 +101,16 @@ class Configuration(AbstractConfiguration):
         else:
             raise ValueError
 
+    @maxSteps.setter
+    def maxSteps(self, maxSteps):
+        if type(maxSteps) == int:  # type check for int
+            if maxSteps>0:  # check if steps not 0
+                self._maxSteps = maxSteps
+            else:
+                raise ValueError
+        else:
+            raise ValueError
+
     def __init__(
         self,
         requirements,
@@ -106,6 +120,7 @@ class Configuration(AbstractConfiguration):
         stateParams,
         stepsUntilLabDataAvailable,
         observationParams,
+        maxSteps=200
     ):
         self.requirements = requirements
         self.actorConstraints = actorConstraints
@@ -114,6 +129,7 @@ class Configuration(AbstractConfiguration):
         self.stateParams = stateParams
         self.stepsUntilLabDataAvailable = stepsUntilLabDataAvailable
         self.observationParams = observationParams
+        self.maxSteps = maxSteps
 
     def readConfigFile(self, pathToFile):
         pass
@@ -127,4 +143,5 @@ class Configuration(AbstractConfiguration):
         print("State Parameters : ",self.stateParams)
         print("Steps Left : ",self.stepsUntilLabDataAvailable)
         print("Observation Parameters : ", self.observationParams)
+        print("Maximum Steps for Training : ", self.maxSteps)
         return " "

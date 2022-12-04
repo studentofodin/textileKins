@@ -26,11 +26,6 @@ class AbstractITAEnvironment(ABC):
 
     @property
     @abstractmethod
-    def maxSteps(self) -> int:
-        pass
-
-    @property
-    @abstractmethod
     def currentState(self) -> np.array:
         pass
 
@@ -73,7 +68,7 @@ class AbstractITAEnvironment(ABC):
         pass
 
     @abstractmethod
-    def render(self) -> AbstractExperimentTracker:
+    def render(self) -> any:
         pass
 
     @abstractmethod

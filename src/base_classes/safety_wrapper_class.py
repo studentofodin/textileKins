@@ -1,6 +1,6 @@
 
 import numpy as np
-from src.abstract_base_class.safety_wrapper import AbstractSafetyWrapper
+from abstract_base_class.safety_wrapper import AbstractSafetyWrapper
 
 
 class SafetyWrapper(AbstractSafetyWrapper):

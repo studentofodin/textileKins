@@ -7,7 +7,7 @@ import pandas as pd
 class AbstractModelInterface(ABC):
     @property
     @abstractmethod
-    def model_properties(self) -> dict:
+    def modelProperties(self) -> dict:
         pass
 
     @property
@@ -17,17 +17,17 @@ class AbstractModelInterface(ABC):
 
     @property
     @abstractmethod
-    def feature_importance(self) -> pd.DataFrame:
+    def featureImportance(self) -> pd.DataFrame:
         pass
 
     @abstractmethod
-    def predict_y(self, X: np.array) -> np.array:
+    def predictY(self, X: np.array) -> np.array:
         pass
 
     @abstractmethod
-    def predict_f(self, X: np.array) -> np.array:
+    def predictF(self, X: np.array) -> np.array:
         pass
 
     @abstractmethod
-    def calc_mean_and_std(self, X: np.array, latent: bool) -> list[np.array, np.array, np.array]:
+    def calcMeanAndStd(self, X: np.array, latent: bool) -> list[np.array, np.array, np.array]:
         pass

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Tuple
 import numpy as np
 
 from abstract_base_class.experiment_tracker import AbstractExperimentTracker
@@ -41,7 +42,7 @@ class AbstractITAEnvironment(ABC):
 
     @property
     @abstractmethod
-    def rewardRange(self) -> list(float,float):
+    def rewardRange(self) -> Tuple[float,float]:
         pass
 
     @property
@@ -60,17 +61,17 @@ class AbstractITAEnvironment(ABC):
         pass
 
     @abstractmethod
-    def step(self, action) -> tuple[np.array, float, bool, bool, dict]:
+    def _step(self, action) -> Tuple[np.array, float, bool, bool, dict]:
         pass
 
     @abstractmethod
-    def reset(self):
+    def _reset(self):
         pass
 
     @abstractmethod
-    def render(self) -> any:
+    def _render(self) -> any:
         pass
 
     @abstractmethod
-    def close(self):
+    def _close(self):
         pass

@@ -32,7 +32,7 @@ class Configuration(AbstractConfiguration):
 
     @property
     def maxSteps(self) -> int:
-        return self.maxStep
+        return self._maxSteps
 
     @requirements.setter
     def requirements(self, requirements):

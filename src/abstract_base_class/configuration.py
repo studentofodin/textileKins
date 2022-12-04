@@ -79,5 +79,5 @@ class AbstractConfiguration(ABC):
 
     @maxSteps.setter
     @abstractmethod
-    def maxStep(self, maxStep):
+    def maxSteps(self, maxSteps):
         pass

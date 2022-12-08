@@ -34,51 +34,51 @@ class ITAEnvWrapper(Env):
 
     @property
     def action_space(self):
-        return self.ITAEnv.actionSpace
+        return self.ITAEnv._actionSpace
 
     @action_space.setter
     def action_space(self, action_space):
-        self.ITAEnv.actionSpace = action_space
+        self.ITAEnv._actionSpace = action_space
 
     @property
     def observation_space(self):
-        return self.ITAEnv.observationSpace
+        return self.ITAEnv._observationSpace
 
     @observation_space.setter
     def observation_space(self, observation_space):
-        self.ITAEnv.observationSpace = observation_space
+        self.ITAEnv._observationSpace = observation_space
 
     @property
     def reward_range(self):
-        return self.ITAEnv.rewardRange
+        return self.ITAEnv._rewardRange
 
     @reward_range.setter
     def reward_range(self, reward_range):
-        self.ITAEnv.rewardRange = reward_range
+        self.ITAEnv._rewardRange = reward_range
 
     @property
     def spec(self):
-        return self.ITAEnv.spec
+        return self.ITAEnv._spec
 
     @spec.setter
     def spec(self, spec):
-        self.ITAEnv.spec = spec
+        self.ITAEnv._spec = spec
 
     @property
     def metadata(self):
-        return self.ITAEnv.metadata
+        return self.ITAEnv._metadata
 
     @metadata.setter
     def metadata(self, metadata):
-        self.ITAEnv.metadata = metadata
+        self.ITAEnv._metadata = metadata
 
     @property
     def np_random(self):
-        return self.ITAEnv.npRandom
+        return self.ITAEnv._npRandom
 
     @np_random.setter
     def np_random(self, np_random):
-        self.ITAEnv.npRandom = np_random
+        self.ITAEnv._npRandom = np_random
 
     
 

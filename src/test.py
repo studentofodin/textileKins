@@ -4,6 +4,8 @@ from base_classes.scenario_manager_class import ScenarioManager
 from base_classes.configuration_class import Configuration
 from base_classes.experiment_tracker_class import ExperimentTracker
 from base_classes.env_wrapper_class import ITAEnvWrapper
+from omegaconf import DictConfig, OmegaConf
+import hydra
 
 def main():
     scenarioManager = ScenarioManager({'key1':1,'key2':2}, {'key3':3,'key4':4})
@@ -28,10 +30,19 @@ def main():
     print("Experiment Tracker Tested!")
 
     env = ITAEnvWrapper()
+    print(env.metadata)
+    env.metadata = 2
+    print(env.metadata)
 
     reward = Reward({'req':5})
 
     safety = SafetyWrapper({'constraint':2})
 
-    
-main()
+
+@hydra.main(version_base=None, config_path=".", config_name = "config")
+def my_app(cfg: DictConfig) -> None:
+    print(OmegaConf.to_yaml(cfg))
+
+if __name__ == "__main__":
+    main()
+    my_app()

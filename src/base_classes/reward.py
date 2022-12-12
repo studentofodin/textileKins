@@ -1,6 +1,5 @@
-
 import numpy as np
-from abstract_base_class.reward import AbstractReward
+from src.abstract_base_class.reward import AbstractReward
 
 
 class Reward(AbstractReward):
@@ -9,11 +8,11 @@ class Reward(AbstractReward):
         self._rewardValue = rewardValue
 
     @property
-    def ITARequirements(self) -> dict :
+    def ITARequirements(self) -> dict:
         return self._ITARequirements
 
     @property
-    def rewardValue(self) -> float :
+    def rewardValue(self) -> float:
         return self._rewardValue
 
     def calculateReward(self, currentState: np.array, currentModelOutput: np.array, safetyFlag: bool) -> float:

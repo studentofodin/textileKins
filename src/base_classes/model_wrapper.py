@@ -1,6 +1,6 @@
 import numpy as np
-from abstract_base_class.model_wrapper import AbstractModelWrapper
-from base_classes.model_interface_class import ModelInterface
+from src.abstract_base_class.model_wrapper import AbstractModelWrapper
+from src.base_classes.model_interface import ModelInterface
 
 
 class ModelWrapper(AbstractModelWrapper):
@@ -10,7 +10,7 @@ class ModelWrapper(AbstractModelWrapper):
         return self._machineModel
 
     @machineModel.setter
-    def machineModel(self,machineModel):
+    def machineModel(self, machineModel):
         self._machineModel = machineModel
 
     def __init__(self):
@@ -28,6 +28,6 @@ class ModelWrapper(AbstractModelWrapper):
 
     def getOutput(self, action):
         input = self.mapActionsToInputs(action)
-        mean,lowerConfidence,upperConfidence = self.callMachineModel(input)
-        output = self.interpretModelOutputs(mean,lowerConfidence,upperConfidence)
+        mean, lowerConfidence, upperConfidence = self.callMachineModel(input)
+        output = self.interpretModelOutputs(mean, lowerConfidence, upperConfidence)
         return output

@@ -1,6 +1,5 @@
-
 import numpy as np
-from abstract_base_class.safety_wrapper import AbstractSafetyWrapper
+from src.abstract_base_class.safety_wrapper import AbstractSafetyWrapper
 
 
 class SafetyWrapper(AbstractSafetyWrapper):
@@ -16,6 +15,6 @@ class SafetyWrapper(AbstractSafetyWrapper):
         return np.ones(3)
 
     def __init__(self, constraints):
-        self._constraints=constraints
+        self._constraints = constraints
 
 

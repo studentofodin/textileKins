@@ -1,4 +1,10 @@
-driver: postgresql
-user: postgres_user
-password: drowssap
-timeout: 10
+---
+requirements : 12
+actionParams : 6
+stateParams : 9
+actorConstraints : 0
+productionScenario : 9
+stepsUntilLabDataAvailable : 100
+observationParams: 6
+maxSteps : 1000
+metrics : 6

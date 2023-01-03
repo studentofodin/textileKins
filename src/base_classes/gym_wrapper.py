@@ -31,6 +31,6 @@ class GymWrapper(Env):
 
 
 register(
-    id='adaNowo-simulator',
+    id='adaNowo-simulator-v0',
     entry_point='src.base_classes.env_wrapper_class.ITAEnvWrapper'
 )

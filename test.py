@@ -1,13 +1,15 @@
 import numpy as np
+import hydra
 
-from base_classes.reward import Reward
-from base_classes.safety_wrapper import SafetyWrapper
-from base_classes.scenario_manager import ScenarioManager
-from base_classes.configuration import Configuration
-from base_classes.experiment_tracker import ExperimentTracker
-from base_classes.gym_wrapper import GymWrapper
-from base_classes.model_wrapper import ModelWrapper
-from base_classes.env import TrainingEnvironment
+from src.base_classes.reward import Reward
+from src.base_classes.safety_wrapper import SafetyWrapper
+from src.base_classes.scenario_manager import ScenarioManager
+from src.base_classes.configuration import Configuration
+from src.base_classes.experiment_tracker import ExperimentTracker
+from src.base_classes.gym_wrapper import GymWrapper
+from src.base_classes.model_wrapper import ModelWrapper
+from src.base_classes.env import TrainingEnvironment
+from omegaconf import DictConfig, OmegaConf
 
 
 def main():
@@ -31,6 +33,10 @@ def main():
     trainingEnv = TrainingEnvironment(configuration, ModelWrapper(), reward, experimentTracker, np.ones(3))
     env = GymWrapper(env=trainingEnv)
 
+@hydra.main(version_base=None, config_path="src", config_name="config")
+def config(cfg : DictConfig) -> None:
+    print(OmegaConf.to_yaml(cfg))
 
 if __name__ == "__main__":
     main()
+    config()

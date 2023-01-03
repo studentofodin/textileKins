@@ -11,7 +11,7 @@ class Configuration(AbstractConfiguration):
 
     @property
     def actorConstraints(self) -> dict:
-        return self._actionParams
+        return self._actorConstraints
 
     @property
     def productionScenario(self) -> dict:

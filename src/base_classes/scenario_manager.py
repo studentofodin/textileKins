@@ -1,4 +1,4 @@
-from abstract_base_class.scenario_manager import AbstractScenarioManager
+from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
 
 class ScenarioManager(AbstractScenarioManager):

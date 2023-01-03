@@ -1,4 +1,7 @@
-from abstract_base_class.configuration import AbstractConfiguration
+# Delete this class and move its contents to the Configuration file
+
+
+from src.abstract_base_class.configuration import AbstractConfiguration
 
 
 class Configuration(AbstractConfiguration):
@@ -104,7 +107,7 @@ class Configuration(AbstractConfiguration):
     @maxSteps.setter
     def maxSteps(self, maxSteps):
         if type(maxSteps) == int:  # type check for int
-            if maxSteps>0:  # check if steps not 0
+            if maxSteps > 0:  # check if steps not 0
                 self._maxSteps = maxSteps
             else:
                 raise ValueError
@@ -136,12 +139,12 @@ class Configuration(AbstractConfiguration):
     
     def __str__(self) -> str:
         print("Configuration Manager ----")
-        print("Requirements : ",self.requirements)
+        print("Requirements : ", self.requirements)
         print("Actor Constraints : ", self.actorConstraints)
-        print("Production Scenario : ",self.productionScenario)
-        print("Action Parameters : ",self.actionParams)
-        print("State Parameters : ",self.stateParams)
-        print("Steps Left : ",self.stepsUntilLabDataAvailable)
+        print("Production Scenario : ",  self.productionScenario)
+        print("Action Parameters : ", self.actionParams)
+        print("State Parameters : ", self.stateParams)
+        print("Steps Left : ", self.stepsUntilLabDataAvailable)
         print("Observation Parameters : ", self.observationParams)
         print("Maximum Steps for Training : ", self.maxSteps)
         return " "

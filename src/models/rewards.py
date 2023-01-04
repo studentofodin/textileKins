@@ -9,7 +9,7 @@ class ProcessReward(AbstractReward):
         self._weights = weights
         self._config = config
 
-    def ITARequirements(self) -> dict:
+    def requirements(self) -> dict:
         return self._requirements
 
     def rewardValue(self) -> float:

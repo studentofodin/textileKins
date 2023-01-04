@@ -1,15 +1,16 @@
 import numpy as np
+
 from src.abstract_base_class.reward import AbstractReward
 
 
 class Reward(AbstractReward):
-    def __init__(self, ITARequirements, rewardValue=0.0):
-        self._ITARequirements = ITARequirements
+    def __init__(self, requirements, rewardValue=0.0):
+        self._requirements = requirements
         self._rewardValue = rewardValue
 
     @property
-    def ITARequirements(self) -> dict:
-        return self._ITARequirements
+    def requirements(self) -> dict:
+        return self._requirements
 
     @property
     def rewardValue(self) -> float:
@@ -20,5 +21,4 @@ class Reward(AbstractReward):
         return 5.0
 
     def calculatePenalty(self, state: np.array, modelOutput: np.array) -> float:
-        print("Penalty")
-        return 2.0
+        return 0.0

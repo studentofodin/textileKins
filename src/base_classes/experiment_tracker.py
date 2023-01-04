@@ -9,7 +9,7 @@ class ExperimentTracker(AbstractExperimentTracker):
     @metrics.setter
     def metrics(self, metrics):
         if type(metrics) == dict:  # type check for dict
-            if metrics:  # check if dictionary not empty
+            if metrics:  # check if dict not empty
                 self._metrics = metrics
             else:
                 raise ValueError

@@ -1,10 +1,14 @@
----
-requirements : 12
-actionParams : 6
-stateParams : 9
-actorConstraints : 0
-productionScenario : 9
-stepsUntilLabDataAvailable : 100
-observationParams: 6
-maxSteps : 1000
-metrics : 6
+reward:
+  requirements : {}
+  penalty : 1.0
+env:
+  actionParams : 6
+  stateParams : 9
+  actorConstraints : 0
+  productionScenario : 9
+  stepsUntilLabDataAvailable : 100
+  observationParams: 6
+  maxSteps : 1000
+  metrics : 6
+experimentTracker:
+  metrics : ['reward', 'action', 'observation']

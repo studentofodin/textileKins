@@ -11,8 +11,10 @@ from src.base_classes.model_wrapper import ModelWrapper
 from src.base_classes.env import TrainingEnvironment
 from omegaconf import DictConfig, OmegaConf
 
-
-def main():
+@hydra.main(version_base=None, config_path="src", config_name="config")
+def main(cfg : DictConfig):
+    print(OmegaConf.to_yaml(cfg))
+    config=cfg.configs
     scenarioManager = ScenarioManager({'dist1': 1, 'dist2': 2},
                                       {'fibre3': 3, 'fibre4': 4})  # changed the keys to something more clear
     scenarioManager.disturbanceSetting = {'key5': 5, 'key6': 6}
@@ -26,17 +28,16 @@ def main():
                                   observationParams={'oP1': 4, 'oP2': 9},
                                   maxSteps=500)
     configuration.requirements = {'New Req1': 222, 'New Req2': 111}
-    experimentTracker = ExperimentTracker(['Reward', 'Weight Per Area', 'Metric3'])
-    reward = Reward({'req': 5})
+    print(type((config.experimentTracker.metrics)))
+    experimentTracker = ExperimentTracker(config.experimentTracker.metrics)
+    print("Experiment Tracker", experimentTracker.metrics)
+    reward = Reward(config.reward)
     safety = SafetyWrapper({'constraint': 2})
 
     trainingEnv = TrainingEnvironment(configuration, ModelWrapper(), reward, experimentTracker, np.ones(3))
     env = GymWrapper(env=trainingEnv)
 
-@hydra.main(version_base=None, config_path="src", config_name="config")
-def config(cfg : DictConfig) -> None:
-    print(OmegaConf.to_yaml(cfg))
+    env.step(np.array([2.0,3.0,1.2]))
 
 if __name__ == "__main__":
     main()
-    config()

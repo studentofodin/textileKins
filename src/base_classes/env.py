@@ -50,8 +50,8 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     def rewardRange(self) -> Tuple[float, float]:
         return 1.0, 100.0
 
-    def step(self, action: np.array) -> (np.array, float, bool, bool, dict):
-        observation = np.ones(3)
+    def step(self, action: np.array) -> Tuple[np.array, float, bool, bool, dict]:
+        observation = action*2
         reward = 4.0
         done = False
         info = {}

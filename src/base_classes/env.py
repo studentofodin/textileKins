@@ -5,8 +5,6 @@ from src.abstract_base_class.environment import AbstractTrainingEnvironment
 from src.base_classes.reward import Reward
 from src.base_classes.experiment_tracker import ExperimentTracker
 from src.base_classes.model_wrapper import ModelWrapper
-from src.base_classes.configuration import Configuration
-
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
     def __init__(self, config, machine: ModelWrapper, reward: Reward,

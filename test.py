@@ -4,17 +4,15 @@ import hydra
 from src.base_classes.reward import Reward
 from src.base_classes.safety_wrapper import SafetyWrapper
 from src.base_classes.scenario_manager import ScenarioManager
-from src.base_classes.configuration import Configuration
 from src.base_classes.experiment_tracker import ExperimentTracker
 from src.base_classes.gym_wrapper import GymWrapper
 from src.base_classes.model_wrapper import ModelWrapper
 from src.base_classes.env import TrainingEnvironment
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 
 @hydra.main(version_base=None, config_path="src", config_name="config")
-def main(cfg : DictConfig):
-    print(OmegaConf.to_yaml(cfg))
-    config=cfg.configs
+def main(configuration : DictConfig):
+    config=configuration.configs
     scenarioManager = ScenarioManager(config.scenarioManager.disturbanceSetting, config.scenarioManager.fibreSetting)  # changed the keys to something more clear
     print(scenarioManager.disturbanceSetting)
     scenarioManager.disturbanceSetting = {'key5': 5, 'key6': 6}

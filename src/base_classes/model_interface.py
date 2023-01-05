@@ -24,10 +24,14 @@ class ModelInterface(AbstractModelInterface):
         return self.featureImportance
 
     def predictY(self, X: np.array) -> np.array:
-        return np.ones(10)
+        return np.array(X[0]+X[1])
 
     def predictF(self, X: np.array):
-        return np.ones(3)
+        return np.array(X[0]+X[1])
 
     def calcMeanAndStd(self, X: np.array, latent: bool) -> list[np.array, np.array, np.array]:
-        return [np.ones(3), np.ones(3), np.ones(3)]
+        mean = np.array(X[0]+X[1])
+        std = 1.7
+        upper = mean + std
+        lower = mean - std
+        return [mean, std]  # the model wrapper needs to sample from this gaussian distribution

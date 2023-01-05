@@ -15,6 +15,6 @@ class SafetyWrapper(AbstractSafetyWrapper):
         return np.ones(3)
 
     def __init__(self, constraints):
-        self._constraints = constraints
+        self._constraints = dict(constraints)
 
 

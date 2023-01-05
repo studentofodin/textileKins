@@ -6,7 +6,7 @@ class AbstractReward(ABC):
 
     @property
     @abstractmethod
-    def ITARequirements(self) -> dict:
+    def requirements(self) -> dict:
         pass
 
     @property

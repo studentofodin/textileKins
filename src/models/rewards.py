@@ -4,12 +4,12 @@ from src.abstract_base_class.reward import AbstractReward
 
 
 class ProcessReward(AbstractReward):
-    def __init_(self, requirements, weights, config):
+    def __init__(self, requirements, weights, config):
         self._requirements = requirements
         self._weights = weights
         self._config = config
 
-    def ITARequirements(self) -> dict:
+    def requirements(self) -> dict:
         return self._requirements
 
     def rewardValue(self) -> float:

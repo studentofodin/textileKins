@@ -18,7 +18,7 @@ class Reward(AbstractReward):
     def rewardValue(self) -> float:
         return self._rewardValue
 
-    def calculateReward(self, currentState: np.array, currentModelOutput: np.array, safetyFlag: bool) -> float:
+    def calculateReward(self, currentState: dict, currentModelOutput: np.array, safetyFlag: bool) -> float:
         target_a = currentState["target_a"]
         target_b = currentState["target_b"]
         disturbance_d = currentState["disturbance_d"]
@@ -29,5 +29,5 @@ class Reward(AbstractReward):
             reward = - self._config.penalty  
         return reward
 
-    def calculatePenalty(self, state: np.array, modelOutput: np.array) -> float:
+    def calculatePenalty(self, state: dict, modelOutput: np.array) -> float:
         return 0.0

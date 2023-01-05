@@ -26,7 +26,7 @@ def main(configuration : DictConfig):
 
     trainingEnv = TrainingEnvironment(config.env, ModelWrapper(), reward, experimentTracker, np.ones(3))
     env = GymWrapper(env=trainingEnv)
-
+    
     env.step(np.array([2.0,3.0,1.2]))
 
 if __name__ == "__main__":

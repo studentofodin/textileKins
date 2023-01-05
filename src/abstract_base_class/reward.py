@@ -15,9 +15,9 @@ class AbstractReward(ABC):
         pass
 
     @abstractmethod
-    def calculateReward(self, currentState: np.array, currentModelOutput: np.array, safetyFlag: bool) -> float:
+    def calculateReward(self, currentState: dict, currentModelOutput: np.array, safetyFlag: bool) -> float:
         pass
 
     @abstractmethod
-    def calculatePenalty(self, state: np.array, modelOutput: np.array) -> float:
+    def calculatePenalty(self, state: dict, modelOutput: np.array) -> float:
         pass

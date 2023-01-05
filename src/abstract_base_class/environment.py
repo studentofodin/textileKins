@@ -26,7 +26,7 @@ class AbstractTrainingEnvironment(ABC):
 
     @property
     @abstractmethod
-    def currentState(self) -> np.array:
+    def currentState(self) -> dict:
         pass
 
     @property

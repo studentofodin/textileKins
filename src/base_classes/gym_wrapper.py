@@ -7,17 +7,20 @@ from src.base_classes.env import TrainingEnvironment
 
 
 class GymWrapper(Env):
-
+    
     def __init__(self, env: TrainingEnvironment, metadata: dict = None):
-        self._env = env
+        self.env = env
         self._metadata = metadata
-
+        self.action_space = self.env.actionSpace
+        self.observation_space = self.env.observationSpace
+        self._reward_range = (-float("inf"), float("inf"))
+   
     def step(self, action: np.array):
-        observation, reward, done, _, info = self._env.step(action)
-        return observation, reward, done, info
+        """Steps through the environment with action."""
+        return self.env.step(action)
 
     def reset(self, seed=None, options=None):
-        return self._env.reset()
+        return self.env.reset()
 
     def close(self):
         pass
@@ -27,7 +30,7 @@ class GymWrapper(Env):
 
     @property
     def reward_range(self):
-        return None
+        return self._reward_range
 
 
 register(

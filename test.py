@@ -19,14 +19,6 @@ def main(cfg : DictConfig):
     print(scenarioManager.disturbanceSetting)
     scenarioManager.disturbanceSetting = {'key5': 5, 'key6': 6}
     print(scenarioManager.disturbanceSetting)
-    configuration = Configuration(requirements={'req1': 123, 'req2': 321},
-                                  actorConstraints={'constraint1': 4, 'constraint2': 5},
-                                  productionScenario={'pS1': 2, 'pS2': 5},
-                                  actionParams={'ap1': 4, 'ap2': 5},
-                                  stateParams={'sP1': 3, 'sP2': 4},
-                                  stepsUntilLabDataAvailable=100,
-                                  observationParams={'oP1': 4, 'oP2': 9},
-                                  maxSteps=500)
     experimentTracker = ExperimentTracker(config.experimentTracker.metrics)
     print("Experiment Tracker", experimentTracker.metrics)
     reward = Reward(config.reward, {'weightB' : 10.0})
@@ -34,7 +26,7 @@ def main(cfg : DictConfig):
     safety = SafetyWrapper(config.safety.constraints)
     print("Safety", safety.constraints)
 
-    trainingEnv = TrainingEnvironment(configuration, ModelWrapper(), reward, experimentTracker, np.ones(3))
+    trainingEnv = TrainingEnvironment(config.env, ModelWrapper(), reward, experimentTracker, np.ones(3))
     env = GymWrapper(env=trainingEnv)
 
     env.step(np.array([2.0,3.0,1.2]))

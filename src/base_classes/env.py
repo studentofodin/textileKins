@@ -9,7 +9,7 @@ from src.base_classes.configuration import Configuration
 
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
-    def __init__(self, config: Configuration, machine: ModelWrapper, reward: Reward,
+    def __init__(self, config, machine: ModelWrapper, reward: Reward,
                  experimentTracker: ExperimentTracker, initialState: np.array):
         self._config = config
         self._machine = machine

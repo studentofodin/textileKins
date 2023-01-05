@@ -13,7 +13,7 @@ class GymWrapper(Env):
         self._metadata = metadata
         self.action_space = self.env.actionSpace
         self.observation_space = self.env.observationSpace
-        self._reward_range = (-float("inf"), float("inf"))
+        self._reward_range = self.env.rewardRange
    
     def step(self, action: np.array):
         """Steps through the environment with action."""

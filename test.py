@@ -24,9 +24,9 @@ def main(configuration : DictConfig):
     safety = SafetyWrapper(config.safety.constraints)
     print("Safety", safety.constraints)
 
-    trainingEnv = TrainingEnvironment(config.env, ModelWrapper(), reward, experimentTracker, np.ones(3))
+    trainingEnv = TrainingEnvironment(config.env, ModelWrapper(), reward, experimentTracker, {"target_a" : 5.0 , "target_b" : 6.0, "disturbance_d" : 7.0, })
     env = GymWrapper(env=trainingEnv)
-    
+
     env.step(np.array([2.0,3.0,1.2]))
 
 if __name__ == "__main__":

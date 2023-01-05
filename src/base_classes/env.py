@@ -21,15 +21,15 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     Machine starts at __________
     """
     def __init__(self, config, machine: ModelWrapper, reward: Reward,
-                 experimentTracker: ExperimentTracker, initialState: np.array):
+                 experimentTracker: ExperimentTracker, initialState: dict):
         self._config = config
         self._machine = machine
         self._reward = reward
         self._experimentTracker = experimentTracker
         self._currentState = initialState
         self._initialState = initialState
-        self._actionSpace = spaces.Box(low=np.array([0,0,0]), high=np.array([100,100,100], shape=(3,)), dtype=np.float32)
-        self._observationSpace = spaces.Box(low=np.array([0,0]), high=np.array([50,50], shape=(2,)), dtype=np.float32)
+        self._actionSpace = spaces.Box(low=np.array([0,0,0]), high=np.array([100,100,100]), shape=(3,), dtype=np.float64)
+        self._observationSpace = spaces.Box(low=np.array([0,0]), high=np.array([50,50]), shape=(2,), dtype=np.float64)
         self.done = False
 
     @property
@@ -62,7 +62,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
     @property
     def rewardRange(self) -> Tuple[float, float]:
-        return 1.0, 100.0
+        return (-float("inf"), float("inf"))
 
     def step(self, action: np.array) -> Tuple[np.array, float, bool, bool, dict]:
         """
@@ -86,7 +86,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
                 a certain timelimit was exceeded, or the physics simulation has entered an invalid state.
         """
         observation = self.machine.getOutput(action)
-        reward = self.reward.calculateReward(self.currentState, observation)
+        reward = self.reward.calculateReward(self.currentState, observation, True)
         # if(requirement target reached):
         # self.done = True
         info = {}

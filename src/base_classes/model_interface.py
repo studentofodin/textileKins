@@ -34,4 +34,4 @@ class ModelInterface(AbstractModelInterface):
         std = 1.7
         upper = mean + std
         lower = mean - std
-        return [mean, std]  # the model wrapper needs to sample from this gaussian distribution
+        return [mean, upper, lower]  # the model wrapper needs to sample from this gaussian distribution

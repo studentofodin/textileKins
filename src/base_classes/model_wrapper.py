@@ -25,11 +25,12 @@ class ModelWrapper(AbstractModelWrapper):
     def callMachineModel(self, input):
         return self.machineModel.calcMeanAndStd(np.array([5,4,3]), latent=True)
 
-    def interpretModelOutputs(self, mean: np.array, std) -> np.array:
-        return np.random.normal(mean, std, 1000)
+    def interpretModelOutputs(self, mean: np.array, lowerConfidence: np.array, upperConfidence: np.array) -> np.array:
+        return [1,2,3]
+
 
     def getOutput(self, action):
         input = self.mapActionsToInputs(action)
-        mean, std = self.callMachineModel(input)
-        output = self.interpretModelOutputs(mean, std)
+        mean, lowerConfidence, upperConfidence = self.callMachineModel(input)
+        output = self.interpretModelOutputs(mean, lowerConfidence, upperConfidence)
         return output

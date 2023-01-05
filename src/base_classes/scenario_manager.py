@@ -1,3 +1,4 @@
+from omegaconf import OmegaConf
 from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
 
@@ -31,8 +32,8 @@ class ScenarioManager(AbstractScenarioManager):
             raise ValueError
 
     def __init__(self, disturbanceSetting, fibreSetting):
-        self.disturbanceSetting = disturbanceSetting
-        self.fibreSetting = fibreSetting
+        self.disturbanceSetting = dict(disturbanceSetting)
+        self.fibreSetting = dict(fibreSetting)
 
     def __str__(self):
         print("Scenario Manager ---")

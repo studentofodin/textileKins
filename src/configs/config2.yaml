@@ -1,6 +1,9 @@
 reward:
-  requirements : {}
+  requirements :
+    bLower : 30.0
+    bUpper : 100.0
   penalty : 1.0
+  fibreCosts : 276.00
 env:
   actionParams : 6
   stateParams : 9
@@ -12,3 +15,15 @@ env:
   metrics : 6
 experimentTracker:
   metrics : ['reward', 'action', 'observation']
+scenarioManager:
+  disturbanceSetting : 
+    dist1 : 1
+    dist2 : 2
+  fibreSetting :
+    fibre3: 3 
+    fibre4: 4
+safety :
+  constraints : 
+    weight : 100
+    speed1 : 100
+    speed2 : 90

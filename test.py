@@ -15,10 +15,10 @@ from omegaconf import DictConfig, OmegaConf
 def main(cfg : DictConfig):
     print(OmegaConf.to_yaml(cfg))
     config=cfg.configs
-    scenarioManager = ScenarioManager({'dist1': 1, 'dist2': 2},
-                                      {'fibre3': 3, 'fibre4': 4})  # changed the keys to something more clear
+    scenarioManager = ScenarioManager(config.scenarioManager.disturbanceSetting, config.scenarioManager.fibreSetting)  # changed the keys to something more clear
+    print(scenarioManager.disturbanceSetting)
     scenarioManager.disturbanceSetting = {'key5': 5, 'key6': 6}
-    scenarioManager.fibreSetting = {'key7': 7, 'key8': 8}
+    print(scenarioManager.disturbanceSetting)
     configuration = Configuration(requirements={'req1': 123, 'req2': 321},
                                   actorConstraints={'constraint1': 4, 'constraint2': 5},
                                   productionScenario={'pS1': 2, 'pS2': 5},
@@ -27,12 +27,12 @@ def main(cfg : DictConfig):
                                   stepsUntilLabDataAvailable=100,
                                   observationParams={'oP1': 4, 'oP2': 9},
                                   maxSteps=500)
-    configuration.requirements = {'New Req1': 222, 'New Req2': 111}
-    print(type((config.experimentTracker.metrics)))
     experimentTracker = ExperimentTracker(config.experimentTracker.metrics)
     print("Experiment Tracker", experimentTracker.metrics)
-    reward = Reward(config.reward)
-    safety = SafetyWrapper({'constraint': 2})
+    reward = Reward(config.reward, {'weightB' : 10.0})
+    print("Reward", reward._config)
+    safety = SafetyWrapper(config.safety.constraints)
+    print("Safety", safety.constraints)
 
     trainingEnv = TrainingEnvironment(configuration, ModelWrapper(), reward, experimentTracker, np.ones(3))
     env = GymWrapper(env=trainingEnv)

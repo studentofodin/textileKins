@@ -8,7 +8,7 @@ class SafetyWrapper(AbstractSafetyWrapper):
     def constraints(self) -> dict:
         return self._constraints
 
-    def isWithinConstraints(self) -> bool:
+    def isWithinConstraints(self, state) -> bool:
         return True
 
     def calculateClippedState(self):

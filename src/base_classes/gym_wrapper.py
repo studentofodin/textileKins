@@ -26,7 +26,7 @@ class GymWrapper(Env):
         pass
 
     def render(self):
-        pass
+        return self.env.render()
 
     @property
     def reward_range(self):

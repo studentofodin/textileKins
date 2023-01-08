@@ -1,35 +1,80 @@
+import numpy as np
+
 from typing import Tuple
 from gym import spaces
-import numpy as np
 from src.abstract_base_class.environment import AbstractTrainingEnvironment
 from src.base_classes.reward import Reward
 from src.base_classes.experiment_tracker import ExperimentTracker
 from src.base_classes.model_wrapper import ModelWrapper
+from src.base_classes.safety_wrapper import SafetyWrapper
+
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
     """
     ### Action Space
-    Continuous : 
-        Considering 3 actions : 
+    Continuous - Considering 3 actions : Input1, Input2, Input3 (to be defined later)
 
     ### Observation Space
-    Continuous : Considering 2D space for observation
+    Continuous - Considering 2D space for observation : Output1, Output2
 
     ### Rewards
 
     ### Starting State
-    Machine starts at __________
+    Machine starts at Initial State defined in Configuration
     """
-    def __init__(self, config, machine: ModelWrapper, reward: Reward,
-                 experimentTracker: ExperimentTracker, initialState: dict):
+
+    def __init__(
+        self,
+        config,
+        machine: ModelWrapper,
+        reward: Reward,
+        experimentTracker: ExperimentTracker,
+        safety: SafetyWrapper,
+    ):
         self._config = config
         self._machine = machine
         self._reward = reward
         self._experimentTracker = experimentTracker
-        self._currentState = initialState
-        self._initialState = initialState
-        self._actionSpace = spaces.Box(low=np.array([0,0,0]), high=np.array([100,100,100]), shape=(3,), dtype=np.float64)
-        self._observationSpace = spaces.Box(low=np.array([0,0]), high=np.array([50,50]), shape=(2,), dtype=np.float64)
+        self._safety = safety
+        self._currentState = dict(config.initialState)
+        self.actionParameters = config.actionParams
+        self.observationParameters = config.observationParams
+        self._actionSpace = spaces.Box(
+            low=np.array(
+                [
+                    self.actionParameters.input1.low,
+                    self.actionParameters.input2.low,
+                    self.actionParameters.input3.low,
+                ],
+                dtype=np.float32,
+            ),
+            high=np.array(
+                [
+                    self.actionParameters.input1.high,
+                    self.actionParameters.input2.high,
+                    self.actionParameters.input3.high,
+                ],
+                dtype=np.float32,
+            ),
+            shape=(3,),
+        )
+        self._observationSpace = spaces.Box(
+            low=np.array(
+                [
+                    self.observationParameters.output1.low,
+                    self.observationParameters.output2.low,
+                ],
+                dtype=np.float32,
+            ),
+            high=np.array(
+                [
+                    self.observationParameters.output1.high,
+                    self.observationParameters.output2.high,
+                ],
+                dtype=np.float32,
+            ),
+            shape=(2,),
+        )
         self.done = False
 
     @property
@@ -47,6 +92,10 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     @property
     def config(self):
         return self._config
+
+    @property
+    def safety(self):
+        return self._safety
 
     @property
     def currentState(self) -> dict:
@@ -80,21 +129,40 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
                 hidden from observations, or individual reward terms that are combined to produce the total reward.
                 It also can contain information that distinguishes truncation and termination, however this is deprecated in favour
                 of returning two booleans, and will be removed in a future version.
-            (deprecated)
             done (bool): A boolean value for if the episode has ended, in which case further :meth:`step` calls will return undefined results.
                 A done signal may be emitted for different reasons: Maybe the task underlying the environment was solved successfully,
                 a certain timelimit was exceeded, or the physics simulation has entered an invalid state.
         """
-        observation = self.machine.getOutput(action)
-        reward = self.reward.calculateReward(self.currentState, observation, True)
-        # if(requirement target reached):
-        # self.done = True
+        safetyFlag = self.calculateStateFromAction(action)
+        if safetyFlag:
+            observation = self.machine.getOutput(self.currentState)
+        else:
+            observation = None
+        reward = self.reward.calculateReward(self.currentState, observation, safetyFlag)
+        if self.isTargetReached():
+            self.done = True
         info = {}
         return observation, reward, self.done, False, info
 
     def reset(self):
         # Reset Current State to Initial State
         # Reset required variables to start optimisation again
-        self._currentState = self._initialState
+        self._currentState = dict(self.config.initialState)
         self._reward = 0.0
         self.done = False
+
+    def calculateStateFromAction(self, action):
+        updatedState = {}
+        for index, key in enumerate(self.actionParameters.actionParamsList):
+            updatedState[key] = self.currentState[key] + action[index]
+        safetyFlag = self.safety.isWithinConstraints(updatedState)
+        if safetyFlag:
+            self._currentState = updatedState
+        return safetyFlag
+
+    def isTargetReached(self):
+        # check if target reached
+        return False
+
+    def render(self):
+        pass

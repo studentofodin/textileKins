@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
+from typing import Tuple
 
 
 class AbstractModelInterface(ABC):
@@ -14,16 +15,16 @@ class AbstractModelInterface(ABC):
         pass
 
     @abstractmethod
-    def predict_y(self, X: dict) -> [np.array, np.array]:
+    def predict_y(self, X: dict) -> Tuple[np.array, np.array]:
         pass
 
     @abstractmethod
-    def predict_f(self, X: dict) -> [np.array, np.array]:
+    def predict_f(self, X: dict) -> Tuple[np.array, np.array]:
         pass
 
     @abstractmethod
-    def predict_f_internal(self, X: np.array) -> [np.array, np.array]:
+    def predict_f_internal(self, X: np.array) -> Tuple[np.array, np.array]:
         pass
 
-    def predict_y_internal(self, X: np.array) -> [np.array, np.array]:
+    def predict_y_internal(self, X: np.array) -> Tuple[np.array, np.array]:
         pass

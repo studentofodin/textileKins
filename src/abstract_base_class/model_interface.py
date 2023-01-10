@@ -1,13 +1,11 @@
 from abc import ABC, abstractmethod
-
 import numpy as np
-import pandas as pd
 
 
 class AbstractModelInterface(ABC):
     @property
     @abstractmethod
-    def modelProperties(self) -> dict:
+    def model_properties(self) -> dict:
         pass
 
     @property
@@ -15,19 +13,17 @@ class AbstractModelInterface(ABC):
     def model(self) -> any:
         pass
 
-    @property
     @abstractmethod
-    def featureImportance(self) -> pd.DataFrame:
+    def predict_y(self, X: dict) -> [np.array, np.array]:
         pass
 
     @abstractmethod
-    def predictY(self, X: np.array) -> np.array:
+    def predict_f(self, X: dict) -> [np.array, np.array]:
         pass
 
     @abstractmethod
-    def predictF(self, X: np.array) -> np.array:
+    def predict_f_internal(self, X: np.array) -> [np.array, np.array]:
         pass
 
-    @abstractmethod
-    def calcMeanAndStd(self, X: np.array, latent: bool) -> list[np.array, np.array, np.array]:
+    def predict_y_internal(self, X: np.array) -> [np.array, np.array]:
         pass

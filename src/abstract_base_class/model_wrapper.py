@@ -20,6 +20,21 @@ class AbstractModelWrapper(ABC):
     def machine_models(self) -> List[AbstractModelInterface, ...]:
         pass
 
+    @property
+    @abstractmethod
+    def means(self) -> np.array:
+        pass
+
+    @property
+    @abstractmethod
+    def vars(self) -> np.array:
+        pass
+
+    @property
+    @abstractmethod
+    def outputs(self) -> np.array:
+        pass
+
     @abstractmethod
     def interpret_model_outputs(self, mean: np.array, var: np.array) -> np.array:
         pass

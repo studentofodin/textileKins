@@ -22,6 +22,11 @@ class AbstractModelWrapper(ABC):
 
     @property
     @abstractmethod
+    def n_models(self) -> int:
+        pass
+
+    @property
+    @abstractmethod
     def means(self) -> np.array:
         pass
 
@@ -40,8 +45,9 @@ class AbstractModelWrapper(ABC):
         pass
 
     @abstractmethod
-    def call_models(self, input: dict, latent: bool) -> Tuple[np.array, np.array]:
-        pass
+    def call_models(self, input: dict, latent: bool = True) -> Tuple[np.array, np.array]:
+        if latent:
+            mean
 
     @abstractmethod
     def call_models_internal(self, input: np.array, latent: bool) -> Tuple[np.array, np.array]:

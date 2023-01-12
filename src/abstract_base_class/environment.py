@@ -66,7 +66,7 @@ class AbstractTrainingEnvironment(ABC):
         pass
 
     @abstractmethod
-    def mapActionsToStates(actions: dict, actionsAreAbsolute: bool) -> None:
+    def mapActionsToState(self, actions: dict) -> None:
         pass
 
     @abstractmethod
@@ -85,11 +85,6 @@ class AbstractTrainingEnvironment(ABC):
         truncated(bool) – whether a truncation condition outside the scope of the MDP is satisfied. Typically a
         timelimit, but could also be used to indicate agent physically going out of bounds. Can be used to end the
         episode prematurely before a terminal state is reached.
-
-        done(bool) – A boolean value for if the episode has ended, in which case further step() calls will return
-        undefined results. A done signal may be emitted for different reasons: Maybe the task underlying the
-        environment was solved successfully, a certain timelimit was exceeded, or the physics simulation has entered an
-        invalid state.
 
         info(dictionary) – info contains auxiliary diagnostic information (helpful for debugging, learning, and logging).
         This might, for instance, contain: metrics that describe the agent’s performance state, variables that are

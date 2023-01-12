@@ -22,6 +22,11 @@ class AbstractTrainingEnvironment(ABC):
 
     @property
     @abstractmethod
+    def actionsAreAbsolute(self) -> bool:
+        pass
+
+    @property
+    @abstractmethod
     def actionsAreSafe(self) -> bool:
         pass
 
@@ -29,7 +34,6 @@ class AbstractTrainingEnvironment(ABC):
     @abstractmethod
     def reward(self) -> AbstractReward:
         pass
-
 
     @property
     @abstractmethod
@@ -62,7 +66,7 @@ class AbstractTrainingEnvironment(ABC):
         pass
 
     @abstractmethod
-    def mapActionsToStates(actions: dict) -> None:
+    def mapActionsToStates(actions: dict, actionsAreAbsolute: bool) -> None:
         pass
 
     @abstractmethod

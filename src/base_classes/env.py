@@ -42,17 +42,15 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._actionSpace = spaces.Box(
             low=np.array(
                 [
-                    self.actionParameters.input1.low,
-                    self.actionParameters.input2.low,
-                    self.actionParameters.input3.low,
+                    self.actionParameters[parameter].low
+                    for parameter in self.actionParameters.list
                 ],
                 dtype=np.float32,
             ),
             high=np.array(
                 [
-                    self.actionParameters.input1.high,
-                    self.actionParameters.input2.high,
-                    self.actionParameters.input3.high,
+                    self.actionParameters[parameter].high
+                    for parameter in self.actionParameters.list
                 ],
                 dtype=np.float32,
             ),
@@ -61,15 +59,15 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._observationSpace = spaces.Box(
             low=np.array(
                 [
-                    self.observationParameters.output1.low,
-                    self.observationParameters.output2.low,
+                    self.observationParameters[parameter].low
+                    for parameter in self.observationParameters.list
                 ],
                 dtype=np.float32,
             ),
             high=np.array(
                 [
-                    self.observationParameters.output1.high,
-                    self.observationParameters.output2.high,
+                    self.observationParameters[parameter].high
+                    for parameter in self.observationParameters.list
                 ],
                 dtype=np.float32,
             ),
@@ -153,7 +151,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
     def calculateStateFromAction(self, action):
         updatedState = {}
-        for index, key in enumerate(self.actionParameters.actionParamsList):
+        for index, key in enumerate(self.actionParameters.list):
             updatedState[key] = self.currentState[key] + action[index]
         safetyFlag = self.safety.isWithinConstraints(updatedState)
         if safetyFlag:
@@ -162,7 +160,10 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
     def isTargetReached(self):
         # check if target reached
+        # TODO
         return False
 
     def render(self):
+        # Implement Experiment Tracking
+        # TODO
         pass

@@ -18,7 +18,7 @@ env:
     input3 :
       low : 10.0
       high : 99.0
-    actionParamsList : ['input1', 'input2', 'input3']
+    list : ['input1', 'input2', 'input3']
   stateParams : 
     - sP1 : 0.3
     - sP2 : 999.0
@@ -29,6 +29,7 @@ env:
     output2 :
       low : 0.0
       high : 8.8
+    list : ['output1', 'output2']
   actorConstraints : 
     - aC1 : 0.0
     - aC2 : 8.9

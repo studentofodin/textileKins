@@ -41,13 +41,13 @@ class AbstractModelWrapper(ABC):
         pass
 
     @abstractmethod
-    def interpret_model_outputs(self, mean: np.array, var: np.array) -> np.array:
+    def call_models(self, input: dict, latent: bool) -> None:
         pass
 
     @abstractmethod
-    def call_models(self, input: dict, latent: bool = True) -> Tuple[np.array, np.array]:
+    def interpret_model_outputs(self) -> None:
         pass
-    
+
     @abstractmethod
-    def get_output(self, input: dict, latent: bool) -> np.array:
+    def get_outputs(self, input: dict, latent: bool) -> np.array:
         pass

@@ -46,17 +46,8 @@ class AbstractModelWrapper(ABC):
 
     @abstractmethod
     def call_models(self, input: dict, latent: bool = True) -> Tuple[np.array, np.array]:
-        if latent:
-            mean
-
-    @abstractmethod
-    def call_models_internal(self, input: np.array, latent: bool) -> Tuple[np.array, np.array]:
         pass
-
+    
     @abstractmethod
     def get_output(self, input: dict, latent: bool) -> np.array:
-        pass
-
-    @abstractmethod
-    def get_output_internal(self, input: np.array, latent: bool) -> np.array:
         pass

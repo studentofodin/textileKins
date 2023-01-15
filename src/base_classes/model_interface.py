@@ -1,18 +1,20 @@
+import dill
+import pathlib as pl
 import numpy as np
 from sklearn.pipeline import Pipeline
 from copy import deepcopy
 from typing import Tuple
 
 from src.abstract_base_class.model_interface import AbstractModelInterface
+from src.base_classes.model_wrapper import ModelWrapper as mw
 
 
 class AdapterSVGP(AbstractModelInterface):
     from gpflow.models import SVGP
-    """
-    Adapts a GPFlow SVGP model to interface with the app.
-    """
 
-    def __init__(self, pickle_obj: dict, model_properties: dict, rescale_y: bool = True) -> None:
+    def __init__(self, model_properties: dict, rescale_y: bool = True) -> None:
+        with open(pl.Path(model_properties["model_path"]), "rb") as file:
+            pickle_obj = dill.load(file)
         self._model = pickle_obj["model"]
         self._unpack_func = pickle_obj["unpack_dict_func"]
         self._scaler_X = pickle_obj["scaler_X"]
@@ -66,11 +68,12 @@ class AdapterSVGP(AbstractModelInterface):
 
 
 class AdapterGPy(AbstractModelInterface):
-    from GPy.models.gp_heteroscedastic_regression import \
-        GPHeteroscedasticRegression
+    from GPy.models.gp_heteroscedastic_regression import GPHeteroscedasticRegression
     from GPy.models.gp_regression import GPRegression
 
-    def __init__(self, pickle_obj: dict, model_properties: dict, rescale_y: bool = True) -> None:
+    def __init__(self, model_properties: dict, rescale_y: bool = True) -> None:
+        with open(pl.Path(model_properties["model_path"]), "rb") as file:
+            pickle_obj = dill.load(file)
         self._model = pickle_obj["model"]
         self._unpack_func = pickle_obj["unpack_dict_func"]
         self._scaler_X = pickle_obj["scaler_X"]

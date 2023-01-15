@@ -8,19 +8,6 @@ from src.base_classes.model_interface import *
 
 class ModelWrapper(AbstractModelWrapper):
 
-    @staticmethod
-    def load_model(model_props: dict) -> AbstractModelInterface:
-        with open(pl.Path(model_props["model_path"]), "rb") as file:
-            pickle_obj = dill.load(file)
-        model_class = model_props["model_class"]
-        if model_class == "SVGP":
-            mdl = AdapterSVGP(pickle_obj, model_props, rescale_y=True)
-        elif model_class == "GPy_GPR":
-            mdl = AdapterGPy(pickle_obj, model_props, rescale_y=True)
-        else:
-            raise (TypeError(f"The model class {model_class} is not yet supported"))
-        return mdl
-
     def __init__(self, model_props: List[dict]):
         self._n_models = len(model_props)
         self._means = np.zeros((self._n_models))
@@ -49,20 +36,6 @@ class ModelWrapper(AbstractModelWrapper):
     @property
     def outputs(self) -> np.array:
         return self._outputs
-
-    def call_models(self, input: dict, latent: bool) -> None:
-        means = np.zeros((self._n_models))
-        vars = np.zerso((self._n_models))
-
-        if latent:
-            for i, mdl in enumerate(self._machine_models):
-                means[i], vars[i] = mdl.predict_f(input)
-        else:
-            for i, mdl in enumerate(self._machine_models):
-                means[i], vars[i] = mdl.predict_y(input)
-
-        self._means = means
-        self._vars = vars
 
     def call_models(self, input: dict, latent: bool) -> None:
         means = np.zeros((self._n_models))

@@ -1,19 +1,10 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from typing import Tuple
 from typing import List
 
 from src.abstract_base_class.model_interface import AbstractModelInterface
-from src.abstract_base_class.safety_wrapper import AbstractSafetyWrapper
-
-
 
 class AbstractModelWrapper(ABC):
-
-    @staticmethod
-    @abstractmethod
-    def load_model(model_props: dict) -> AbstractModelInterface:
-        pass
 
     @property
     @abstractmethod

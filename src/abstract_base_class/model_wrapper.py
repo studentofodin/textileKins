@@ -17,7 +17,7 @@ class AbstractModelWrapper(ABC):
 
     @property
     @abstractmethod
-    def machine_models(self) -> List[AbstractModelInterface, ...]:
+    def machine_models(self) -> List[AbstractModelInterface]:
         pass
 
     @property

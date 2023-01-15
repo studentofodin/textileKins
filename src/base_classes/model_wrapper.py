@@ -1,21 +1,25 @@
-import pathlib as pl
-import dill
 from typing import List
-import numpy as np
 
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
 from src.base_classes.model_interface import *
 
 class ModelWrapper(AbstractModelWrapper):
 
-    def __init__(self, model_props: List[dict]):
+    def __init__(self, model_props: List[dict], model_props_dirs: List[pl.Path], rescale_y: bool = True):
         self._n_models = len(model_props)
         self._means = np.zeros((self._n_models))
         self._vars = np.zeros((self._n_models))
         self._outputs = np.zeros((self._n_models))
         self._machine_models = list()
-        for mp in model_props:
-            self._machine_models.append(ModelWrapper.load_model(mp))
+        for i in range(self._n_models):
+            model_class = model_props[i]["model_class"]
+            if model_class == "SVGP":
+                mdl = AdapterSVGP(model_props[i], model_props_dirs[i], rescale_y)
+            elif model_class == "GPy_GPR":
+                mdl = AdapterGPy(model_props[i], model_props_dirs[i], rescale_y)
+            else:
+                raise (TypeError(f"The model class {model_class} is not yet supported"))
+            self._machine_models.append(mdl)
 
     @property
     def machine_models(self) -> List[AbstractModelInterface]:

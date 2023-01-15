@@ -6,8 +6,6 @@ from copy import deepcopy
 from typing import Tuple
 
 from src.abstract_base_class.model_interface import AbstractModelInterface
-from src.base_classes.model_wrapper import ModelWrapper as mw
-
 
 class AdapterSVGP(AbstractModelInterface):
     from gpflow.models import SVGP

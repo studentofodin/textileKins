@@ -12,8 +12,8 @@ from src.base_classes.model_wrapper import ModelWrapper as mw
 class AdapterSVGP(AbstractModelInterface):
     from gpflow.models import SVGP
 
-    def __init__(self, model_properties: dict, rescale_y: bool = True) -> None:
-        with open(pl.Path(model_properties["model_path"]), "rb") as file:
+    def __init__(self, model_properties: dict, model_properties_dir: pl.Path, rescale_y: bool = True) -> None:
+        with open(model_properties_dir / pl.Path(model_properties["model_path"]), "rb") as file:
             pickle_obj = dill.load(file)
         self._model = pickle_obj["model"]
         self._unpack_func = pickle_obj["unpack_dict_func"]
@@ -71,8 +71,8 @@ class AdapterGPy(AbstractModelInterface):
     from GPy.models.gp_heteroscedastic_regression import GPHeteroscedasticRegression
     from GPy.models.gp_regression import GPRegression
 
-    def __init__(self, model_properties: dict, rescale_y: bool = True) -> None:
-        with open(pl.Path(model_properties["model_path"]), "rb") as file:
+    def __init__(self, model_properties: dict, model_properties_dir: pl.Path, rescale_y: bool = True) -> None:
+        with open(model_properties_dir / pl.Path(model_properties["model_path"]), "rb") as file:
             pickle_obj = dill.load(file)
         self._model = pickle_obj["model"]
         self._unpack_func = pickle_obj["unpack_dict_func"]

@@ -1,6 +1,6 @@
 name: unevenness_card_web
 model_class: GPy_GPR
-model_path: C:\Users\rkins\Documents\AdaNowo\adanowo-modeling\models\unevenness_card_web.pkl
+model_path: unevenness_card_web.pkl
 data_source: EasyVlies
 data_path: C:\Users\rkins\Documents\AdaNowo\adanowo-modeling\data\processed\data_EasyVlies.hdf5
 inputs:

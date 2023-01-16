@@ -6,7 +6,17 @@ class AbstractReward(ABC):
 
     @property
     @abstractmethod
+    def config(self) -> dict:
+        pass
+
+    @property
+    @abstractmethod
     def requirements(self) -> dict:
+        pass
+
+    @property
+    @abstractmethod
+    def weights(self) -> dict:
         pass
 
     @property
@@ -15,9 +25,5 @@ class AbstractReward(ABC):
         pass
 
     @abstractmethod
-    def calculateReward(self, currentState: dict, currentModelOutput: np.array, safetyFlag: bool) -> float:
-        pass
-
-    @abstractmethod
-    def calculatePenalty(self, state: dict, modelOutput: np.array) -> float:
+    def calculateReward(self, state: dict, observation: dict, safety_flag: bool) -> float:
         pass

@@ -1,5 +1,3 @@
-import numpy as np
-
 from src.abstract_base_class.reward import AbstractReward
 
 

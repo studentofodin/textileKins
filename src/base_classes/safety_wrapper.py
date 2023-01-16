@@ -1,4 +1,3 @@
-import numpy as np
 from src.abstract_base_class.safety_wrapper import AbstractSafetyWrapper
 
 

@@ -1,26 +1,24 @@
 import pathlib as pl
 import yaml
-import dill
 
-from src.base_classes.model_interface import *
-from src.base_classes.model_wrapper import ModelWrapper as mw
+from src.base_classes.model_wrapper import ModelWrapper
 
 parent_dir = pl.Path(__file__).parent
 print(parent_dir)
 
 model_name = 'unevenness_card_web'
+models_dir = parent_dir / 'models'
 
-yaml_path = parent_dir / 'models' / (model_name + '.yaml')
-pkl_path = parent_dir / 'models' / (model_name + '.pkl')
-
-with open(yaml_path, 'r') as stream:
+with open(models_dir / (model_name + '.yaml'), 'r') as stream:
     try:
         model_props = yaml.safe_load(stream)
     except yaml.YAMLError as exc:
         print(exc)
 
-model_props['model_path'] = pkl_path
+model_props = [model_props, model_props]
+model_props_dirs = [models_dir, models_dir]
+model_wrapper = ModelWrapper(model_props, model_props_dirs)
 
-model_interface = mw.load_model(model_props)
+pass
 
 

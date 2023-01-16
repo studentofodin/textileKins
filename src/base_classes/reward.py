@@ -4,10 +4,10 @@ from src.abstract_base_class.reward import AbstractReward
 
 
 class Reward(AbstractReward):
-    def __init__(self, config, requirements, weights):
-        self._config = config
-        self._requirements = requirements
-        self._weights = weights
+    def __init__(self, config: "DictConfig"):
+        self._config = dict(config)
+        self._requirements = dict(config.requirements)
+        self._weights = dict(config.weights)
         self._rewardValue = 0.0
 
     @property

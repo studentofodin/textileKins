@@ -1,23 +1,33 @@
 import pathlib as pl
 import yaml
+import numpy as np
 
 from src.base_classes.model_wrapper import ModelWrapper
 
 parent_dir = pl.Path(__file__).parent
-print(parent_dir)
 
-model_name = 'unevenness_card_web'
-models_dir = parent_dir / 'models'
+model_names = ['unevenness_card_web', 'min_area_weight']
+model_dirs = [parent_dir / 'models', parent_dir / 'models']
+model_props = list()
 
-with open(models_dir / (model_name + '.yaml'), 'r') as stream:
-    try:
-        model_props = yaml.safe_load(stream)
-    except yaml.YAMLError as exc:
-        print(exc)
+for i in range(len(model_names)):
+    with open(model_dirs[i] / (model_names[i] + '.yaml'), 'r') as stream:
+        try:
+            model_props.append(yaml.safe_load(stream))
+        except yaml.YAMLError as exc:
+            print(exc)
 
-model_props = [model_props, model_props]
-model_props_dirs = [models_dir, models_dir]
-model_wrapper = ModelWrapper(model_props, model_props_dirs)
+model_wrapper = ModelWrapper(model_props, model_dirs)
+
+keys = ["Ishikawa_WeightPerAreaCardDelivery", "Ishikawa_CardMassThroughputSetpoint", "Ishikawa_LayersCount",
+        "Ishikawa_DraftRatioNeedleloom1Intake", "Ishikawa_DraftRatioNeedleloom", "v_Vorreisser", "v_Arbeiter_HT",
+        "v_Wender_HT", "v_Arbeiter_VR", "v_Wender_VR"]
+values = np.ones((len(keys)))
+
+inputs = dict(zip(keys, values))
+
+print(model_wrapper.get_outputs(inputs))
+
 
 pass
 

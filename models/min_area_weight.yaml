@@ -1,0 +1,15 @@
+name: min_area_weight
+model_class: GPy_GPR
+model_path: min_area_weight.pkl
+data_source: Augsburg
+data_path: C:\Users\rkins\Documents\AdaNowo\adanowo-modeling\data\processed\data_augsburg.hdf5
+inputs:
+  - Ishikawa_WeightPerAreaCardDelivery
+  - Ishikawa_LayersCount
+  - Ishikawa_DraftRatioNeedleloom1Intake
+  - Ishikawa_DraftRatioNeedleloom
+output: min_area_weight
+training_inputs:
+  - weight_per_area_theoretical
+training_output: area_weight_minimum
+heteroscedastic: false

@@ -28,7 +28,12 @@ class AbstractModelWrapper(ABC):
 
     @property
     @abstractmethod
-    def outputs(self) -> np.array:
+    def outputs_array(self) -> np.array:
+        pass
+
+    @property
+    @abstractmethod
+    def outputs(self) -> dict:
         pass
 
     @abstractmethod
@@ -36,9 +41,9 @@ class AbstractModelWrapper(ABC):
         pass
 
     @abstractmethod
-    def interpret_model_outputs(self) -> None:
+    def interpret_model_outputs(self) -> dict:
         pass
 
     @abstractmethod
-    def get_outputs(self, input: dict, latent: bool) -> np.array:
+    def get_outputs(self, input: dict, latent: bool) -> dict:
         pass

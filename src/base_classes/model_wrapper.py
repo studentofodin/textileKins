@@ -49,7 +49,7 @@ class ModelWrapper(AbstractModelWrapper):
 
     def call_models(self, input: dict, latent: bool) -> None:
         means = np.zeros((self._n_models))
-        vars = np.zerso((self._n_models))
+        vars = np.zeros((self._n_models))
 
         if latent:
             for i, mdl in enumerate(self._machine_models):

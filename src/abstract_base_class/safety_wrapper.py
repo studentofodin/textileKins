@@ -10,7 +10,7 @@ class AbstractSafetyWrapper(ABC):
         pass
 
     @abstractmethod
-    def isWithinConstraints(self, actions: dict) -> bool:
+    def isWithinConstraints(self, state : dict) -> bool:
         pass
 
     @abstractmethod

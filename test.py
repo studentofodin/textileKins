@@ -19,15 +19,15 @@ def main(configuration : DictConfig):
     print(scenarioManager.disturbanceSetting)
     experimentTracker = ExperimentTracker(config.experimentTracker.metrics)
     print("Experiment Tracker", experimentTracker.metrics)
-    reward = Reward(config.reward, {'weightB' : 10.0})
+    reward = Reward(config.reward)
     print("Reward", reward._config)
-    safety = SafetyWrapper(config.safety.constraints)
-    print("Safety", safety.constraints)
+    safetyWrapper = SafetyWrapper(config.safety.constraints)
+    print("Safety", safetyWrapper.constraints)
 
-    trainingEnv = TrainingEnvironment(config.env, ModelWrapper(), reward, experimentTracker, {"target_a" : 5.0 , "target_b" : 6.0, "disturbance_d" : 7.0, })
+    trainingEnv = TrainingEnvironment(config.env, ModelWrapper(), reward, experimentTracker, safetyWrapper)
     env = GymWrapper(env=trainingEnv)
 
-    env.step(np.array([2.0,3.0,1.2]))
+    env.step(np.array([5.0,3.0,4.0]))
 
 if __name__ == "__main__":
     main()

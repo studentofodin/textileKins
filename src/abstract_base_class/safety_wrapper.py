@@ -10,10 +10,6 @@ class AbstractSafetyWrapper(ABC):
         pass
 
     @abstractmethod
-    def isWithinConstraints(self, state : dict) -> bool:
-        pass
-
-    @abstractmethod
-    def calculateClippedState(self) -> np.array:
+    def isWithinConstraints(self, state: dict) -> bool:
         pass
 

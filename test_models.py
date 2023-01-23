@@ -17,7 +17,7 @@ for i in range(len(model_names)):
         except yaml.YAMLError as exc:
             print(exc)
 
-model_wrapper = ModelWrapper(model_props, model_dirs)
+model_wrapper = ModelWrapper([model_props[0]], [model_dirs[0]])
 
 # keys = ["Ishikawa_WeightPerAreaCardDelivery", "Ishikawa_CardMassThroughputSetpoint", "Ishikawa_LayersCount",
 #         "Ishikawa_DraftRatioNeedleloom1Intake", "Ishikawa_DraftRatioNeedleloom", "v_Vorreisser", "v_Arbeiter_HT",
@@ -26,10 +26,12 @@ model_wrapper = ModelWrapper(model_props, model_dirs)
 #
 # inputs = dict(zip(keys, values))
 
-inputs = {"mean_cylinder_worker":1, "Ishikawa_WeightPerAreaCardDelivery":5, "v_Abnehmer":4, "v_Arbeiter_HT":2, "v_Wender_HT":8,
-          "Ishikawa_CardMassThroughputSetpoint":1, "v_Arbeiter_HT":6, "v_Arbeiter_VR":1, "v_Wender_VR":5}
+inputs = {"Ishikawa_WeightPerAreaCardDelivery":5, "Ishikawa_CardMassThroughputSetpoint":1, "v_Vorreisser":5, "v_Arbeiter_HT":6,
+          "v_Wender_HT":8, "v_Arbeiter_VR":1, "v_Wender_VR":5, "v_Abnehmer":0, "mean_cylinder_worker":1}
 
 print(model_wrapper.get_outputs(inputs))
+print(model_wrapper.means)
+print(model_wrapper.vars)
 
 
 pass

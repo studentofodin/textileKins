@@ -4,4 +4,6 @@
 *.vscode
 *outputs
 *.idea*
+*pyproject.toml
+*poetry.lock
 venv

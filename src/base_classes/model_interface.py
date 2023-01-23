@@ -8,7 +8,6 @@ from typing import Tuple
 from src.abstract_base_class.model_interface import AbstractModelInterface
 
 class AdapterSVGP(AbstractModelInterface):
-    from gpflow.models import SVGP
 
     def __init__(self, model_properties: dict, model_properties_dir: pl.Path, rescale_y: bool = True) -> None:
         with open(model_properties_dir / pl.Path(model_properties["model_path"]), "rb") as file:
@@ -29,7 +28,7 @@ class AdapterSVGP(AbstractModelInterface):
         self._rescale_y = rescale_y
 
     @property
-    def model(self) -> SVGP:
+    def model(self):
         return deepcopy(self._model)
 
     @property
@@ -66,8 +65,6 @@ class AdapterSVGP(AbstractModelInterface):
 
 
 class AdapterGPy(AbstractModelInterface):
-    from GPy.models.gp_heteroscedastic_regression import GPHeteroscedasticRegression
-    from GPy.models.gp_regression import GPRegression
 
     def __init__(self, model_properties: dict, model_properties_dir: pl.Path, rescale_y: bool = True) -> None:
         with open(model_properties_dir / pl.Path(model_properties["model_path"]), "rb") as file:
@@ -88,7 +85,7 @@ class AdapterGPy(AbstractModelInterface):
         self._rescale_y = rescale_y
 
     @property
-    def model(self) -> GPRegression:
+    def model(self):
         return deepcopy(self._model)
 
     @property

@@ -3,4 +3,5 @@
 *.pyc
 *.vscode
 *outputs
+*.idea*
 venv

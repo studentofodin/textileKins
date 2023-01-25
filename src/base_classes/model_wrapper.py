@@ -32,5 +32,7 @@ class ModelWrapper(AbstractModelWrapper):
     def getOutput(self, action):
         input = self.mapActionsToInputs(action)
         mean, lowerConfidence, upperConfidence = self.callMachineModel(input)
-        output = self.interpretModelOutputs(mean, lowerConfidence, upperConfidence)
-        return output
+        # output = self.interpretModelOutputs(mean, lowerConfidence, upperConfidence)
+        output = np.random.randn(2)
+        outputDict = {"Output1":output[0],"Output2" : output[1]}
+        return output, outputDict

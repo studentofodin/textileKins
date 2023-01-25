@@ -27,7 +27,8 @@ class Reward(AbstractReward):
         reward = target_a*fibreCosts + weightB*target_b - disturbance_d
         if self.requirements.bLower < target_b < self.requirements.bUpper or safetyFlag:
             reward = - self._config.penalty  
-        return reward
+        self._rewardValue = self._rewardValue + reward
+        return self.rewardValue
 
     def calculatePenalty(self, state: dict, modelOutput: np.array) -> float:
         return 0.0

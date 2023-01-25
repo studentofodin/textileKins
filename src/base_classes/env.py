@@ -11,16 +11,13 @@ from src.base_classes.safety_wrapper import SafetyWrapper
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
     """
-    ### Action Space
-    Continuous - Considering 3 actions : Input1, Input2, Input3 (to be defined later)
+    ### Action Space : Dimension is dynamic - to be imported from config
 
-    ### Observation Space
-    Continuous - Considering 2D space for observation : Output1, Output2
+    ### Observation Space : Dimension is dynamic - to be imported from config
 
-    ### Rewards
+    ### Rewards : Calculated in Reward object after passing current state to Model
 
-    ### Starting State
-    Machine starts at Initial State defined in Configuration
+    ### Starting State : Machine starts at Initial State defined in Configuration
     """
 
     def __init__(
@@ -132,15 +129,12 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
                 a certain timelimit was exceeded, or the physics simulation has entered an invalid state.
         """
         safetyFlag = self.calculateStateFromAction(action)
-        if safetyFlag:
-            observation = self.machine.getOutput(self.currentState)
-        else:
-            observation = None
-        reward = self.reward.calculateReward(self.currentState, observation, safetyFlag)
-        if self.isTargetReached():
-            self.done = True
+        observationArray, observationDict = self.machine.getOutput(self.currentState)
+        reward = self.reward.calculateReward(self.currentState, observationArray, safetyFlag)
+        self.done = False
         info = {}
-        return observation, reward, self.done, False, info
+        self.experimentTracker.log(reward, self.currentState, observationDict)
+        return observationArray, reward, self.done, False, info
 
     def reset(self):
         # Reset Current State to Initial State
@@ -151,19 +145,17 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
     def calculateStateFromAction(self, action):
         updatedState = {}
-        for index, key in enumerate(self.actionParameters.list):
-            updatedState[key] = self.currentState[key] + action[index]
+        actionType = self.config.actionType # 0 for relative | 1 for absolute
+        if actionType == 0: 
+            for index, key in enumerate(self.actionParameters.list):
+                updatedState[key] = self.currentState[key] + action[index]
+        elif actionType == 1: 
+            for index, key in enumerate(self.actionParameters.list):
+                updatedState[key] = action[index]
         safetyFlag = self.safety.isWithinConstraints(updatedState)
         if safetyFlag:
             self._currentState = updatedState
         return safetyFlag
 
-    def isTargetReached(self):
-        # check if target reached
-        # TODO
-        return False
-
     def render(self):
-        # Implement Experiment Tracking
-        # TODO
         pass

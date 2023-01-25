@@ -8,7 +8,9 @@ reward:
     output1 : 10.0
     output2 : 20.0
 env:
+  actionType : 1 # 0 for relative | 1 for absolute
   actionParams : 
+    list : ['input1', 'input2', 'input3']
     input1 : 
       low : 0.0
       high : 100.0
@@ -18,18 +20,17 @@ env:
     input3 :
       low : 10.0
       high : 99.0
-    list : ['input1', 'input2', 'input3']
   stateParams : 
     - sP1 : 0.3
     - sP2 : 999.0
-  observationParams : 
+  observationParams :
+    list : ['output1', 'output2']
     output1 :
       low : 0.0
       high : 999.0
     output2 :
       low : 0.0
       high : 8.8
-    list : ['output1', 'output2']
   actorConstraints : 
     - aC1 : 0.0
     - aC2 : 8.9

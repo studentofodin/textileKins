@@ -72,4 +72,4 @@ class ModelWrapper(AbstractModelWrapper):
     def get_outputs(self, input: dict, latent: bool = False) -> dict:
         self.call_models(input, latent)
         self.interpret_model_outputs()
-        return self._outputs
+        return self._outputs_array, self._outputs

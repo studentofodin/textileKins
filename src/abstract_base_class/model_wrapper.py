@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
 from typing import List
+from typing import Tuple
 
 from src.abstract_base_class.model_interface import AbstractModelInterface
 
@@ -45,5 +46,5 @@ class AbstractModelWrapper(ABC):
         pass
 
     @abstractmethod
-    def get_outputs(self, input: dict, latent: bool) -> dict:
+    def get_outputs(self, input: dict, latent: bool) -> Tuple[np.array, dict]:
         pass

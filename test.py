@@ -21,7 +21,7 @@ def main(configuration : DictConfig):
     print("Experiment Tracker", experimentTracker.metrics)
     reward = Reward(config.reward)
     print("Reward", reward._config)
-    safetyWrapper = SafetyWrapper(config.safety.constraints) #config.safety
+    safetyWrapper = SafetyWrapper(config.safety) 
     print("Safety", safetyWrapper.constraints)
 
     trainingEnv = TrainingEnvironment(config.env, ModelWrapper(), reward, experimentTracker, safetyWrapper)

@@ -123,7 +123,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
             done (bool): Not needed since it is a continuous process
         """
         safetyFlag = self.calculateStateFromAction(action)
-        observationArray, observationDict = self.machine.getOutput(self.currentState)
+        observationArray, observationDict = self.machine.get_outputs(self.currentState)
         reward = self.reward.calculateReward(self.currentState, observationArray, safetyFlag)
         self.done = False
         info = {}
@@ -137,7 +137,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._currentState = dict(self.config.initialState)
         self._reward = 0.0
         self.done = False
-        observationArray, _ = self.machine.getOutput(self.currentState)
+        observationArray, _ = self.machine.get_outputs(self.currentState)
         info = {}
         return observationArray, info
 

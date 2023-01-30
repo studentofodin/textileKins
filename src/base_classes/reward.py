@@ -24,14 +24,13 @@ class Reward(AbstractReward):
     def rewardValue(self) -> float:
         return self._rewardValue
 
-
     def calculateReward(self, state: dict, observation: dict, safety_flag: bool) -> float:
-        target_a = state["target_a"]
-        target_b = state["target_b"]
-        disturbance_d = state["disturbance_d"]
-        weightB = self._weights["weightB"]
+        target_a = state["input1"]
+        target_b = state["input2"]
+        disturbance_d = state["input3"]
+        weightB = self._weights["output2"]
         fibreCosts = self._config["fibreCosts"]
         self._rewardValue = target_a*fibreCosts + weightB*target_b - disturbance_d
         if self._requirements["bLower"] < target_b < self._requirements["bUpper"] or safety_flag:
             self._rewardValue = - self._config["penalty"]
-        return self._rewardValues
+        return self._rewardValue

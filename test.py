@@ -17,17 +17,20 @@ def main(configuration : DictConfig):
     print(scenarioManager.disturbanceSetting)
     scenarioManager.disturbanceSetting = {'key5': 5, 'key6': 6}
     print(scenarioManager.disturbanceSetting)
-    experimentTracker = ExperimentTracker(config.experimentTracker.metrics)
+    experimentTracker = ExperimentTracker(config)
     print("Experiment Tracker", experimentTracker.metrics)
     reward = Reward(config.reward)
     print("Reward", reward._config)
-    safetyWrapper = SafetyWrapper(config.safety.constraints)
+    safetyWrapper = SafetyWrapper(config.safety.constraints) #config.safety
     print("Safety", safetyWrapper.constraints)
 
     trainingEnv = TrainingEnvironment(config.env, ModelWrapper(), reward, experimentTracker, safetyWrapper)
     env = GymWrapper(env=trainingEnv)
 
-    env.step(np.array([5.0,3.0,4.0]))
+    for _ in range(45):
+        print(env.step(np.random.randn(3)))
+
+
 
 if __name__ == "__main__":
     main()

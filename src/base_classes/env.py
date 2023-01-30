@@ -11,16 +11,13 @@ from src.base_classes.safety_wrapper import SafetyWrapper
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
     """
-    ### Action Space
-    Continuous - Considering 3 actions : Input1, Input2, Input3 (to be defined later)
+    ### Action Space : Dimension is dynamic - to be imported from config
 
-    ### Observation Space
-    Continuous - Considering 2D space for observation : Output1, Output2
+    ### Observation Space : Dimension is dynamic - to be imported from config
 
-    ### Rewards
+    ### Rewards : Calculated in Reward object after passing current state to Model
 
-    ### Starting State
-    Machine starts at Initial State defined in Configuration
+    ### Starting State : Machine starts at Initial State defined in Configuration
     """
 
     def __init__(
@@ -117,53 +114,46 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
             observation (object): this will be an element of the environment's :attr:`observation_space`.
                 This may, for instance, be a numpy array containing the positions and velocities of certain objects.
             reward (float): The amount of reward returned as a result of taking the action.
-            terminated (bool): whether a `terminal state` (as defined under the MDP of the task) is reached.
-                In this case further step() calls could return undefined results.
-            truncated (bool): whether a truncation condition outside the scope of the MDP is satisfied.
-                Typically a timelimit, but could also be used to indicate agent physically going out of bounds.
-                Can be used to end the episode prematurely before a `terminal state` is reached.
+            terminated (bool)/truncated (bool) : not needed as safety limits checked by safety wrapper
             info (dictionary): `info` contains auxiliary diagnostic information (helpful for debugging, learning, and logging).
                 This might, for instance, contain: metrics that describe the agent's performance state, variables that are
                 hidden from observations, or individual reward terms that are combined to produce the total reward.
                 It also can contain information that distinguishes truncation and termination, however this is deprecated in favour
                 of returning two booleans, and will be removed in a future version.
-            done (bool): A boolean value for if the episode has ended, in which case further :meth:`step` calls will return undefined results.
-                A done signal may be emitted for different reasons: Maybe the task underlying the environment was solved successfully,
-                a certain timelimit was exceeded, or the physics simulation has entered an invalid state.
+            done (bool): Not needed since it is a continuous process
         """
         safetyFlag = self.calculateStateFromAction(action)
-        if safetyFlag:
-            observation = self.machine.getOutput(self.currentState)
-        else:
-            observation = None
-        reward = self.reward.calculateReward(self.currentState, observation, safetyFlag)
-        if self.isTargetReached():
-            self.done = True
+        observationArray, observationDict = self.machine.getOutput(self.currentState)
+        reward = self.reward.calculateReward(self.currentState, observationArray, safetyFlag)
+        self.done = False
         info = {}
-        return observation, reward, self.done, False, info
+        self.experimentTracker.log(reward, self.currentState, observationDict)
+        return observationArray, reward, self.done, False, info
 
     def reset(self):
         # Reset Current State to Initial State
         # Reset required variables to start optimisation again
+        # super().reset()
         self._currentState = dict(self.config.initialState)
         self._reward = 0.0
         self.done = False
+        observationArray, _ = self.machine.getOutput(self.currentState)
+        info = {}
+        return observationArray, info
 
     def calculateStateFromAction(self, action):
         updatedState = {}
-        for index, key in enumerate(self.actionParameters.list):
-            updatedState[key] = self.currentState[key] + action[index]
+        actionType = self.config.actionType # 0 for relative | 1 for absolute
+        if actionType == 0: 
+            for index, key in enumerate(self.actionParameters.list):
+                updatedState[key] = self.currentState[key] + action[index]
+        elif actionType == 1: 
+            for index, key in enumerate(self.actionParameters.list):
+                updatedState[key] = action[index]
         safetyFlag = self.safety.isWithinConstraints(updatedState)
         if safetyFlag:
             self._currentState = updatedState
         return safetyFlag
 
-    def isTargetReached(self):
-        # check if target reached
-        # TODO
-        return False
-
     def render(self):
-        # Implement Experiment Tracking
-        # TODO
         pass

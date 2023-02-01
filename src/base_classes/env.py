@@ -51,7 +51,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
                 ],
                 dtype=np.float32,
             ),
-            shape=(3,),
+            shape=(len(self.actionParameters.list),),
         )
         self._observationSpace = spaces.Box(
             low=np.array(
@@ -68,7 +68,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
                 ],
                 dtype=np.float32,
             ),
-            shape=(2,),
+            shape=(len(self.observationParameters.list),),
         )
         self.done = False
 

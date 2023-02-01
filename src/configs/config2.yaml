@@ -2,7 +2,7 @@ reward:
   requirements :
     bLower : 30.0
     bUpper : 100.0
-  penalty : 1.0
+  penalty : -1.0
   fibreCosts : 276.00
   weights :
     output1 : 10.0
@@ -10,25 +10,67 @@ reward:
 env:
   actionType : 1 # 0 for relative | 1 for absolute
   actionParams : 
-    list : ['input1', 'input2', 'input3']
-    input1 : 
+    list : ["Ishikawa_LayersCount", "Ishikawa_DraftRatioNeedleloom1Intake", "Ishikawa_DraftRatioNeedleloom",
+          "Ishikawa_WeightPerAreaCardDelivery", "Ishikawa_CardMassThroughputSetpoint", "v_Vorreisser",
+          "v_Arbeiter_HT", "v_Wender_HT", "v_Arbeiter_VR", "v_Wender_VR", "v_Abnehmer", "mean_cylinder_worker"]
+    Ishikawa_LayersCount:
       low : 0.0
       high : 100.0
-    input2 :
-      low : 20.0
-      high : 80.0
-    input3 :
-      low : 10.0
-      high : 99.0
+    Ishikawa_DraftRatioNeedleloom1Intake:
+      low: 0.0
+      high: 100.0
+    Ishikawa_DraftRatioNeedleloom:
+      low: 0.0
+      high: 100.0
+    Ishikawa_WeightPerAreaCardDelivery:
+      low: 0.0
+      high: 100.0
+    Ishikawa_CardMassThroughputSetpoint:
+      low: 0.0
+      high: 100.0
+    v_Vorreisser:
+      low: 0.0
+      high: 100.0
+    v_Arbeiter_HT:
+      low: 0.0
+      high: 100.0
+    v_Wender_HT:
+      low: 0.0
+      high: 100.0
+    v_Arbeiter_VR:
+      low: 0.0
+      high: 100.0
+    v_Wender_VR:
+      low: 0.0
+      high: 100.0
+    v_Abnehmer:
+      low: 0.0
+      high: 100.0
+    mean_cylinder_worker:
+      low: 0.0
+      high: 100.0
+  initialState:
+    Ishikawa_LayersCount: 0
+    Ishikawa_DraftRatioNeedleloom1Intake: 0
+    Ishikawa_DraftRatioNeedleloom: 0
+    Ishikawa_WeightPerAreaCardDelivery: 0
+    Ishikawa_CardMassThroughputSetpoint: 0
+    v_Vorreisser: 0
+    v_Arbeiter_HT: 0
+    v_Wender_HT: 0
+    v_Arbeiter_VR: 0
+    v_Wender_VR: 0
+    v_Abnehmer: 0
+    mean_cylinder_worker: 0
   stateParams : 
     - sP1 : 0.3
     - sP2 : 999.0
   observationParams :
-    list : ['output1', 'output2']
-    output1 :
+    list : ['area_weight_minimum', 'unevenness_card_web']
+    area_weight_minimum :
       low : 0.0
       high : 999.0
-    output2 :
+    unevenness_card_web :
       low : 0.0
       high : 8.8
   actorConstraints : 
@@ -39,10 +81,6 @@ env:
     - pS2 : 7.4
   stepsUntilLabDataAvailable : 100
   maxSteps : 1000
-  initialState :
-    input1 : 5.0
-    input2 : 6.0
-    input3 : 7.0
 experimentTracker:
   metrics : ['reward', 'action', 'observation']
 scenarioManager:

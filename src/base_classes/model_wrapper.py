@@ -5,19 +5,19 @@ from src.base_classes.model_interface import *
 
 class ModelWrapper(AbstractModelWrapper):
 
-    def __init__(self, model_props: List[dict], model_props_dirs: List[pl.Path], rescale_y: bool = True):
+    def __init__(self, model_props: List[dict], model_dir: pl.Path, rescale_y: bool = True):
         self._n_models = len(model_props)
         self._means = np.zeros((self._n_models))
         self._vars = np.zeros((self._n_models))
         self._outputs_array = np.zeros((self._n_models))
         self._outputs = dict()
         self._machine_models = list()
-        for i in range(self._n_models):
-            model_class = model_props[i]["model_class"]
+        for mp in model_props:
+            model_class = mp["model_class"]
             if model_class == "SVGP":
-                mdl = AdapterSVGP(model_props[i], model_props_dirs[i], rescale_y)
+                mdl = AdapterSVGP(mp, model_dir, rescale_y)
             elif model_class == "GPy_GPR":
-                mdl = AdapterGPy(model_props[i], model_props_dirs[i], rescale_y)
+                mdl = AdapterGPy(mp, model_dir, rescale_y)
             else:
                 raise (TypeError(f"The model class {model_class} is not yet supported"))
             self._machine_models.append(mdl)

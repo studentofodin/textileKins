@@ -7,17 +7,15 @@ from src.base_classes.model_wrapper import ModelWrapper
 parent_dir = pl.Path(__file__).parent
 
 model_names = ['unevenness_card_web', 'min_area_weight']
-model_dirs = [parent_dir / 'models', parent_dir / 'models']
+model_dir = parent_dir / 'models'
 model_props = list()
-
-for i in range(len(model_names)):
-    with open(model_dirs[i] / (model_names[i] + '.yaml'), 'r') as stream:
+for mn in model_names:
+    with open(model_dir / (mn + '.yaml'), 'r') as stream:
         try:
             model_props.append(yaml.safe_load(stream))
         except yaml.YAMLError as exc:
             print(exc)
-
-model_wrapper = ModelWrapper(model_props, model_dirs)
+model_wrapper = ModelWrapper(model_props, model_dir)
 
 # keys = ["Ishikawa_WeightPerAreaCardDelivery", "Ishikawa_CardMassThroughputSetpoint", "Ishikawa_LayersCount",
 #         "Ishikawa_DraftRatioNeedleloom1Intake", "Ishikawa_DraftRatioNeedleloom", "v_Vorreisser", "v_Arbeiter_HT",

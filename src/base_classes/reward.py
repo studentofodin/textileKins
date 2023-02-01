@@ -25,9 +25,9 @@ class Reward(AbstractReward):
         return self._rewardValue
 
     def calculateReward(self, state: dict, observation: dict, safety_flag: bool) -> float:
-        target_a = state["input1"]
-        target_b = state["input2"]
-        disturbance_d = state["input3"]
+        target_a = state["Ishikawa_LayersCount"]
+        target_b = state["Ishikawa_WeightPerAreaCardDelivery"]
+        disturbance_d = state["v_Arbeiter_HT"]
         weightB = self._weights["output2"]
         fibreCosts = self._config["fibreCosts"]
         self._rewardValue = target_a*fibreCosts + weightB*target_b - disturbance_d

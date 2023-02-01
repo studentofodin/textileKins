@@ -124,7 +124,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         """
         safetyFlag = self.calculateStateFromAction(action)
         observationArray, observationDict = self.machine.get_outputs(self.currentState)
-        reward = self.reward.calculateReward(self.currentState, observationArray, safetyFlag)
+        reward = self.reward.calculateReward(self.currentState, observationDict, safetyFlag)
         self.done = False
         info = {}
         self.experimentTracker.log(reward, self.currentState, observationDict)

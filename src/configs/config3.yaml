@@ -1,0 +1,98 @@
+env:
+  usedStates: ["Ishikawa_LayersCount", "Ishikawa_DraftRatioNeedleloom1Intake", "Ishikawa_DraftRatioNeedleloom",
+               "Ishikawa_WeightPerAreaCardDelivery", "Ishikawa_CardMassThroughputSetpoint", "v_Vorreisser",
+               "v_Arbeiter_HT", "v_Wender_HT", "v_Arbeiter_VR", "v_Wender_VR", "v_Abnehmer", "mean_cylinder_worker"]
+
+  initialState:
+    Ishikawa_LayersCount: 0
+    Ishikawa_DraftRatioNeedleloom1Intake: 0
+    Ishikawa_DraftRatioNeedleloom: 0
+    Ishikawa_WeightPerAreaCardDelivery: 0
+    Ishikawa_CardMassThroughputSetpoint: 0
+    v_Vorreisser: 0
+    v_Arbeiter_HT: 0
+    v_Wender_HT: 0
+    v_Arbeiter_VR: 0
+    v_Wender_VR: 0
+    v_Abnehmer: 0
+  actionType : 1 # 0 for relative | 1 for absolute
+  actionSpace:
+    Ishikawa_LayersCount:
+      low: 0.0
+      high: 100.0
+    Ishikawa_DraftRatioNeedleloom1Intake:
+      low: 0.0
+      high: 100.0
+    Ishikawa_DraftRatioNeedleloom:
+      low: 0.0
+      high: 100.0
+    Ishikawa_WeightPerAreaCardDelivery:
+      low: 0.0
+      high: 100.0
+    Ishikawa_CardMassThroughputSetpoint:
+      low: 0.0
+      high: 100.0
+    v_Vorreisser:
+      low: 0.0
+      high: 100.0
+    v_Arbeiter_HT:
+      low: 0.0
+      high: 100.0
+    v_Wender_HT:
+      low: 0.0
+      high: 100.0
+    v_Arbeiter_VR:
+      low: 0.0
+      high: 100.0
+    v_Wender_VR:
+      low: 0.0
+      high: 100.0
+    v_Abnehmer:
+      low: 0.0
+      high: 100.0
+    mean_cylinder_worker:
+      low: 0.0
+      high: 100.0
+    observationSpace:
+      area_weight_minimum:
+        low: 0.0
+        high: 999.0
+      unevenness_card_web:
+        low: 0.0
+        high: 8.8
+  productionScenario:
+    pS1: 5.5
+    pS2: 7.4
+  stepsUntilLabDataAvailable: 100
+  maxSteps: 1000
+safety :
+  constraints :
+    con1: 100.0
+    con2 : 100.0
+    con3 : 90.0
+modelWrapper:
+  pathToModels: C:\Users\Luisito\Desktop\adanowo-simulator\models
+  usedModels: ["min_area_weight", "unevenness_card_web"]
+outputs:
+  output1:
+    lower:
+    upper:
+reward:
+  requirements :
+    req1 : 30.0
+    req2 : 100.0
+  penalty : -1.0
+  fibreCosts : 276.00
+  weights :
+    w1 : 10.0
+    w2 : 20.0
+experimentTracker:
+  metrics : ['reward', 'action', 'observation']
+scenarioManager:
+  disturbanceSetting : 
+    dist1 : 1.0
+    dist2 : 2.0
+  fibreSetting :
+    fibre3: 3.0
+    fibre4: 4.0
+

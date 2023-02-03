@@ -32,5 +32,5 @@ class Reward(AbstractReward):
         fibreCosts = self._config["fibreCosts"]
         self._rewardValue = target_a*fibreCosts + weightB*target_b - disturbance_d
         if self._requirements["bLower"] < target_b < self._requirements["bUpper"] or safety_flag:
-            self._rewardValue = - self._config["penalty"]
+            self._rewardValue = self._config["penalty"]
         return self._rewardValue

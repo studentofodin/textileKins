@@ -9,22 +9,32 @@ class AbstractModelWrapper(ABC):
 
     @property
     @abstractmethod
-    def machine_models(self) -> List[AbstractModelInterface]:
-        pass
-
-    @property
-    @abstractmethod
     def n_models(self) -> int:
         pass
 
     @property
     @abstractmethod
-    def means(self) -> np.array:
+    def model_names(self) -> dict:
         pass
 
     @property
     @abstractmethod
-    def vars(self) -> np.array:
+    def model_props(self) -> dict:
+        pass
+
+    @property
+    @abstractmethod
+    def means(self) -> dict:
+        pass
+
+    @property
+    @abstractmethod
+    def vars(self) -> dict:
+        pass
+
+    @property
+    @abstractmethod
+    def outputs(self) -> dict:
         pass
 
     @property
@@ -34,7 +44,12 @@ class AbstractModelWrapper(ABC):
 
     @property
     @abstractmethod
-    def outputs(self) -> dict:
+    def machine_models(self) -> dict:
+        pass
+
+    @property
+    @abstractmethod
+    def output_names(self) -> List:
         pass
 
     @abstractmethod

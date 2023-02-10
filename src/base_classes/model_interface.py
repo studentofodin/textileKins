@@ -9,8 +9,8 @@ from src.abstract_base_class.model_interface import AbstractModelInterface
 
 class AdapterSVGP(AbstractModelInterface):
 
-    def __init__(self, model_properties: dict, model_properties_dir: pl.Path, rescale_y: bool = True) -> None:
-        with open(model_properties_dir / pl.Path(model_properties["model_path"]), "rb") as file:
+    def __init__(self, path_to_pkl, rescale_y: bool = True) -> None:
+        with open(path_to_pkl, "rb") as file:
             pickle_obj = dill.load(file)
         self._model = pickle_obj["model"]
         self._unpack_func = pickle_obj["unpack_dict_func"]
@@ -23,17 +23,11 @@ class AdapterSVGP(AbstractModelInterface):
         if self._pca_X is not None:
             list_transform.append(("pca_X", self._pca_X))
         self._pipe = Pipeline(list_transform)
-
-        self._model_properties = model_properties
         self._rescale_y = rescale_y
 
     @property
     def model(self):
         return deepcopy(self._model)
-
-    @property
-    def model_properties(self) -> dict:
-        return deepcopy(self._model_properties)
 
     def predict_f_internal(self, X: np.array) -> Tuple[np.array, np.array]:
         X_trans = self._pipe.transform(X)
@@ -66,8 +60,8 @@ class AdapterSVGP(AbstractModelInterface):
 
 class AdapterGPy(AbstractModelInterface):
 
-    def __init__(self, model_properties: dict, model_properties_dir: pl.Path, rescale_y: bool = True) -> None:
-        with open(model_properties_dir / pl.Path(model_properties["model_path"]), "rb") as file:
+    def __init__(self, path_to_pkl, rescale_y: bool = True) -> None:
+        with open(path_to_pkl, "rb") as file:
             pickle_obj = dill.load(file)
         self._model = pickle_obj["model"]
         self._unpack_func = pickle_obj["unpack_dict_func"]
@@ -80,17 +74,11 @@ class AdapterGPy(AbstractModelInterface):
         if self._pca_X is not None:
             list_transform.append(("pca_X", self._pca_X))
         self._pipe = Pipeline(list_transform)
-
-        self._model_properties = model_properties
         self._rescale_y = rescale_y
 
     @property
     def model(self):
         return deepcopy(self._model)
-
-    @property
-    def model_properties(self) -> dict:
-        return deepcopy(self._model_properties)
 
     def predict_f_internal(self, X: np.array) -> Tuple[np.array, np.array]:
         X_trans = self._pipe.transform(X)

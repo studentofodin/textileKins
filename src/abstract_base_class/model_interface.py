@@ -4,10 +4,6 @@ from typing import Tuple
 
 
 class AbstractModelInterface(ABC):
-    @property
-    @abstractmethod
-    def model_properties(self) -> dict:
-        pass
 
     @property
     @abstractmethod

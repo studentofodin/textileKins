@@ -1,6 +1,8 @@
 from typing import List
+from typing import Tuple
 import pathlib as pl
 import yaml
+from omegaconf import DictConfig
 
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
 from src.base_classes.model_interface import *
@@ -9,11 +11,9 @@ class ModelWrapper(AbstractModelWrapper):
 
     def __init__(self, config):
 
-        path_to_models = pl.Path(config.pathToModels)
-        model_names = config.usedModels
-        rescale_y = config.rescaleY
+        self._config = config
 
-        self._n_models = len(model_names)
+        self._n_models = len(self._config.usedModels)
         self._model_names = dict()
         self._model_props = dict()
         self._means = dict()
@@ -23,9 +23,9 @@ class ModelWrapper(AbstractModelWrapper):
         self._machine_models = dict()
         self._output_names = list()
 
-        for model_name in model_names:
+        for model_name in self._config.usedModels:
 
-            with open(path_to_models / (model_name + '.yaml'), 'r') as stream:
+            with open(pl.Path(self._config.pathToModels) / (model_name + '.yaml'), 'r') as stream:
                 try:
                     properties = yaml.safe_load(stream)
                 except yaml.YAMLError as exc:
@@ -46,14 +46,18 @@ class ModelWrapper(AbstractModelWrapper):
                     self._output_names.append(output_name)
 
                     model_class = properties["model_class"]
-                    path_to_pkl = path_to_models / (model_name + '.pkl')
+                    path_to_pkl = pl.Path(self._config.pathToModels) / (model_name + '.pkl')
                     if model_class == "SVGP":
-                        mdl = AdapterSVGP(path_to_pkl, rescale_y)
+                        mdl = AdapterSVGP(path_to_pkl, self._config.rescaleY)
                     elif model_class == "GPy_GPR":
-                        mdl = AdapterGPy(path_to_pkl, rescale_y)
+                        mdl = AdapterGPy(path_to_pkl, self._config.rescaleY)
                     else:
                         raise (TypeError(f"The model class {model_class} is not yet supported"))
                     self._machine_models[output_name] = mdl
+
+    @property
+    def config(self) -> DictConfig:
+        return self._config
 
     @property
     def n_models(self) -> int:
@@ -88,7 +92,7 @@ class ModelWrapper(AbstractModelWrapper):
         return self._machine_models
 
     @property
-    def output_names(self) -> List:
+    def output_names(self) -> List[str]:
         return self._output_names
 
     def call_models(self, input: dict, latent: bool) -> None:
@@ -104,7 +108,7 @@ class ModelWrapper(AbstractModelWrapper):
             self._outputs[output_name] = np.random.normal(self._means[output_name], self._vars[output_name])
             self._outputs_array[i] = self._outputs[output_name]
 
-    def get_outputs(self, input: dict, latent: bool = False) -> dict:
+    def get_outputs(self, input: dict, latent: bool = False) -> Tuple[np.array, dict]:
         self.call_models(input, latent)
         self.interpret_model_outputs()
         return self._outputs_array, self._outputs

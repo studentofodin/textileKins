@@ -2,10 +2,16 @@ from abc import ABC, abstractmethod
 import numpy as np
 from typing import List
 from typing import Tuple
+from omegaconf import DictConfig
 
 from src.abstract_base_class.model_interface import AbstractModelInterface
 
 class AbstractModelWrapper(ABC):
+
+    @property
+    @abstractmethod
+    def config(self) -> DictConfig:
+        pass
 
     @property
     @abstractmethod
@@ -49,7 +55,7 @@ class AbstractModelWrapper(ABC):
 
     @property
     @abstractmethod
-    def output_names(self) -> List:
+    def output_names(self) -> List[str]:
         pass
 
     @abstractmethod

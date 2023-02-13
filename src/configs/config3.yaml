@@ -17,7 +17,7 @@ env:
   initialDisturbances:
     Ishikawa_WeightPerAreaCardDelivery: 1.0
     mean_cylinder_worker: 1.0
-  actionType : 0 # 0 for relative | 1 for absolute
+  actionType : 1 # 0 for relative | 1 for absolute
   actionSpace:
     Ishikawa_LayersCount:
       low: -100.0

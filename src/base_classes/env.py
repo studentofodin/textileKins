@@ -176,8 +176,6 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         if safetyFlag:
             self._currentControls = updatedControls
 
-
-
         return safetyFlag
 
     def render(self) -> None:

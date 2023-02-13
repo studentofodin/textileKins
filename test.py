@@ -22,12 +22,14 @@ def main(configuration: DictConfig):
     env = GymWrapper(trainingEnv)
 
     for _ in range(10):
-        env.step(np.random.uniform(-0.5, 0.5, len(env.env.currentControls)))
+        # env.step(np.random.uniform(-0.5, 0.5, len(env.env.currentControls))) # for actionType == relative
+        env.step(np.random.uniform(0, 1, len(env.env.currentControls)))  # for actionType == absolute
 
     env.reset()
 
     for _ in range(10):
-        env.step(np.random.uniform(-0.5, 0.5, len(env.env.currentControls)))
+        # env.step(np.random.uniform(-0.5, 0.5, len(env.env.currentControls))) # for actionType == relative
+        env.step(np.random.uniform(0, 1, len(env.env.currentControls))) # for actionType == absolute
 
 
 

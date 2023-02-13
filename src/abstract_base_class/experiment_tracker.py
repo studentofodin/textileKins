@@ -1,19 +1,24 @@
 from abc import ABC, abstractmethod
+from omegaconf import DictConfig
 
 
 class AbstractExperimentTracker(ABC):
 
     @property
     @abstractmethod
-    def metrics(self) -> dict:
+    def config(self) -> DictConfig:
         pass
 
-    @metrics.setter
     @abstractmethod
-    def metrics(self, metrics):
+    def initWandB(self) -> None:
+        """
+        initialise wandb.
+        """
         pass
-        
+
     @abstractmethod
-    def plotReward(self, rewardValue) -> bool:
+    def log(self, logVariables: dict) -> None:
+        """
+        log logVariables in wandb.
+        """
         pass
-        

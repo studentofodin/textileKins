@@ -9,7 +9,7 @@ from src.abstract_base_class.model_interface import AbstractModelInterface
 
 class AdapterSVGP(AbstractModelInterface):
 
-    def __init__(self, path_to_pkl, rescale_y: bool = True) -> None:
+    def __init__(self, path_to_pkl: pl.Path, rescale_y: bool = True) -> None:
         with open(path_to_pkl, "rb") as file:
             pickle_obj = dill.load(file)
         self._model = pickle_obj["model"]
@@ -60,7 +60,7 @@ class AdapterSVGP(AbstractModelInterface):
 
 class AdapterGPy(AbstractModelInterface):
 
-    def __init__(self, path_to_pkl, rescale_y: bool = True) -> None:
+    def __init__(self, path_to_pkl: pl.Path, rescale_y: bool = True) -> None:
         with open(path_to_pkl, "rb") as file:
             pickle_obj = dill.load(file)
         self._model = pickle_obj["model"]

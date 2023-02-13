@@ -1,36 +1,69 @@
 from src.abstract_base_class.reward import AbstractReward
+from omegaconf import DictConfig
+from typing import Tuple
+from typing import Dict
 
 
 class Reward(AbstractReward):
-    def __init__(self, config: "DictConfig"):
-        self._config = dict(config)
-        self._requirements = dict(config.requirements)
-        self._weights = dict(config.weights)
+    def __init__(self, config: DictConfig):
+        self._config = config
         self._rewardValue = 0.0
+        self._reqsFlag = True
 
     @property
-    def config(self) -> dict:
+    def config(self) -> DictConfig:
         return self._config
-
-    @property
-    def requirements(self) -> dict:
-        return self._requirements
-
-    @property
-    def weights(self) -> dict:
-        return self._weights
 
     @property
     def rewardValue(self) -> float:
         return self._rewardValue
 
-    def calculateReward(self, state: dict, observation: dict, safety_flag: bool) -> float:
-        target_a = state["Ishikawa_LayersCount"]
-        target_b = state["Ishikawa_WeightPerAreaCardDelivery"]
-        disturbance_d = state["v_Arbeiter_HT"]
-        weightB = self._weights["output2"]
-        fibreCosts = self._config["fibreCosts"]
-        self._rewardValue = target_a*fibreCosts + weightB*target_b - disturbance_d
-        if self._requirements["bLower"] < target_b < self._requirements["bUpper"] or safety_flag:
-            self._rewardValue = self._config["penalty"]
-        return self._rewardValue
+    @property
+    def reqsFlag(self) -> bool:
+        return self._reqsFlag
+
+    def reqsMet(self, outputs: Dict[str, float]) -> bool:
+
+        reqsFlag = True
+
+        # check simple fixed bounds for outputs.
+        for output, lowerBound in self._config.simpleOutputBounds.lower.items():
+            if outputs[output] < lowerBound:
+                reqsFlag = False
+        for output, upperBound in self._config.simpleOutputBounds.upper.items():
+            if outputs[output] > upperBound:
+                reqsFlag = False
+
+        # check more complex, relational constraints.
+        product = 1
+        for output, value in outputs.items():
+            product = product * value
+        if (product < self._config.complexConstraints.multMin) or (product > self._config.complexConstraints.multMax):
+            reqsFlag = False
+
+        self._reqsFlag = reqsFlag
+
+        return reqsFlag
+
+    def calculateRewardAndReqsFlag(self, state: Dict[str, float], outputs: Dict[str, float],
+                                   safetyFlag: bool) -> Tuple[float, bool]:
+
+        reqsFlag = self.reqsMet(outputs)
+
+        # penalty.
+        if not (reqsFlag and safetyFlag):
+            rewardValue = -self._config.penalty
+
+        # no penalty.
+        else:
+            targetA = outputs["min_area_weight"]
+            targetB = outputs["unevenness_card_web"]
+            cost = state["v_Arbeiter_HT"]
+            w1 = self._config.weights.w1
+            w2 = self._config.weights.w2
+            fibreCosts = self._config.fibreSettings.fibreCosts
+            rewardValue = w1*fibreCosts*targetA + w2*targetB - cost
+
+        self._rewardValue = rewardValue
+
+        return rewardValue, reqsFlag

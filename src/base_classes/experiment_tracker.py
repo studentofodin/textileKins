@@ -8,7 +8,7 @@ class ExperimentTracker(AbstractExperimentTracker):
 
     def __init__(self, config: DictConfig):
         self._config = config
-        wb.init(**self._config)
+        self.initWandB()
 
     @property
     def config(self) -> DictConfig:

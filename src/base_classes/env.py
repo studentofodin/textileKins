@@ -36,13 +36,6 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
         currentState = self._currentControls | self._currentDisturbances
         observationArray, observationDict = self._machine.get_outputs(currentState)
-        """
-        safetyFlag = self._safetyWrapper.safetyMet(self._currentControls)
-        reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(currentState, observationDict, safetyFlag)
-        logVariables = {"Reward": reward} | {"Safety Flag": int(safetyFlag)} | {"Requirements Flag": int(reqsFlag)} | \
-                       self._currentControls | self._currentDisturbances | observationDict
-        self._experimentTracker.log(logVariables)
-        """
 
         # set action space.
         self._actionSpace = spaces.Box(

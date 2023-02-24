@@ -97,4 +97,3 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         observation = self._machine.getOutput(self._initialState)
         info = dict()
         return observation, info
-

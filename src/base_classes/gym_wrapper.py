@@ -22,11 +22,8 @@ class GymWrapper(Env):
     def reset(self, seed=None, options=None):
         return self.env.reset()
 
-    def close(self):
-        pass
-
     def render(self):
-        pass
+        return self.env.render()
 
     @property
     def reward_range(self):

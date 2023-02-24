@@ -1,3 +1,6 @@
+import numpy as np
+import wandb as wb
+
 from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 
 
@@ -25,10 +28,15 @@ class ExperimentTracker(AbstractExperimentTracker):
             metrics[metric] = []
         return metrics
 
-    def __init__(self, metricConfig):
-        self.metrics = self.createMetricFromConfig(metricConfig)
+    def __init__(self, config):
+        self.metrics = self.createMetricFromConfig(config.experimentTracker.metrics)
+        wb.init(config = config)
 
     def __str__(self) -> str:
         print("Experiment Tracker ---- ")
         print("Metrics", self.metrics)
         return " "
+
+    def log(self, reward, stateDict, observationDict):
+        wb.log({"Reward":reward, **stateDict, **observationDict})
+

@@ -1,0 +1,38 @@
+reward:
+  requirements :
+    bLower : 30.0
+    bUpper : 100.0
+  penalty : 1.0
+  fibreCosts : 276.00
+env:
+  actionParams : 
+    - aP1 : 3.2
+    - aP2 : 4.0
+  stateParams : 
+    - sP1 : 0.3
+    - sP2 : 999.0
+  observationParams: 
+    - oP1 : 99.9
+    - oP2 : 7.8
+  actorConstraints : 
+    - aC1 : 0.0
+    - aC2 : 8.9
+  productionScenario : 
+    - pS1 : 5.5
+    - pS2 : 7.4
+  stepsUntilLabDataAvailable : 100
+  maxSteps : 1000
+experimentTracker:
+  metrics : ['reward', 'action', 'observation']
+scenarioManager:
+  disturbanceSetting : 
+    dist1 : 1
+    dist2 : 2
+  fibreSetting :
+    fibre3: 3 
+    fibre4: 4
+safety :
+  constraints : 
+    weight : 100
+    speed1 : 100
+    speed2 : 90

@@ -1,0 +1,28 @@
+initialControls:
+  Ishikawa_LayersCount: 0.5
+  Ishikawa_DraftRatioNeedleloom1Intake: 0.5
+  Ishikawa_DraftRatioNeedleloom: 0.5
+  Ishikawa_CardMassThroughputSetpoint: 0.5
+  v_Vorreisser: 0.5
+  v_Arbeiter_HT: 0.5
+  v_Wender_HT: 0.5
+  v_Arbeiter_VR: 0.5
+  v_Wender_VR: 0.5
+  v_Abnehmer: 0.5
+initialDisturbances:
+  Ishikawa_WeightPerAreaCardDelivery: 1.0
+  mean_cylinder_worker: 1.0
+safetyBounds:
+  simpleControlBounds:
+    Ishikawa_LayersCount:
+      lower: 0.1
+      upper: 0.9
+    Ishikawa_DraftRatioNeedleloom1Intake:
+      lower: 0.1
+      upper: 0.9
+    Ishikawa_DraftRatioNeedleloom:
+    lower: 0.1
+    upper: 0.9
+  complexConstraints:
+    addMin: 2.0
+    addMax: 8.0

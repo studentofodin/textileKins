@@ -1,9 +1,0 @@
-pandas>=1.4.2
-numpy
-matplotlib
-pillow
-sklearn
-pyyaml
-GPy
-dill
-seaborn

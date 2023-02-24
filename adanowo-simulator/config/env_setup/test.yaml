@@ -1,0 +1,45 @@
+actionType : 1 # 0 for relative | 1 for absolute
+usedControls: ["Ishikawa_LayersCount", "Ishikawa_DraftRatioNeedleloom1Intake", "Ishikawa_DraftRatioNeedleloom",
+                     "Ishikawa_CardMassThroughputSetpoint", "v_Vorreisser", "v_Arbeiter_HT", "v_Wender_HT",
+                     "v_Arbeiter_VR", "v_Wender_VR", "v_Abnehmer"]
+usedDisturbances: ["Ishikawa_WeightPerAreaCardDelivery", "mean_cylinder_worker"]
+usedModels: ["min_area_weight", "unevenness_card_web"]
+pathToModels: ./models
+actionSpace:
+  Ishikawa_LayersCount:
+    low: -100.0
+    high: 100.0
+  Ishikawa_DraftRatioNeedleloom1Intake:
+    low: -100.0
+    high: 100.0
+  Ishikawa_DraftRatioNeedleloom:
+    low: -100.0
+    high: 100.0
+  Ishikawa_CardMassThroughputSetpoint:
+    low: -100.0
+    high: 100.0
+  v_Vorreisser:
+    low: -100.0
+    high: 100.0
+  v_Arbeiter_HT:
+    low: -100.0
+    high: 100.0
+  v_Wender_HT:
+    low: -100.0
+    high: 100.0
+  v_Arbeiter_VR:
+    low: -100.0
+    high: 100.0
+  v_Wender_VR:
+    low: -100.0
+    high: 100.0
+  v_Abnehmer:
+    low: -100.0
+    high: 100.0
+observationSpace:
+  min_area_weight:
+    low: -100.0
+    high: 100.0
+  unevenness_card_web:
+    low: -100.0
+    high: 100.0

@@ -1,38 +1,87 @@
+import pathlib as pl
+import pickle
+from typing import List
 import numpy as np
-from src.abstract_base_class.model_wrapper import AbstractModelWrapper
-from src.base_classes.model_interface import ModelInterface
 
+from src.abstract_base_class.model_wrapper import AbstractModelWrapper
+from src.base_classes.model_interface import *
 
 class ModelWrapper(AbstractModelWrapper):
 
+    @staticmethod
+    def load_model(model_props: dict) -> AbstractModelInterface:
+        with open(pl.Path(model_props["model_path"]), "rb") as file:
+            pickle_obj = pickle.load(file)
+        model_class = model_props["model_class"]
+        if model_class == "SVGP":
+            mdl = AdapterSVGP(pickle_obj, model_props, rescale_y=True)
+        elif model_class == "GPy_GPR":
+            mdl = AdapterGPy(pickle_obj, model_props, rescale_y=True)
+        else:
+            raise (TypeError(f"The model class {model_class} is not yet supported"))
+        return mdl
+
+    def __init__(self, model_props: List[dict, ...]):
+        self._n_models = len(model_props)
+        self._means = np.zeros((self._n_models))
+        self._vars = np.zeros((self._n_models))
+        self._outputs = np.zeros((self._n_models))
+        self._machine_models = list()
+        for mp in model_props:
+            self._machine_models.append(ModelWrapper.load_model(mp))
+
     @property
-    def machineModel(self) -> ModelInterface:
-        return self._machineModel
+    def machine_models(self) -> List[AbstractModelInterface, ...]:
+        return self._machine_models
 
-    @machineModel.setter
-    def machineModel(self, machineModel):
-        self._machineModel = machineModel
+    @property
+    def n_models(self) -> int:
+        return self._n_models
 
-    def __init__(self):
-        self.machineModel = ModelInterface({
-                                                "inputs": ["input_d", "input_c"],
-                                                "output": "target_b"
-                                            })
+    @property
+    def means(self) -> np.array:
+        return self._means
 
-    def mapActionsToInputs(self, action):
-        return np.array([3,2,1])
+    @property
+    def vars(self) -> np.array:
+        return self._vars
 
-    def callMachineModel(self, input):
-        return self.machineModel.calcMeanAndStd(np.array([5,4,3]), latent=True)
+    @property
+    def outputs(self) -> np.array:
+        return self._outputs
 
-    def interpretModelOutputs(self, mean: np.array, lowerConfidence: np.array, upperConfidence: np.array) -> np.array:
-        return [1,2,3]
+    def call_models(self, input: dict, latent: bool) -> None:
+        means = np.zeros((self._n_models))
+        vars = np.zerso((self._n_models))
 
+        if latent:
+            for i, mdl in enumerate(self._machine_models):
+                means[i], vars[i] = mdl.predict_f(input)
+        else:
+            for i, mdl in enumerate(self._machine_models):
+                means[i], vars[i] = mdl.predict_y(input)
 
-    def getOutput(self, action):
-        input = self.mapActionsToInputs(action)
-        mean, lowerConfidence, upperConfidence = self.callMachineModel(input)
-        # output = self.interpretModelOutputs(mean, lowerConfidence, upperConfidence)
-        output = np.random.randn(2)
-        outputDict = {"Output1":output[0],"Output2" : output[1]}
-        return output, outputDict
+        self._means = means
+        self._vars = vars
+
+    def call_models(self, input: dict, latent: bool) -> None:
+        means = np.zeros((self._n_models))
+        vars = np.zerso((self._n_models))
+
+        if latent:
+            for i, mdl in enumerate(self._machine_models):
+                means[i], vars[i] = mdl.predict_f(input)
+        else:
+            for i, mdl in enumerate(self._machine_models):
+                means[i], vars[i] = mdl.predict_y(input)
+
+        self._means = means
+        self._vars = vars
+
+    def interpret_model_outputs(self) -> None:
+        self._outputs = np.random.normal(self._means, self._vars)
+
+    def get_outputs(self, input: dict, latent: bool = False) -> np.array:
+        self.call_models(input, latent)
+        self.interpret_model_outputs()
+        return self._outputs

@@ -1,7 +1,8 @@
-from src.abstract_base_class.reward import AbstractReward
 from omegaconf import DictConfig
 from typing import Tuple
 from typing import Dict
+
+from src.abstract_base_class.reward import AbstractReward
 
 
 class Reward(AbstractReward):

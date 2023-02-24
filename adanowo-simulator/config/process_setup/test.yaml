@@ -21,8 +21,8 @@ safetyBounds:
       lower: 0.1
       upper: 0.9
     Ishikawa_DraftRatioNeedleloom:
-    lower: 0.1
-    upper: 0.9
+      lower: 0.1
+      upper: 0.9
   complexConstraints:
     addMin: 2.0
     addMax: 8.0

@@ -7,6 +7,7 @@ from omegaconf import DictConfig
 
 from src.abstract_base_class.model_interface import AbstractModelInterface
 
+
 class AbstractModelWrapper(ABC):
 
     @property
@@ -60,7 +61,7 @@ class AbstractModelWrapper(ABC):
         pass
 
     @abstractmethod
-    def call_models(self, input: Dict[str, float]) -> None:
+    def call_models(self, input: Dict[str, float], latent) -> None:
         """
         call all machine models to determine mean and variance (predict_y() or predict_f()) from input and assign
         values to properties means and vars.

@@ -21,21 +21,18 @@ class SafetyWrapper(AbstractSafetyWrapper):
         safetyFlag = True
 
         # check simple fixed bounds for controls.
-        for control, bounds in self._config.simpleControlBounds.items():
+        for control, bounds in self._config.safetyBounds.simpleControlBounds.items():
             if (controls[control] < bounds.lower) or (controls[control] > bounds.upper):
                 safetyFlag = False
 
         # check more complex, relational constraints.
-        sum = 0
+        constr_sum = 0
         for control, value in controls.items():
-            sum = sum + value
-        if (sum < self._config.complexConstraints.addMin) or (sum > self._config.complexConstraints.addMax):
+            constr_sum = constr_sum + value
+        if (constr_sum < self._config.safetyBounds.complexConstraints.addMin) or \
+                (constr_sum > self._config.safetyBounds.complexConstraints.addMax):
             safetyFlag = False
 
         self._safetyFlag = safetyFlag
 
         return safetyFlag
-
-
-
-

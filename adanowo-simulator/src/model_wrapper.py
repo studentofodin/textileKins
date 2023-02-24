@@ -2,12 +2,14 @@ from typing import List
 from typing import Tuple
 from typing import Dict
 import pathlib as pl
+
 import yaml
 from omegaconf import DictConfig
+import numpy as np
 
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
 from src.abstract_base_class.model_interface import AbstractModelInterface
-from src.base_classes.model_interface import *
+from src import model_interface
 
 
 class ModelWrapper(AbstractModelWrapper):
@@ -23,7 +25,7 @@ class ModelWrapper(AbstractModelWrapper):
         self._means = dict()
         self._vars = dict()
         self._outputs = dict()
-        self._outputs_array = np.zeros((self._n_models))
+        self._outputs_array = np.zeros(self._n_models)
         self._machine_models = dict()
         self._output_names = list()
 
@@ -56,9 +58,9 @@ class ModelWrapper(AbstractModelWrapper):
                     model_class = properties["model_class"]
                     path_to_pkl = pl.Path(self._config.pathToModels) / (model_name + '.pkl')
                     if model_class == "SVGP":
-                        mdl = AdapterSVGP(path_to_pkl, self._config.rescaleY)
+                        mdl = model_interface.AdapterSVGP(path_to_pkl, True)
                     elif model_class == "GPy_GPR":
-                        mdl = AdapterGPy(path_to_pkl, self._config.rescaleY)
+                        mdl = model_interface.AdapterGPy(path_to_pkl, True)
                     else:
                         raise (TypeError(f"The model class {model_class} is not yet supported"))
                     self._machine_models[output_name] = mdl
@@ -103,8 +105,8 @@ class ModelWrapper(AbstractModelWrapper):
     def outputs_array(self) -> np.array:
         return self._outputs_array
 
-    def call_models(self, input: Dict[str, float]) -> None:
-        if self._config.latent:
+    def call_models(self, input: Dict[str, float], latent=False) -> None:
+        if latent:
             for output_name in self._output_names:
                 self._means[output_name], self._vars[output_name] = self._machine_models[output_name].predict_f(input)
         else:

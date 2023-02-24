@@ -1,6 +1,5 @@
 import pathlib as pl
 import yaml
-import numpy as np
 
 from src.base_classes.model_wrapper import ModelWrapper
 

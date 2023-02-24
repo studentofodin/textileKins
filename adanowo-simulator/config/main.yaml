@@ -1,2 +1,8 @@
 defaults:
-  - configs : config3
+  - env_setup: test
+  - process_setup: test
+  - product_setup: test
+  - _self_
+experimentTracker:
+  project: adanowo-simulator
+  mode: offline

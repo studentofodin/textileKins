@@ -2,23 +2,23 @@ import numpy as np
 import hydra
 from omegaconf import DictConfig
 
-from src.base_classes.reward import Reward
-from src.base_classes.safety_wrapper import SafetyWrapper
-from src.base_classes.experiment_tracker import ExperimentTracker
-from src.base_classes.gym_wrapper import GymWrapper
-from src.base_classes.model_wrapper import ModelWrapper
-from src.base_classes.env import TrainingEnvironment
+from src.reward import Reward
+from src.safety_wrapper import SafetyWrapper
+from src.experiment_tracker import ExperimentTracker
+from src.gym_wrapper import GymWrapper
+from src.model_wrapper import ModelWrapper
+from src.env import TrainingEnvironment
 
 
-@hydra.main(version_base=None, config_path="src", config_name="config")
+@hydra.main(version_base=None, config_path="./config", config_name="main")
 def main(configuration: DictConfig):
 
-    config = configuration.configs
+    config = configuration
     experimentTracker = ExperimentTracker(config.experimentTracker)
-    reward = Reward(config.reward)
-    safetyWrapper = SafetyWrapper(config.safetyWrapper)
-    modelWrapper = ModelWrapper(config.modelWrapper)
-    trainingEnv = TrainingEnvironment(config.env, modelWrapper, reward, safetyWrapper, experimentTracker)
+    reward = Reward(config.product_setup)
+    safetyWrapper = SafetyWrapper(config.process_setup)
+    modelWrapper = ModelWrapper(config.env_setup)
+    trainingEnv = TrainingEnvironment(config, modelWrapper, reward, safetyWrapper, experimentTracker)
     env = GymWrapper(trainingEnv)
 
     for _ in range(10):
@@ -29,8 +29,7 @@ def main(configuration: DictConfig):
 
     for _ in range(10):
         # env.step(np.random.uniform(-0.5, 0.5, len(env.env.currentControls))) # for actionType == relative
-        env.step(np.random.uniform(0, 1, len(env.env.currentControls))) # for actionType == absolute
-
+        env.step(np.random.uniform(0, 1, len(env.env.currentControls)))  # for actionType == absolute
 
 
 if __name__ == "__main__":

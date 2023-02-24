@@ -3,7 +3,7 @@ import numpy as np
 from gymnasium import Env
 from gymnasium.envs.registration import register
 
-from src.base_classes.env import TrainingEnvironment
+from src.env import TrainingEnvironment
 
 
 class GymWrapper(Env):

@@ -26,31 +26,31 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
         # set current controls.
         self._currentControls = dict()
-        for control in self._config.usedControls:
-            self._currentControls[control] = self._config.initialControls[control]
+        for control in self._config.env_setup.usedControls:
+            self._currentControls[control] = self._config.process_setup.initialControls[control]
 
         # set current disturbances.
         self._currentDisturbances = dict()
-        for disturbance in self._config.usedDisturbances:
-            self._currentDisturbances[disturbance] = self._config.initialDisturbances[disturbance]
+        for disturbance in self._config.env_setup.usedDisturbances:
+            self._currentDisturbances[disturbance] = self._config.process_setup.initialDisturbances[disturbance]
 
         currentState = self._currentControls | self._currentDisturbances
         observationArray, observationDict = self._machine.get_outputs(currentState)
 
         # set action space.
         self._actionSpace = spaces.Box(
-            low=np.array([self._config.actionSpace[param].low for param in self._config.usedControls],
+            low=np.array([self._config.env_setup.actionSpace[param].low for param in self._config.env_setup.usedControls],
                          dtype=np.float32),
-            high=np.array([self._config.actionSpace[param].high for param in self._config.usedControls],
+            high=np.array([self._config.env_setup.actionSpace[param].high for param in self._config.env_setup.usedControls],
                           dtype=np.float32),
-            shape=(len(self._config.usedControls),)
+            shape=(len(self._config.env_setup.usedControls),)
         )
 
         # set observation space.
         self._observationSpace = spaces.Box(
-            low=np.array([self._config.observationSpace[param].low for param in self._machine.output_names],
+            low=np.array([self._config.env_setup.observationSpace[param].low for param in self._machine.output_names],
                          dtype=np.float32),
-            high=np.array([self._config.observationSpace[param].high for param in self._machine.output_names],
+            high=np.array([self._config.env_setup.observationSpace[param].high for param in self._machine.output_names],
                           dtype=np.float32),
             shape=(len(self._machine.output_names),)
         )
@@ -71,7 +71,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
     @property
     def safetyWrapper(self) -> AbstractSafetyWrapper:
-        return self._safety
+        return self._safetyWrapper
 
     @property
     def experimentTracker(self) -> AbstractExperimentTracker:
@@ -95,11 +95,11 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
     @property
     def rewardRange(self) -> Tuple[float, float]:
-        return (-float("inf"), float("inf"))
+        return -float("inf"), float("inf")
 
     @property
     def stepIndex(self):
-        pass
+        return self._stepIndex
 
     def step(self, action: np.array) -> Tuple[np.array, float, bool, bool, dict]:
 
@@ -111,7 +111,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         observationArray, observationDict = self._machine.get_outputs(currentState)
         reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(currentState, observationDict, safetyFlag)
         logVariables = {"Reward": reward} | {"Safety Flag": int(safetyFlag)} | {"Requirements Flag": int(reqsFlag)} | \
-                       self._currentControls | self._currentDisturbances | observationDict
+            self._currentControls | self._currentDisturbances | observationDict
         self._experimentTracker.log(logVariables)
 
         self._done = False
@@ -126,7 +126,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         currentState = self._currentControls | self._currentDisturbances
         reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(currentState, self._machine.outputs, safetyFlag)
         logVariables = {"Reward": reward} | {"Safety Flag": int(safetyFlag)} | {"Requirements Flag": int(reqsFlag)} | \
-                       self._currentControls | self._currentDisturbances | self._machine.outputs
+            self._currentControls | self._currentDisturbances | self._machine.outputs
         self._experimentTracker.log(logVariables)
 
     def reset(self) -> Tuple[np.array, dict]:
@@ -136,13 +136,13 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
         # set current controls.
         self._currentControls = dict()
-        for control in self._config.usedControls:
-            self._currentControls[control] = self._config.initialControls[control]
+        for control in self._config.env_setup.usedControls:
+            self._currentControls[control] = self._config.process_setup.initialControls[control]
 
         # set current disturbances.
         self._currentDisturbances = dict()
-        for disturbance in self._config.usedDisturbances:
-            self._currentDisturbances[disturbance] = self._config.initialDisturbances[disturbance]
+        for disturbance in self._config.env_setup.usedDisturbances:
+            self._currentDisturbances[disturbance] = self._config.process_setup.initialDisturbances[disturbance]
 
         currentState = self._currentControls | self._currentDisturbances
         observationArray, _ = self._machine.get_outputs(currentState)
@@ -151,18 +151,17 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
         return observationArray, info
 
-
     def calculateControlsFromAction(self, action: np.array) -> bool:
 
         updatedControls = dict()
-        actionType = self._config.actionType # 0 for relative | 1 for absolute
+        actionType = self._config.env_setup.actionType  # 0 for relative | 1 for absolute
 
         if actionType == 0: 
-            for index, key in enumerate(self._config.usedControls):
+            for index, key in enumerate(self._config.env_setup.usedControls):
                 updatedControls[key] = self._currentControls[key] + action[index]
 
         else:
-            for index, key in enumerate(self._config.usedControls):
+            for index, key in enumerate(self._config.env_setup.usedControls):
                 updatedControls[key] = action[index]
 
         safetyFlag = self._safetyWrapper.safetyMet(updatedControls)

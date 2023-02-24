@@ -7,6 +7,7 @@ from typing import Tuple
 
 from src.abstract_base_class.model_interface import AbstractModelInterface
 
+
 class AdapterSVGP(AbstractModelInterface):
 
     def __init__(self, path_to_pkl: pl.Path, rescale_y: bool = True) -> None:

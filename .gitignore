@@ -3,8 +3,8 @@
 *.pyc
 *.vscode
 *outputs
-*.idea*
-*pyproject.toml
-*poetry.lock
-venv
 /wandb
+*.ipynb
+*.xlsx
+.idea/
+__pycache__/

@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import Tuple
 from typing import Dict
 import numpy as np
-from omegaconf import DictConfig
 
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
 from src.abstract_base_class.reward import AbstractReward
@@ -13,6 +12,7 @@ from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 class AbstractTrainingEnvironment(ABC):
 
     @property
+    @abstractmethod
     def config(self):
         pass
 

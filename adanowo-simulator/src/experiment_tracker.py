@@ -19,4 +19,3 @@ class ExperimentTracker(AbstractExperimentTracker):
 
     def log(self, logVariables: dict) -> None:
         wb.log(logVariables)
-

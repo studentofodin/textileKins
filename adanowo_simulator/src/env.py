@@ -1,9 +1,6 @@
 import numpy as np
 from omegaconf import DictConfig
-from typing import Tuple
-from typing import Dict
 from gymnasium import spaces
-import wandb as wb
 
 from src.abstract_base_class.environment import AbstractTrainingEnvironment
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
@@ -16,33 +13,25 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     def __init__(self, config: DictConfig, machine: AbstractModelWrapper, reward: AbstractReward,
                  safetyWrapper: AbstractSafetyWrapper, experimentTracker: AbstractExperimentTracker):
 
-        self._stepIndex = 0
-
         self._config = config
         self._machine = machine
         self._reward = reward
         self._experimentTracker = experimentTracker
         self._safetyWrapper = safetyWrapper
 
-        # set current controls.
+        # set current controls and disturbances
+        self._stepIndex = None
+        self._done = False
         self._currentControls = dict()
-        for control in self._config.env_setup.usedControls:
-            self._currentControls[control] = self._config.process_setup.initialControls[control]
-
-        # set current disturbances.
         self._currentDisturbances = dict()
-        for disturbance in self._config.env_setup.usedDisturbances:
-            self._currentDisturbances[disturbance] = self._config.process_setup.initialDisturbances[disturbance]
-
-        currentState = self._currentControls | self._currentDisturbances
-        observationArray, observationDict = self._machine.get_outputs(currentState)
+        self._currentState = dict()
 
         # set action space.
         self._actionSpace = spaces.Box(
-            low=np.array([self._config.env_setup.actionSpace[param].low for param in self._config.env_setup.usedControls],
-                         dtype=np.float32),
-            high=np.array([self._config.env_setup.actionSpace[param].high for param in self._config.env_setup.usedControls],
-                          dtype=np.float32),
+            low=np.array([self._config.env_setup.actionSpace[param].low for
+                          param in self._config.env_setup.usedControls], dtype=np.float32),
+            high=np.array([self._config.env_setup.actionSpace[param].high for
+                           param in self._config.env_setup.usedControls], dtype=np.float32),
             shape=(len(self._config.env_setup.usedControls),)
         )
 
@@ -55,7 +44,8 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
             shape=(len(self._machine.output_names),)
         )
 
-        self._done = False
+        self._resetState()
+        self._state = "NEW"
 
     @property
     def config(self) -> DictConfig:
@@ -78,11 +68,11 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         return self._experimentTracker
 
     @property
-    def currentControls(self) -> Dict[str, float]:
+    def currentControls(self) -> dict[str, float]:
         return self._currentControls
 
     @property
-    def currentDisturbances(self) -> Dict[str, float]:
+    def currentDisturbances(self) -> dict[str, float]:
         return self._currentDisturbances
 
     @property
@@ -94,69 +84,32 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         return self._observationSpace
 
     @property
-    def rewardRange(self) -> Tuple[float, float]:
-        return -float("inf"), float("inf")
+    def rewardRange(self) -> tuple[float, float]:
+        return self._reward.reward_range
 
     @property
     def stepIndex(self):
         return self._stepIndex
 
-    def step(self, action: np.array) -> Tuple[np.array, float, bool, bool, dict]:
-
-        if self._stepIndex == 0:
-            self.initExperiment()
-
-        safetyFlag = self.calculateControlsFromAction(action)
-        currentState = self._currentControls | self._currentDisturbances
-        observationArray, observationDict = self._machine.get_outputs(currentState)
-        reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(currentState, observationDict, safetyFlag)
-        logVariables = {"Reward": reward} | {"Safety Flag": int(safetyFlag)} | {"Requirements Flag": int(reqsFlag)} | \
-            self._currentControls | self._currentDisturbances | observationDict
-        self._experimentTracker.log(logVariables)
-
-        self._done = False
-        info = dict()
-        self._stepIndex = self._stepIndex + 1
-
-        return observationArray, reward, self._done, False, info
-
-    def initExperiment(self) -> None:
-        self._experimentTracker.initWandB()
-        safetyFlag = self._safetyWrapper.safetyMet(self._currentControls)
-        currentState = self._currentControls | self._currentDisturbances
-        reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(currentState, self._machine.outputs, safetyFlag)
-        logVariables = {"Reward": reward} | {"Safety Flag": int(safetyFlag)} | {"Requirements Flag": int(reqsFlag)} | \
-            self._currentControls | self._currentDisturbances | self._machine.outputs
-        self._experimentTracker.log(logVariables)
-
-    def reset(self) -> Tuple[np.array, dict]:
-
-        wb.finish()
+    def _resetState(self):
         self._stepIndex = 0
-
-        # set current controls.
-        self._currentControls = dict()
         for control in self._config.env_setup.usedControls:
             self._currentControls[control] = self._config.process_setup.initialControls[control]
-
-        # set current disturbances.
-        self._currentDisturbances = dict()
         for disturbance in self._config.env_setup.usedDisturbances:
             self._currentDisturbances[disturbance] = self._config.process_setup.initialDisturbances[disturbance]
+        self._currentState = self._currentControls | self._currentDisturbances
 
-        currentState = self._currentControls | self._currentDisturbances
-        observationArray, _ = self._machine.get_outputs(currentState)
+        if not self._safetyWrapper.safetyMet(self._currentControls):
+            raise AssertionError("The initial setting is unsafe. Aborting Experiment.")
 
-        info = dict()
+    def _initExperiment(self) -> None:
+        self._experimentTracker.initTracker(self._config)
 
-        return observationArray, info
-
-    def calculateControlsFromAction(self, action: np.array) -> bool:
-
+    def _calculateControlsFromAction(self, action: np.array) -> bool:
         updatedControls = dict()
         actionType = self._config.env_setup.actionType  # 0 for relative | 1 for absolute
 
-        if actionType == 0: 
+        if actionType == 0:
             for index, key in enumerate(self._config.env_setup.usedControls):
                 updatedControls[key] = self._currentControls[key] + action[index]
 
@@ -167,8 +120,43 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         safetyFlag = self._safetyWrapper.safetyMet(updatedControls)
         if safetyFlag:
             self._currentControls = updatedControls
+        self._currentState = self._currentControls | self._currentDisturbances
 
         return safetyFlag
+
+    def step(self, action: np.array) -> tuple[np.array, float, bool, bool, dict]:
+        if self._state != "RUNNING":
+            self._initExperiment()
+
+        safetyFlag = self._calculateControlsFromAction(action)
+        observationArray, observationDict = self._machine.get_outputs(self._currentState)
+        reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(self._currentState, observationDict, safetyFlag)
+        logVariables = \
+            {"Reward": reward} | \
+            {"Safety Flag": int(safetyFlag)} | \
+            {"Requirements Flag": int(reqsFlag)} | \
+            self._currentControls | \
+            self._currentDisturbances | \
+            observationDict
+        self._experimentTracker.log(logVariables)
+        info = dict()
+        self._stepIndex = self._stepIndex + 1
+
+        self.render()
+        self._state = "RUNNING"
+
+        return observationArray, reward, self._done, False, info
+
+    def reset(self) -> tuple[np.array, dict]:
+
+        self._experimentTracker.finish_experiment()
+        self._resetState()
+
+        observationArray, _ = self._machine.get_outputs(self._currentState)
+        info = dict()
+
+        self._state = "READY"
+        return observationArray, info
 
     def render(self) -> None:
         pass

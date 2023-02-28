@@ -1,15 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Tuple
-from typing import Dict
-from omegaconf import DictConfig
 
 
 class AbstractReward(ABC):
-
-    @property
-    @abstractmethod
-    def config(self) -> DictConfig:
-        pass
 
     @property
     @abstractmethod
@@ -21,8 +13,13 @@ class AbstractReward(ABC):
     def reqsFlag(self) -> bool:
         pass
 
+    @property
     @abstractmethod
-    def reqsMet(self, outputs: Dict[str, float]) -> bool:
+    def reward_range(self) -> (float, float):
+        pass
+
+    @abstractmethod
+    def reqsMet(self, outputs: dict[str, float]) -> bool:
         """
         check if the outputs are within requirement constraints.
         return this value and assign it to property reqsFlag.
@@ -31,8 +28,8 @@ class AbstractReward(ABC):
         pass
 
     @abstractmethod
-    def calculateRewardAndReqsFlag(self, state: Dict[str, float], outputs: Dict[str, float],
-                                   safetyFlag: bool) -> Tuple[float, bool]:
+    def calculateRewardAndReqsFlag(self, state: dict[str, float], outputs: dict[str, float],
+                                   safetyFlag: bool) -> tuple[float, bool]:
         """
         determine reward value from state and outputs.
         also determine requirements flag.

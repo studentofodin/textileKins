@@ -31,6 +31,8 @@ def main(configuration: DictConfig):
         # env.step(np.random.uniform(-0.5, 0.5, len(env.env.currentControls))) # for actionType == relative
         env.step(np.random.uniform(0, 1, len(env.env.currentControls)))  # for actionType == absolute
 
+    env.reset()
+
 
 if __name__ == "__main__":
     main()

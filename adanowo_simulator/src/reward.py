@@ -1,6 +1,4 @@
 from omegaconf import DictConfig
-from typing import Tuple
-from typing import Dict
 
 from src.abstract_base_class.reward import AbstractReward
 
@@ -12,18 +10,17 @@ class Reward(AbstractReward):
         self._reqsFlag = True
 
     @property
-    def config(self) -> DictConfig:
-        return self._config
-
-    @property
     def rewardValue(self) -> float:
         return self._rewardValue
+
+    def reward_range(self) -> (float, float):
+        return -float("inf"), float("inf")
 
     @property
     def reqsFlag(self) -> bool:
         return self._reqsFlag
 
-    def reqsMet(self, outputs: Dict[str, float]) -> bool:
+    def reqsMet(self, outputs: dict[str, float]) -> bool:
 
         reqsFlag = True
 
@@ -46,17 +43,15 @@ class Reward(AbstractReward):
 
         return reqsFlag
 
-    def calculateRewardAndReqsFlag(self, state: Dict[str, float], outputs: Dict[str, float],
-                                   safetyFlag: bool) -> Tuple[float, bool]:
+    def calculateRewardAndReqsFlag(self, state: dict[str, float], outputs: dict[str, float],
+                                   safetyFlag: bool) -> tuple[float, bool]:
 
         reqsFlag = self.reqsMet(outputs)
 
-        # penalty.
-        if not (reqsFlag and safetyFlag):
+        if not (reqsFlag and safetyFlag):  # penalty
             rewardValue = -self._config.penalty
 
-        # no penalty.
-        else:
+        else:  # no penalty
             targetA = outputs["min_area_weight"]
             targetB = outputs["unevenness_card_web"]
             cost = state["v_Arbeiter_HT"]

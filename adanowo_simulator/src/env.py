@@ -142,7 +142,6 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         info = dict()
         self._stepIndex = self._stepIndex + 1
 
-        self.render()
         self._state = "RUNNING"
 
         return observationArray, reward, self._done, False, info

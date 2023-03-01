@@ -40,7 +40,3 @@
   - events from the TrainingEnvironment class: init complete, reset complete
 # Questions
 - Can the action and observation spaces be moved to the gym class?
-
-- remove properties from machines
-- check wandb for any errors I might have missed
-- update git

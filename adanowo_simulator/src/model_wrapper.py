@@ -19,10 +19,7 @@ class ModelWrapper(AbstractModelWrapper):
         self._n_models = len(self._config.usedModels)
         self._model_names = dict()
         self._model_props = dict()
-        self._means = dict()
-        self._vars = dict()
-        self._outputs = dict()
-        self._outputs_array = np.zeros(self._n_models)
+
         self._machine_models = dict()
         self._output_names = list()
 
@@ -45,9 +42,6 @@ class ModelWrapper(AbstractModelWrapper):
                 else:
                     self._model_names[output_name] = model_name
                     self._model_props[output_name] = properties
-                    self._means[output_name] = 0.0
-                    self._vars[output_name] = 0.0
-                    self._outputs[output_name] = 0.0
                     self._output_names.append(output_name)
 
                     # load machine model
@@ -81,38 +75,29 @@ class ModelWrapper(AbstractModelWrapper):
     def machine_models(self) -> dict[str, AbstractModelInterface]:
         return self._machine_models
 
-    @property
-    def means(self) -> dict[str, float]:
-        return self._means
-
-    @property
-    def vars(self) -> dict[str, float]:
-        return self._vars
-
-    @property
-    def outputs(self) -> dict[str, float]:
-        return self._outputs
-
-    @property
-    def outputs_array(self) -> np.array:
-        return self._outputs_array
-
-    def _call_models(self, input_model: dict[str, float], latent=False) -> None:
+    def _call_models(self, input_model: dict[str, float], latent=False) -> (dict[str, float], dict[str, float]):
+        mean_pred = dict()
+        var_pred = dict()
         if latent:
             for output_name in self._output_names:
-                self._means[output_name], self._vars[output_name] = \
+                mean_pred[output_name], var_pred[output_name] = \
                     self._machine_models[output_name].predict_f(input_model)
         else:
             for output_name in self._output_names:
-                self._means[output_name], self._vars[output_name] = \
+                mean_pred[output_name], var_pred[output_name] = \
                     self._machine_models[output_name].predict_y(input_model)
+        return mean_pred, var_pred
 
-    def _interpret_model_outputs(self) -> None:
+    def _interpret_model_outputs(self, mean_pred: dict[str, float], var_pred: dict[str, float]) \
+            -> (np.array, dict[str, float]):
+        outputs = dict()
+        outputs_array = np.zeros(self._n_models)
         for i, output_name in enumerate(self._output_names):
-            self._outputs[output_name] = np.random.normal(self._means[output_name], np.sqrt(self._vars[output_name]))
-            self._outputs_array[i] = self._outputs[output_name]
+            outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name]))
+            outputs_array[i] = outputs[output_name]
+        return outputs_array, outputs
 
     def get_outputs(self, input_model: dict[str, float]) -> tuple[np.array, dict]:
-        self._call_models(input_model)
-        self._interpret_model_outputs()
-        return self._outputs_array, self._outputs
+        mean_pred, var_pred = self._call_models(input_model)
+        outputs_array, outputs = self._interpret_model_outputs(mean_pred, var_pred)
+        return outputs_array, outputs

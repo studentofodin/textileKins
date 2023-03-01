@@ -3,8 +3,9 @@
 *.pyc
 *.vscode
 *outputs
-/wandb
+wandb/
 *.ipynb
 *.xlsx
 .idea/
 __pycache__/
+adanowo_simulator/wandb/

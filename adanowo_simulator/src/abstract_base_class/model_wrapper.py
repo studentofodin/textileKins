@@ -33,28 +33,8 @@ class AbstractModelWrapper(ABC):
     def machine_models(self) -> dict[str, AbstractModelInterface]:
         pass
 
-    @property
     @abstractmethod
-    def means(self) -> dict[str, float]:
-        pass
-
-    @property
-    @abstractmethod
-    def vars(self) -> dict[str, float]:
-        pass
-
-    @property
-    @abstractmethod
-    def outputs(self) -> dict[str, float]:
-        pass
-
-    @property
-    @abstractmethod
-    def outputs_array(self) -> np.array:
-        pass
-
-    @abstractmethod
-    def _call_models(self, input_model: dict[str, float], latent) -> None:
+    def _call_models(self, input_model: dict[str, float], latent) -> (dict[str, float], dict[str, float]):
         """
         call all machine models to determine mean and variance (predict_y() or predict_f()) from input and assign
         values to properties means and vars.
@@ -62,7 +42,8 @@ class AbstractModelWrapper(ABC):
         pass
 
     @abstractmethod
-    def _interpret_model_outputs(self) -> None:
+    def _interpret_model_outputs(self, mean_pred: dict[str, float], var_pred: dict[str, float]) \
+            -> (np.array, dict[str, float]):
         """
         sample output distributions dependent on corresponding mean and variance and assign values to properties
         outputs and outputs_array.

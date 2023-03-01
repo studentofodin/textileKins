@@ -6,4 +6,4 @@ defaults:
   - _self_
 experimentTracker:
   project: adanowo-simulator
-  mode: offline
+  mode: online

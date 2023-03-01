@@ -1,22 +1,18 @@
 from src.abstract_base_class.safety_wrapper import AbstractSafetyWrapper
 from omegaconf import DictConfig
-from typing import Dict
 
 
 class SafetyWrapper(AbstractSafetyWrapper):
 
     def __init__(self, config: DictConfig):
         self._config = config
-
-    @property
-    def config(self) -> DictConfig:
-        return self._config
+        self._safetyFlag = True
 
     @property
     def safetyFlag(self) -> bool:
         return self._safetyFlag
 
-    def safetyMet(self, controls: Dict[str, float]) -> bool:
+    def safetyMet(self, controls: dict[str, float]) -> bool:
 
         safetyFlag = True
 

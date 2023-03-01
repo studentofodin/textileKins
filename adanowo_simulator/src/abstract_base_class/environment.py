@@ -84,7 +84,7 @@ class AbstractTrainingEnvironment(ABC):
         pass
 
     @abstractmethod
-    def initExperiment(self) -> None:
+    def _initExperiment(self) -> None:
         """
         is executed in first step of an experiment.
         sets several values to initial values.
@@ -100,7 +100,7 @@ class AbstractTrainingEnvironment(ABC):
         pass
 
     @abstractmethod
-    def calculateControlsFromAction(self, action: np.array) -> bool:
+    def _calculateControlsFromAction(self, action: np.array) -> bool:
         """
         calculates controls from action and assigns value to property currentControls.
         also determines if action leads to safe controls and returns this value as safetyFlag.

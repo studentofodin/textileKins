@@ -3,8 +3,9 @@
 *.pyc
 *.vscode
 *outputs
-*.idea*
-*pyproject.toml
-*poetry.lock
-venv
-/wandb
+wandb/
+*.ipynb
+*.xlsx
+.idea/
+__pycache__/
+adanowo_simulator/wandb/

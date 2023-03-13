@@ -1,19 +1,35 @@
 import numpy as np
 
-from gymnasium import Env
+from gymnasium import Env, spaces
 from gymnasium.envs.registration import register
+from omegaconf import DictConfig
 
 from src.env import TrainingEnvironment
 
 
 class GymWrapper(Env):
     
-    def __init__(self, env: TrainingEnvironment, metadata: dict = None):
+    def __init__(self, env: TrainingEnvironment, config: DictConfig, metadata: dict = None):
         self.env = env
         self._metadata = metadata
-        self.action_space = self.env.actionSpace
-        self.observation_space = self.env.observationSpace
         self._reward_range = self.env.rewardRange
+        self._config = config
+        # set action space.
+        self._actionSpace = spaces.Box(
+            low=np.array([self._config.actionSpace[param].low for
+                          param in self._config.usedControls], dtype=np.float32),
+            high=np.array([self._config.actionSpace[param].high for
+                           param in self._config.usedControls], dtype=np.float32),
+            shape=(len(self._config.usedControls),)
+        )
+        # set observation space.
+        self._observationSpace = spaces.Box(
+            low=np.array([self._config.observationSpace[param].low for param in self.env._machine.output_names],
+                         dtype=np.float32),
+            high=np.array([self._config.observationSpace[param].high for param in self.env._machine.output_names],
+                          dtype=np.float32),
+            shape=(len(self.env._machine.output_names),)
+        )
    
     def step(self, action: np.array):
         """Steps through the environment with action."""

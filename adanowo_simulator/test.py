@@ -19,7 +19,7 @@ def main(configuration: DictConfig):
     safetyWrapper = SafetyWrapper(config.process_setup)
     modelWrapper = ModelWrapper(config.env_setup)
     trainingEnv = TrainingEnvironment(config, modelWrapper, reward, safetyWrapper, experimentTracker)
-    env = GymWrapper(trainingEnv)
+    env = GymWrapper(trainingEnv, config.env_setup)
 
     for _ in range(10):
         # env.step(np.random.uniform(-0.5, 0.5, len(env.env.currentControls))) # for actionType == relative

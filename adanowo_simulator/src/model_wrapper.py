@@ -25,9 +25,8 @@ class ModelWrapper(AbstractModelWrapper):
 
         # fill properties.
         for model_name in self._config.usedModels:
-
             # load model properties dict from .yaml file
-            with open(pl.Path(self._config.pathToModels) / (model_name + '.yaml'), 'r') as stream:
+            with open(pl.Path(self._config.pathToModels)/(model_name + '.yaml'), 'r') as stream:
                 try:
                     properties = yaml.safe_load(stream)
                 except yaml.YAMLError as exc:

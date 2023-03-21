@@ -10,13 +10,14 @@ from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
     def __init__(self, config: DictConfig, machine: AbstractModelWrapper, reward: AbstractReward,
-                 safetyWrapper: AbstractSafetyWrapper, experimentTracker: AbstractExperimentTracker):
+                 safetyWrapper: AbstractSafetyWrapper, experimentTracker: AbstractExperimentTracker, actionType):
 
         self._config = config
         self._machine = machine
         self._reward = reward
         self._experimentTracker = experimentTracker
         self._safetyWrapper = safetyWrapper
+        self._actionType = actionType
 
         # set current controls and disturbances
         self._stepIndex = None
@@ -79,9 +80,8 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
     def _calculateControlsFromAction(self, action: np.array) -> bool:
         updatedControls = dict()
-        actionType = self._config.env_setup.actionType  # 0 for relative | 1 for absolute
 
-        if actionType == 0:
+        if self._actionType == 0:
             for index, key in enumerate(self._config.env_setup.usedControls):
                 updatedControls[key] = self._currentControls[key] + action[index]
 

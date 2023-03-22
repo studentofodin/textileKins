@@ -48,16 +48,6 @@ class AbstractTrainingEnvironment(ABC):
 
     @property
     @abstractmethod
-    def actionSpace(self) -> np.array:
-        pass
-
-    @property
-    @abstractmethod
-    def observationSpace(self) -> np.array:
-        pass
-
-    @property
-    @abstractmethod
     def rewardRange(self) -> Tuple[float, float]:
         pass
 

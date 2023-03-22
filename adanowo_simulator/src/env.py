@@ -1,6 +1,5 @@
 import numpy as np
 from omegaconf import DictConfig
-from gymnasium import spaces
 
 from src.abstract_base_class.environment import AbstractTrainingEnvironment
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
@@ -11,13 +10,14 @@ from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
     def __init__(self, config: DictConfig, machine: AbstractModelWrapper, reward: AbstractReward,
-                 safetyWrapper: AbstractSafetyWrapper, experimentTracker: AbstractExperimentTracker):
+                 safetyWrapper: AbstractSafetyWrapper, experimentTracker: AbstractExperimentTracker, actionType):
 
         self._config = config
         self._machine = machine
         self._reward = reward
         self._experimentTracker = experimentTracker
         self._safetyWrapper = safetyWrapper
+        self._actionType = actionType
 
         # set current controls and disturbances
         self._stepIndex = None
@@ -25,25 +25,6 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._currentControls = dict()
         self._currentDisturbances = dict()
         self._currentState = dict()
-
-        # set action space.
-        self._actionSpace = spaces.Box(
-            low=np.array([self._config.env_setup.actionSpace[param].low for
-                          param in self._config.env_setup.usedControls], dtype=np.float32),
-            high=np.array([self._config.env_setup.actionSpace[param].high for
-                           param in self._config.env_setup.usedControls], dtype=np.float32),
-            shape=(len(self._config.env_setup.usedControls),)
-        )
-
-        # set observation space.
-        self._observationSpace = spaces.Box(
-            low=np.array([self._config.env_setup.observationSpace[param].low for param in self._machine.output_names],
-                         dtype=np.float32),
-            high=np.array([self._config.env_setup.observationSpace[param].high for param in self._machine.output_names],
-                          dtype=np.float32),
-            shape=(len(self._machine.output_names),)
-        )
-
         self._resetState()
         self._state = "NEW"
 
@@ -76,14 +57,6 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         return self._currentDisturbances
 
     @property
-    def actionSpace(self) -> np.array:
-        return self._actionSpace
-
-    @property
-    def observationSpace(self) -> np.array:
-        return self._observationSpace
-
-    @property
     def rewardRange(self) -> tuple[float, float]:
         return self._reward.reward_range
 
@@ -107,9 +80,8 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
     def _calculateControlsFromAction(self, action: np.array) -> bool:
         updatedControls = dict()
-        actionType = self._config.env_setup.actionType  # 0 for relative | 1 for absolute
 
-        if actionType == 0:
+        if self._actionType == 0:
             for index, key in enumerate(self._config.env_setup.usedControls):
                 updatedControls[key] = self._currentControls[key] + action[index]
 

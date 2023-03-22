@@ -1,10 +1,9 @@
-actionType : 1 # 0 for relative | 1 for absolute
 usedControls: ["Ishikawa_LayersCount", "Ishikawa_DraftRatioNeedleloom1Intake", "Ishikawa_DraftRatioNeedleloom",
                      "Ishikawa_CardMassThroughputSetpoint", "v_Vorreisser", "v_Arbeiter_HT", "v_Wender_HT",
                      "v_Arbeiter_VR", "v_Wender_VR", "v_Abnehmer"]
 usedDisturbances: ["Ishikawa_WeightPerAreaCardDelivery", "mean_cylinder_worker"]
 usedModels: ["min_area_weight", "unevenness_card_web"]
-pathToModels: ./models
+pathToModels: ./adanowo_simulator/models
 actionSpace:
   Ishikawa_LayersCount:
     low: -100.0

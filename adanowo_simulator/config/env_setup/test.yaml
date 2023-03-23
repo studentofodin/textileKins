@@ -3,7 +3,7 @@ usedControls: ["Ishikawa_LayersCount", "Ishikawa_DraftRatioNeedleloom1Intake", "
                      "v_Arbeiter_VR", "v_Wender_VR", "v_Abnehmer"]
 usedDisturbances: ["Ishikawa_WeightPerAreaCardDelivery", "mean_cylinder_worker"]
 usedModels: ["min_area_weight", "unevenness_card_web"]
-pathToModels: ./adanowo_simulator/models
+pathToModels: ./models
 actionSpace:
   Ishikawa_LayersCount:
     low: -100.0

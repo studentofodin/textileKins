@@ -1,11 +1,10 @@
 disturbances:
+  timeStep : 10
   Ishikawa_WeightPerAreaCardDelivery:
-    timeStep : 10
     meanValue : 30
     std : 1
     setting : 'random'
   mean_cylinder_worker:
-    timeStep : 10
     meanValue : 15
     std : 2
     setting : 'random'

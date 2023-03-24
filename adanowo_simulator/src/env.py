@@ -65,15 +65,26 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         return self._stepIndex
 
     def _resetState(self):
-        self._stepIndex = 0
+        self._stepIndex = 0 
         for control in self._config.env_setup.usedControls:
             self._currentControls[control] = self._config.process_setup.initialControls[control]
         for disturbance in self._config.env_setup.usedDisturbances:
             self._currentDisturbances[disturbance] = self._config.process_setup.initialDisturbances[disturbance]
+        
         self._currentState = self._currentControls | self._currentDisturbances
 
         if not self._safetyWrapper.safetyMet(self._currentControls):
             raise AssertionError("The initial setting is unsafe. Aborting Experiment.")
+
+    def _updateDisturbances(self):
+        mu = dict()
+        sigma = dict()
+        for disturbance in self._config.env_setup.usedDisturbances:
+            mu[disturbance] = self._config.scenario_setup.disturbances[disturbance]["meanValue"]
+            sigma[disturbance] = self._config.scenario_setup.disturbances[disturbance]["std"]
+            self._currentDisturbances[disturbance] = np.random.normal(mu[disturbance], sigma[disturbance], 1)
+        
+        self._currentState = self._currentControls | self._currentDisturbances
 
     def _initExperiment(self) -> None:
         self._experimentTracker.initTracker(self._config)
@@ -101,6 +112,10 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
             self._initExperiment()
 
         safetyFlag = self._calculateControlsFromAction(action)
+
+        if self._stepIndex % self._config.scenario_setup.disturbances.timeStep == 0:
+            self._updateDisturbances()
+                
         observationArray, observationDict = self._machine.get_outputs(self._currentState)
         reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(self._currentState, observationDict, safetyFlag)
         logVariables = \

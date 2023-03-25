@@ -114,9 +114,6 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self.update()
 
         safetyFlag = self._calculateControlsFromAction(action)
-
-        if self._stepIndex % self._config.scenario_setup.disturbances.timeStep == 0:
-            self._updateDisturbances()
                 
         observationArray, observationDict = self._machine.get_outputs(self._currentState)
         reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(self._currentState, observationDict, safetyFlag)
@@ -149,6 +146,8 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
     def update(self) -> None:
         self._machine.update(self._stepIndex)
+        if self._stepIndex % self._config.scenario_setup.disturbances.timeStep == 0:
+            self._updateDisturbances()
 
     def render(self) -> None:
         pass

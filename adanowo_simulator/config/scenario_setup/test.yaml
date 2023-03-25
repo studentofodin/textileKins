@@ -1,0 +1,17 @@
+disturbances:
+  timeStep : 10
+  Ishikawa_WeightPerAreaCardDelivery:
+    meanValue : 30
+    std : 1
+    setting : 'random'
+  mean_cylinder_worker:
+    meanValue : 15
+    std : 2
+    setting : 'random'
+requirements:
+  min_area_weight:
+    timeStep : 1000
+    setting : 40
+  unevenness_card_web:
+    timeStep : 1000
+    setting : 50

@@ -12,7 +12,6 @@ from src import model_interface
 class ModelWrapper(AbstractModelWrapper):
 
     def __init__(self, config: DictConfig):
-
         self._config = config
 
         # all dictionary properties have output names as keys.
@@ -23,13 +22,20 @@ class ModelWrapper(AbstractModelWrapper):
         self._output_names = list()
         self._scenario_idxs = dict()
 
-        # fill properties.
-        for output_name, model_name in self._config.usedModels.items():
-            self._allocate_model_to_output(output_name, model_name, True)
+        # check if first scenario element has step index of 0 and if step indices are in ascending order.
+        for output_name, scenario in self._config.usedModels.items():
 
-        self.reset_scenario()
+            if scenario[0][0] != 0:
+                raise Exception("The first step index of a model scenario has to be 0 (initial model),\n"
+                                f"but for output {output_name} it is {scenario[0][0]} instead.")
 
+            for i in range(1, len(scenario)):
+                if scenario[i][0] <= scenario[i-1][0]:
+                    raise Exception("The step indices of a model scenario have to be in ascending order,\n"
+                                    f"but we have [{scenario[i-1][0]}, {scenario[i-1][1]}], [{scenario[i][0]}, {scenario[i][1]}].")
 
+            self._output_names.append(output_name)
+            self._scenario_idxs[output_name] = 0
 
 
     @property
@@ -79,8 +85,7 @@ class ModelWrapper(AbstractModelWrapper):
         outputs_array, outputs = self._interpret_model_outputs(mean_pred, var_pred)
         return outputs_array, outputs
 
-    def _allocate_model_to_output(self, output_name: str, model_name: str, initial_flag: bool) -> None:
-
+    def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
         # load model properties dict from .yaml file.
         with open(pl.Path(self._config.pathToModels) / (model_name + '.yaml'), 'r') as stream:
             try:
@@ -89,18 +94,7 @@ class ModelWrapper(AbstractModelWrapper):
                 print(exc)
 
         if output_name != properties["output"]:
-            raise Exception("output name argument does not match output name from model properties")
-
-        if initial_flag:
-            # check if output_name is not yet a model output.
-            if output_name in self._output_names:
-                raise Exception(f"{output_name} would be used twice as a model output which is not possible.")
-            self._output_names.append(output_name)
-
-        else:
-            # check if output_name is already a model output.
-            if output_name not in self._output_names:
-                raise Exception(f"{output_name} would be a new model output which is not possible in this state.")
+            raise Exception(f"output name argument ({output_name}) does not match output name from model properties ({properties['output']}.")
 
         self._model_names[output_name] = model_name
         self._model_props[output_name] = properties
@@ -117,14 +111,14 @@ class ModelWrapper(AbstractModelWrapper):
         self._machine_models[output_name] = mdl
 
     def update(self, step_index: int) -> None:
-        for output_name, scenario in self._config.scenario.models.items():
+        for output_name, scenario in self._config.usedModels.items():
             scenario_idx = self._scenario_idxs[output_name]
             if (scenario_idx < len(scenario)) and (step_index == scenario[scenario_idx][0]):
-                self._allocate_model_to_output(output_name, scenario[scenario_idx][1], False)
+                self._allocate_model_to_output(output_name, scenario[scenario_idx][1])
                 self._scenario_idxs[output_name] += 1
 
-    def reset_scenario(self) -> None:
-        for output_name in self._config.scenario.models.keys():
+    def reset(self) -> None:
+        for output_name in self._config.usedModels.keys():
             self._scenario_idxs[output_name] = 0
 
 

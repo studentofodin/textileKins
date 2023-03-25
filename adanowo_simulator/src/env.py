@@ -133,10 +133,9 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         return observationArray, reward, self._done, False, info
 
     def reset(self) -> tuple[np.array, dict]:
-
         self._experimentTracker.finish_experiment()
         self._resetState()
-        self._machine.reset_scenario()
+        self._machine.reset()
 
         observationArray, _ = self._machine.get_outputs(self._currentState)
         info = dict()

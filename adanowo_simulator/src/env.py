@@ -100,6 +100,8 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         if self._state != "RUNNING":
             self._initExperiment()
 
+        self.update()
+
         safetyFlag = self._calculateControlsFromAction(action)
         observationArray, observationDict = self._machine.get_outputs(self._currentState)
         reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(self._currentState, observationDict, safetyFlag)
@@ -122,12 +124,16 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
         self._experimentTracker.finish_experiment()
         self._resetState()
+        self._machine.reset_scenario()
 
         observationArray, _ = self._machine.get_outputs(self._currentState)
         info = dict()
 
         self._state = "READY"
         return observationArray, info
+
+    def update(self) -> None:
+        self._machine.update(self._stepIndex)
 
     def render(self) -> None:
         pass

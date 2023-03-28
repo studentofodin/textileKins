@@ -1,4 +1,5 @@
 penalty : 10.0
+timeSteps : 10
 simpleOutputBounds:
   lower:
       min_area_weight: 0.0

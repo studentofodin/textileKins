@@ -77,12 +77,10 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
             raise AssertionError("The initial setting is unsafe. Aborting Experiment.")
 
     def _updateDisturbances(self):
-        mu = dict()
         sigma = dict()
         for disturbance in self._config.env_setup.usedDisturbances:
-            mu[disturbance] = self._config.scenario_setup.disturbances[disturbance]["meanValue"]
             sigma[disturbance] = self._config.scenario_setup.disturbances[disturbance]["std"]
-            self._currentDisturbances[disturbance] = np.random.normal(mu[disturbance], sigma[disturbance], 1)
+            self._currentDisturbances[disturbance] = np.random.normal(self._config.process_setup.initialDisturbances[disturbance], sigma[disturbance], 1)
         
         self._currentState = self._currentControls | self._currentDisturbances
 

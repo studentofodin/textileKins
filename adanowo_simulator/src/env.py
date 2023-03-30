@@ -155,7 +155,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._currentState = self._currentControls | self._currentDisturbances
 
     def _update(self) -> None:
-        changed_outputs = self._scenarioManager.update_model_wrapper(self._stepIndex, self._machine._config)
+        changed_outputs = self._scenarioManager.update_output_models(self._stepIndex, self._machine._config)
         self._machine.update(changed_outputs)
 
 

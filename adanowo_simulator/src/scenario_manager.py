@@ -32,7 +32,7 @@ class ScenarioManager(AbstractScenarioManager):
     def config(self, c):
         self._config = c
 
-    def update_model_wrapper(self, step_index: int, model_wrapper_config: DictConfig) -> List[str]:
+    def update_output_models(self, step_index: int, model_wrapper_config: DictConfig) -> List[str]:
 
         changed = []
 

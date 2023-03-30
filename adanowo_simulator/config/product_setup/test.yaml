@@ -1,14 +1,14 @@
 penalty : 10.0
-timeSteps : 10
-simpleOutputBounds:
-  lower:
-      min_area_weight: 0.0
-      unevenness_card_web: 0.0
-  upper:
-      unevenness_card_web: 20.0
-complexConstraints:
-  multMin: 0.0
-  multMax: 200.0
+requirements:
+  simpleOutputBounds:
+    lower:
+        min_area_weight: 0.0
+        unevenness_card_web: 0.0
+    upper:
+        unevenness_card_web: 20.0
+  complexConstraints:
+    multMin: 0.0
+    multMax: 200.0
 fibreSettings:
   fibreCosts: 1.0
 weights:

@@ -12,7 +12,7 @@ initialControls:
 initialDisturbances:
   Ishikawa_WeightPerAreaCardDelivery: 1.0
   mean_cylinder_worker: 1.0
-safetyBounds:
+safety:
   simpleControlBounds:
     Ishikawa_LayersCount:
       lower: 0.1

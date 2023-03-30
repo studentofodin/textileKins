@@ -12,6 +12,14 @@ class SafetyWrapper(AbstractSafetyWrapper):
     def safetyFlag(self) -> bool:
         return self._safetyFlag
 
+    @property
+    def config(self) -> DictConfig:
+        return self._config
+
+    @config.setter
+    def config(self, c):
+        self._config = c
+
     def safetyMet(self, controls: dict[str, float]) -> bool:
 
         safetyFlag = True

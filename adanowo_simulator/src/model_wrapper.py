@@ -28,6 +28,14 @@ class ModelWrapper(AbstractModelWrapper):
     def machine_models(self) -> dict[str, AbstractModelInterface]:
         return self._machine_models
 
+    @property
+    def config(self) -> DictConfig:
+        return self._config
+
+    @config.setter
+    def config(self, c):
+        self._config = c
+
     def get_outputs(self, input_model: dict[str, float]) -> tuple[np.array, dict]:
         mean_pred, var_pred = self._call_models(input_model)
         outputs_array, outputs = self._interpret_model_outputs(mean_pred, var_pred)

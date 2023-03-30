@@ -24,6 +24,13 @@ class ScenarioManager(AbstractScenarioManager):
                                     f"But for {output_name} we have"
                                     f"[{scenario[i][0]}, {scenario[i][1]}], [{scenario[i+1][0]}, {scenario[i+1][1]}]")
 
+    @property
+    def config(self) -> DictConfig:
+        return self._config
+
+    @config.setter
+    def config(self, c):
+        self._config = c
 
     def update_model_wrapper(self, step_index: int, model_wrapper_config: DictConfig) -> List[str]:
 

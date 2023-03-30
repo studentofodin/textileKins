@@ -11,6 +11,14 @@ class ExperimentTracker(AbstractExperimentTracker):
         self._wb_config = wb_config
         self._run = None
 
+    @property
+    def wb_config(self) -> DictConfig:
+        return self._config
+
+    @wb_config.setter
+    def wb_config(self, c):
+        self._wb_config = c
+
     def initTracker(self, exp_config: DictConfig):
         exp_config = OmegaConf.to_container(exp_config)
         self._run = wb.init(config=exp_config, **self._wb_config)

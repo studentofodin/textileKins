@@ -23,9 +23,6 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._scenarioManager = scenarioManager
         self._actionType = actionType
 
-        # self._machine._config.outputModels["unevenness_card_web"] = "unevenness_card_web1"
-        # self._config.env_setup.outputModels["unevenness_card_web"] = "unevenness_card_web1"
-
         # set current controls and disturbances
         self._stepIndex = None
         self._done = False
@@ -38,6 +35,10 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     @property
     def config(self) -> DictConfig:
         return self._config
+
+    @config.setter
+    def config(self, c):
+        self._config = c
 
     @property
     def machine(self) -> AbstractModelWrapper:
@@ -102,13 +103,16 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
     def reset(self) -> tuple[np.array, dict]:
         self._experimentTracker.finish_experiment()
+
         self._config = self._initialconfig.copy()
-        self._experimentTracker._config = self._config.experimentTracker
-        self._reward._config = self._config.product_setup
-        self._safetyWrapper._config = self._config.process_setup
-        self._machine._config = self._config.env_setup
+        self._experimentTracker.wb_config = self._config.experimentTracker
+        self._reward.config = self._config.product_setup
+        self._safetyWrapper.config = self._config.process_setup
+        self._machine.config = self._config.env_setup
+        self._scenarioManager.config = self._config.scenario_setup
+
         self._machine.update(self._config.env_setup.usedOutputs)
-        self._scenarioManager._config = self._config.scenario_setup
+
         self._resetState()
 
         observationArray, _ = self._machine.get_outputs(self._currentState)

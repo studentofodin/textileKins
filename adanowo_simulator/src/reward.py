@@ -13,6 +13,14 @@ class Reward(AbstractReward):
     def rewardValue(self) -> float:
         return self._rewardValue
 
+    @property
+    def config(self) -> DictConfig:
+        return self._config
+
+    @config.setter
+    def config(self, c):
+        self._config = c
+
     def reward_range(self) -> (float, float):
         return -float("inf"), float("inf")
 

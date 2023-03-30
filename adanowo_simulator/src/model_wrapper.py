@@ -34,8 +34,9 @@ class ModelWrapper(AbstractModelWrapper):
         return outputs_array, outputs
 
     def update(self, changed_outputs: List[str]) -> None:
-        for output in (set(changed_outputs) & set(self._output_names)):
-            self._allocate_model_to_output(output, self._config.outputModels[output])
+        for output in changed_outputs:
+            if output in self._output_names:
+                self._allocate_model_to_output(output, self._config.outputModels[output])
 
     def _call_models(self, input_model: dict[str, float], latent=False) -> (dict[str, float], dict[str, float]):
         mean_pred = dict()

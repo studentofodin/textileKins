@@ -33,10 +33,10 @@ class Reward(AbstractReward):
         reqsFlag = True
 
         # check simple fixed bounds for outputs.
-        for output, lowerBound in self._config.simpleOutputBounds.lower.items():
+        for output, lowerBound in self._config.requirements.simpleOutputBounds.lower.items():
             if outputs[output] < lowerBound:
                 reqsFlag = False
-        for output, upperBound in self._config.simpleOutputBounds.upper.items():
+        for output, upperBound in self._config.requirements.simpleOutputBounds.upper.items():
             if outputs[output] > upperBound:
                 reqsFlag = False
 
@@ -44,7 +44,7 @@ class Reward(AbstractReward):
         product = 1
         for output, value in outputs.items():
             product = product * value
-        if (product < self._config.complexConstraints.multMin) or (product > self._config.complexConstraints.multMax):
+        if (product < self._config.requirements.complexConstraints.multMin) or (product > self._config.requirements.complexConstraints.multMax):
             reqsFlag = False
 
         self._reqsFlag = reqsFlag

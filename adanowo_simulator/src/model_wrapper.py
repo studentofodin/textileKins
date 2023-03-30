@@ -13,7 +13,7 @@ class ModelWrapper(AbstractModelWrapper):
 
     def __init__(self, config: DictConfig, output_names: List[str]):
         self._config = config
-        self._output_names = output_names
+        self._output_names = tuple(output_names)
         self._n_models = len(output_names)
 
         self._machine_models = dict()
@@ -34,7 +34,7 @@ class ModelWrapper(AbstractModelWrapper):
         return outputs_array, outputs
 
     def update(self, changed_outputs: List[str]) -> None:
-        for output in changed_outputs:
+        for output in (set(changed_outputs) & set(self._output_names)):
             self._allocate_model_to_output(output, self._config.outputModels[output])
 
     def _call_models(self, input_model: dict[str, float], latent=False) -> (dict[str, float], dict[str, float]):

@@ -1,3 +1,6 @@
+outputModels:
+  min_area_weight: [[2, "min_area_weight1"]]
+  unevenness_card_web: [[1, "unevenness_card_web1"], [7, "unevenness_card_web"]]
 disturbances:
   timeStep : 10
   Ishikawa_WeightPerAreaCardDelivery:

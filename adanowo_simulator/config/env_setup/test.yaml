@@ -2,10 +2,11 @@ usedControls: ["Ishikawa_LayersCount", "Ishikawa_DraftRatioNeedleloom1Intake", "
                      "Ishikawa_CardMassThroughputSetpoint", "v_Vorreisser", "v_Arbeiter_HT", "v_Wender_HT",
                      "v_Arbeiter_VR", "v_Wender_VR", "v_Abnehmer"]
 usedDisturbances: ["Ishikawa_WeightPerAreaCardDelivery", "mean_cylinder_worker"]
-usedModels:
-  min_area_weight: [[0, "min_area_weight" ], [2, "min_area_weight1"], [5, "min_area_weight"]]
-  unevenness_card_web: [[0, "unevenness_card_web"], [3, "unevenness_card_web1"], [7, "unevenness_card_web"]]
+usedOutputs: ["min_area_weight", "unevenness_card_web"]
 pathToModels: ./models
+outputModels:
+  min_area_weight: min_area_weight
+  unevenness_card_web: unevenness_card_web
 actionSpace:
   Ishikawa_LayersCount:
     low: -100.0

@@ -6,18 +6,25 @@ from src.abstract_base_class.model_wrapper import AbstractModelWrapper
 from src.abstract_base_class.reward import AbstractReward
 from src.abstract_base_class.safety_wrapper import AbstractSafetyWrapper
 from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
+from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
     def __init__(self, config: DictConfig, machine: AbstractModelWrapper, reward: AbstractReward,
-                 safetyWrapper: AbstractSafetyWrapper, experimentTracker: AbstractExperimentTracker, actionType):
+                 safetyWrapper: AbstractSafetyWrapper, experimentTracker: AbstractExperimentTracker,
+                 scenarioManager: AbstractScenarioManager, actionType):
 
+        self._initialconfig = config.copy()
         self._config = config
         self._machine = machine
         self._reward = reward
         self._experimentTracker = experimentTracker
         self._safetyWrapper = safetyWrapper
+        self._scenarioManager = scenarioManager
         self._actionType = actionType
+
+        # self._machine._config.outputModels["unevenness_card_web"] = "unevenness_card_web1"
+        # self._config.env_setup.outputModels["unevenness_card_web"] = "unevenness_card_web1"
 
         # set current controls and disturbances
         self._stepIndex = None
@@ -49,6 +56,10 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         return self._experimentTracker
 
     @property
+    def scenarioManager(self) -> AbstractScenarioManager:
+        return self._scenarioManager
+
+    @property
     def currentControls(self) -> dict[str, float]:
         return self._currentControls
 
@@ -64,25 +75,50 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     def stepIndex(self):
         return self._stepIndex
 
-    def _resetState(self):
-        self._stepIndex = 0 
-        for control in self._config.env_setup.usedControls:
-            self._currentControls[control] = self._config.process_setup.initialControls[control]
-        for disturbance in self._config.env_setup.usedDisturbances:
-            self._currentDisturbances[disturbance] = self._config.process_setup.initialDisturbances[disturbance]
-        
-        self._currentState = self._currentControls | self._currentDisturbances
+    def step(self, action: np.array) -> tuple[np.array, float, bool, bool, dict]:
+        if self._state != "RUNNING":
+            self._initExperiment()
 
-        if not self._safetyWrapper.safetyMet(self._currentControls):
-            raise AssertionError("The initial setting is unsafe. Aborting Experiment.")
+        self._update()
 
-    def _updateDisturbances(self):
-        sigma = dict()
-        for disturbance in self._config.env_setup.usedDisturbances:
-            sigma[disturbance] = self._config.scenario_setup.disturbances[disturbance]["std"]
-            self._currentDisturbances[disturbance] = np.random.normal(self._config.process_setup.initialDisturbances[disturbance], sigma[disturbance], 1)
-        
-        self._currentState = self._currentControls | self._currentDisturbances
+        safetyFlag = self._calculateControlsFromAction(action)
+
+        observationArray, observationDict = self._machine.get_outputs(self._currentState)
+        reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(self._currentState, observationDict, safetyFlag)
+        logVariables = \
+            {"Reward": reward} | \
+            {"Safety Flag": int(safetyFlag)} | \
+            {"Requirements Flag": int(reqsFlag)} | \
+            self._currentControls | \
+            self._currentDisturbances | \
+            observationDict
+        self._experimentTracker.log(logVariables)
+        info = dict()
+        self._stepIndex = self._stepIndex + 1
+
+        self._state = "RUNNING"
+
+        return observationArray, reward, self._done, False, info
+
+    def reset(self) -> tuple[np.array, dict]:
+        self._experimentTracker.finish_experiment()
+        self._config = self._initialconfig.copy()
+        self._experimentTracker._config = self._config.experimentTracker
+        self._reward._config = self._config.product_setup
+        self._safetyWrapper._config = self._config.process_setup
+        self._machine._config = self._config.env_setup
+        self._machine.update(self._config.env_setup.usedOutputs)
+        self._scenarioManager._config = self._config.scenario_setup
+        self._resetState()
+
+        observationArray, _ = self._machine.get_outputs(self._currentState)
+        info = dict()
+
+        self._state = "READY"
+        return observationArray, info
+
+    def render(self) -> None:
+        pass
 
     def _initExperiment(self) -> None:
         self._experimentTracker.initTracker(self._config)
@@ -105,46 +141,28 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
         return safetyFlag
 
-    def step(self, action: np.array) -> tuple[np.array, float, bool, bool, dict]:
-        if self._state != "RUNNING":
-            self._initExperiment()
+    def _updateDisturbances(self) -> None:
+        sigma = dict()
+        for disturbance in self._config.env_setup.usedDisturbances:
+            sigma[disturbance] = self._config.scenario_setup.disturbances[disturbance]["std"]
+            self._currentDisturbances[disturbance] = np.random.normal(
+                self._config.process_setup.initialDisturbances[disturbance], sigma[disturbance], 1)
 
-        self.update()
+        self._currentState = self._currentControls | self._currentDisturbances
 
-        safetyFlag = self._calculateControlsFromAction(action)
-                
-        observationArray, observationDict = self._machine.get_outputs(self._currentState)
-        reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(self._currentState, observationDict, safetyFlag)
-        logVariables = \
-            {"Reward": reward} | \
-            {"Safety Flag": int(safetyFlag)} | \
-            {"Requirements Flag": int(reqsFlag)} | \
-            self._currentControls | \
-            self._currentDisturbances | \
-            observationDict
-        self._experimentTracker.log(logVariables)
-        info = dict()
-        self._stepIndex = self._stepIndex + 1
+    def _update(self) -> None:
+        changed_outputs = self._scenarioManager.update_model_wrapper(self._stepIndex, self._machine._config)
+        self._machine.update(changed_outputs)
 
-        self._state = "RUNNING"
 
-        return observationArray, reward, self._done, False, info
+    def _resetState(self):
+        self._stepIndex = 0
+        for control in self._config.env_setup.usedControls:
+            self._currentControls[control] = self._config.process_setup.initialControls[control]
+        for disturbance in self._config.env_setup.usedDisturbances:
+            self._currentDisturbances[disturbance] = self._config.process_setup.initialDisturbances[disturbance]
 
-    def reset(self) -> tuple[np.array, dict]:
-        self._experimentTracker.finish_experiment()
-        self._resetState()
-        self._machine.reset()
+        self._currentState = self._currentControls | self._currentDisturbances
 
-        observationArray, _ = self._machine.get_outputs(self._currentState)
-        info = dict()
-
-        self._state = "READY"
-        return observationArray, info
-
-    def update(self) -> None:
-        self._machine.update(self._stepIndex)
-        if self._stepIndex % self._config.scenario_setup.disturbances.timeStep == 0:
-            self._updateDisturbances()
-
-    def render(self) -> None:
-        pass
+        if not self._safetyWrapper.safetyMet(self._currentControls):
+            raise AssertionError("The initial setting is unsafe. Aborting Experiment.")

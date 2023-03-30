@@ -10,22 +10,7 @@ class AbstractModelWrapper(ABC):
 
     @property
     @abstractmethod
-    def n_models(self) -> int:
-        pass
-
-    @property
-    @abstractmethod
     def output_names(self) -> list[str]:
-        pass
-
-    @property
-    @abstractmethod
-    def model_names(self) -> dict[str, str]:
-        pass
-
-    @property
-    @abstractmethod
-    def model_props(self) -> dict[str, any]:
         pass
 
     @property

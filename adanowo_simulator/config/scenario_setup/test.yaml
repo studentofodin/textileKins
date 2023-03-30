@@ -1,18 +1,10 @@
 outputModels:
   min_area_weight: [[2, "min_area_weight1"]]
   unevenness_card_web: [[1, "unevenness_card_web1"], [7, "unevenness_card_web"]]
-disturbances:
-  timeStep : 10
-  Ishikawa_WeightPerAreaCardDelivery:
-    std : 1
-    setting : 'random'
-  mean_cylinder_worker:
-    std : 2
-    setting : 'random'
 requirements:
-  min_area_weight:
-    timeStep : 1000
-    setting : 40
-  unevenness_card_web:
-    timeStep : 1000
-    setting : 50
+  simpleOutputBounds:
+    lower: {}
+    upper:
+      unevenness_card_web: [[3, 25.0], [4, 30.0]]
+  complexConstraints:
+    multMax: [[5, 180]]

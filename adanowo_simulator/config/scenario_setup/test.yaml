@@ -8,3 +8,8 @@ requirements:
       unevenness_card_web: [[3, 25.0], [4, 30.0]]
   complexConstraints:
     multMax: [[5, 180]]
+disturbances:
+  Ishikawa_WeightPerAreaCardDelivery:
+    timeStep: 2
+    mean: 0.8
+    std: 0.1

@@ -1,5 +1,6 @@
 from omegaconf import DictConfig
 from typing import List
+import numpy as np
 
 from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
@@ -29,7 +30,6 @@ class ScenarioManager(AbstractScenarioManager):
         self._config = c
 
     def update_output_models(self, step_index: int, output_models_config: DictConfig) -> List[str]:
-
         changed = []
 
         for output, scenario in self._config.outputModels.items():
@@ -57,6 +57,15 @@ class ScenarioManager(AbstractScenarioManager):
                 requirements_config.complexConstraints[req] = scenario[0][1]
                 self._config.requirements.complexConstraints[req].pop(0)
 
+    def update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> List[str]:
+        changed = []
+
+        for disturbance, scenario in self._config.disturbances.items():
+            if step_index % scenario.timeStep == 0:
+                disturbance_config[disturbance] = np.random.normal(scenario.mean, scenario.std)
+                changed.append(disturbance)
+
+        return changed
 
 
     def _check_simple_scenario(self, scenario, parent_name, name):

@@ -1,5 +1,6 @@
 import numpy as np
 from omegaconf import DictConfig
+from typing import List
 
 from src.abstract_base_class.environment import AbstractTrainingEnvironment
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
@@ -112,7 +113,6 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._scenarioManager.config = self._config.scenario_setup
 
         self._machine.update(self._config.env_setup.usedOutputs)
-
         self._resetState()
 
         observationArray, _ = self._machine.get_outputs(self._currentState)
@@ -145,13 +145,10 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
         return safetyFlag
 
-    def _updateDisturbances(self) -> None:
-        sigma = dict()
-        for disturbance in self._config.env_setup.usedDisturbances:
-            sigma[disturbance] = self._config.scenario_setup.disturbances[disturbance]["std"]
-            self._currentDisturbances[disturbance] = np.random.normal(
-                self._config.process_setup.initialDisturbances[disturbance], sigma[disturbance], 1)
-
+    def _updateDisturbances(self, changed_disturbances: List[str]) -> None:
+        for disturbance in changed_disturbances:
+            if disturbance in self._config.env_setup.usedDisturbances:
+                self._currentDisturbances[disturbance] = self._config.process_setup.disturbances[disturbance]
         self._currentState = self._currentControls | self._currentDisturbances
 
     def _update(self) -> None:
@@ -160,13 +157,16 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         changed_outputs = self._scenarioManager.update_output_models(self._stepIndex, self._machine._config.outputModels)
         self._machine.update(changed_outputs)
 
+        changed_disturbances = self._scenarioManager.update_disturbances(self._stepIndex, self._config.process_setup.disturbances)
+        self._updateDisturbances(changed_disturbances)
 
     def _resetState(self):
         self._stepIndex = 0
+
         for control in self._config.env_setup.usedControls:
             self._currentControls[control] = self._config.process_setup.initialControls[control]
         for disturbance in self._config.env_setup.usedDisturbances:
-            self._currentDisturbances[disturbance] = self._config.process_setup.initialDisturbances[disturbance]
+            self._currentDisturbances[disturbance] = self._config.process_setup.disturbances[disturbance]
 
         self._currentState = self._currentControls | self._currentDisturbances
 

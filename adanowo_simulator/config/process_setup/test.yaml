@@ -9,7 +9,7 @@ initialControls:
   v_Arbeiter_VR: 0.5
   v_Wender_VR: 0.5
   v_Abnehmer: 0.5
-initialDisturbances:
+disturbances:
   Ishikawa_WeightPerAreaCardDelivery: 1.0
   mean_cylinder_worker: 1.0
 safety:

@@ -32,13 +32,13 @@ class ScenarioManager(AbstractScenarioManager):
     def config(self, c):
         self._config = c
 
-    def update_output_models(self, step_index: int, model_wrapper_config: DictConfig) -> List[str]:
+    def update_output_models(self, step_index: int, output_models_config: DictConfig) -> List[str]:
 
         changed = []
 
         for output_name, scenario in self._config.outputModels.items():
             if scenario and scenario[0][0] == step_index:
-                model_wrapper_config.outputModels[output_name] = scenario[0][1]
+                output_models_config[output_name] = scenario[0][1]
                 changed.append(output_name)
                 self._config.outputModels[output_name].pop(0)
 

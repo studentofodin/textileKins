@@ -10,8 +10,6 @@ from src.model_wrapper import ModelWrapper
 from src.scenario_manager import ScenarioManager
 from src.env import TrainingEnvironment
 
-
-
 @hydra.main(version_base=None, config_path="./config", config_name="main")
 def main(configuration: DictConfig):
 
@@ -24,19 +22,6 @@ def main(configuration: DictConfig):
     trainingEnv = TrainingEnvironment(config, modelWrapper, reward, safetyWrapper, experimentTracker, scenarioManager,
                                       actionType=1) # actionType 0 for relative | 1 for absolute
     env = GymWrapper(trainingEnv, config.env_setup)
-
-    # configcopy = config.copy()
-    # productsetup = config.product_setup
-    # config.product_setup.penalty = 0
-    # print(config.product_setup.penalty,"and",productsetup.penalty)
-    # productsetup.penalty = 1
-    # print(config.product_setup.penalty, "and", productsetup.penalty)
-    # config.update(configcopy)
-    # for key in config.keys():
-    #     config[key] = configcopy[key]
-    # for key in config.product_setup.keys():
-    #     config.product_setup[key] = configcopy.product_setup[key]
-    # print(config.product_setup.penalty,"and",productsetup.penalty)
 
     for _ in range(10):
         # env.step(np.random.uniform(-0.5, 0.5, len(env.env.currentControls))) # for actionType == relative

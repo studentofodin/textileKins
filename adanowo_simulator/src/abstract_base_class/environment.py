@@ -50,11 +50,6 @@ class AbstractTrainingEnvironment(ABC):
 
     @property
     @abstractmethod
-    def currentDisturbances(self) -> Dict[str, float]:
-        pass
-
-    @property
-    @abstractmethod
     def rewardRange(self) -> Tuple[float, float]:
         pass
 

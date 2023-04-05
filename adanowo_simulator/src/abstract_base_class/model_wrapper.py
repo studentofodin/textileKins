@@ -10,11 +10,6 @@ class AbstractModelWrapper(ABC):
 
     @property
     @abstractmethod
-    def output_names(self) -> list[str]:
-        pass
-
-    @property
-    @abstractmethod
     def machine_models(self) -> dict[str, AbstractModelInterface]:
         pass
 

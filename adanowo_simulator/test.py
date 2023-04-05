@@ -17,7 +17,7 @@ def main(configuration: DictConfig):
     experimentTracker = ExperimentTracker(config.experimentTracker)
     reward = Reward(config.product_setup)
     safetyWrapper = SafetyWrapper(config.process_setup)
-    modelWrapper = ModelWrapper(config.env_setup, config.env_setup.usedOutputs)
+    modelWrapper = ModelWrapper(config.env_setup)
     scenarioManager = ScenarioManager(config.scenario_setup, modelWrapper._config)
     trainingEnv = TrainingEnvironment(config, modelWrapper, reward, safetyWrapper, experimentTracker, scenarioManager,
                                       actionType=1) # actionType 0 for relative | 1 for absolute

@@ -13,7 +13,7 @@ from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 class TrainingEnvironment(AbstractTrainingEnvironment):
     def __init__(self, config: DictConfig, machine: AbstractModelWrapper, reward: AbstractReward,
                  safetyWrapper: AbstractSafetyWrapper, experimentTracker: AbstractExperimentTracker,
-                 scenarioManager: AbstractScenarioManager, actionType):
+                 scenarioManager: AbstractScenarioManager, actionType: int):
 
         self._initialconfig = config.copy()
         self._config = config
@@ -28,7 +28,6 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._stepIndex = None
         self._done = False
         self._currentControls = dict()
-        self._currentDisturbances = dict()
         self._currentState = dict()
         self._resetState()
         self._state = "NEW"
@@ -66,10 +65,6 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         return self._currentControls
 
     @property
-    def currentDisturbances(self) -> dict[str, float]:
-        return self._currentDisturbances
-
-    @property
     def rewardRange(self) -> tuple[float, float]:
         return self._reward.reward_range
 
@@ -91,8 +86,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
             {"Reward": reward} | \
             {"Safety Flag": int(safetyFlag)} | \
             {"Requirements Flag": int(reqsFlag)} | \
-            self._currentControls | \
-            self._currentDisturbances | \
+            self._currentState | \
             observationDict
         self._experimentTracker.log(logVariables)
         info = dict()
@@ -141,15 +135,9 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         safetyFlag = self._safetyWrapper.safetyMet(updatedControls)
         if safetyFlag:
             self._currentControls = updatedControls
-        self._currentState = self._currentControls | self._currentDisturbances
+        self._currentState = self._currentControls | dict(self._config.process_setup.disturbances)
 
         return safetyFlag
-
-    def _updateDisturbances(self, changed_disturbances: List[str]) -> None:
-        for disturbance in changed_disturbances:
-            if disturbance in self._config.env_setup.usedDisturbances:
-                self._currentDisturbances[disturbance] = self._config.process_setup.disturbances[disturbance]
-        self._currentState = self._currentControls | self._currentDisturbances
 
     def _update(self) -> None:
         self._scenarioManager.update_requirements(self._stepIndex, self._reward._config.requirements)
@@ -158,17 +146,12 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._machine.update(changed_outputs)
 
         changed_disturbances = self._scenarioManager.update_disturbances(self._stepIndex, self._config.process_setup.disturbances)
-        self._updateDisturbances(changed_disturbances)
 
     def _resetState(self):
         self._stepIndex = 0
 
-        for control in self._config.env_setup.usedControls:
-            self._currentControls[control] = self._config.process_setup.initialControls[control]
-        for disturbance in self._config.env_setup.usedDisturbances:
-            self._currentDisturbances[disturbance] = self._config.process_setup.disturbances[disturbance]
-
-        self._currentState = self._currentControls | self._currentDisturbances
+        self._currentControls = dict(self._config.process_setup.initialControls)
+        self._currentState = self._currentControls | dict(self._config.process_setup.disturbances)
 
         if not self._safetyWrapper.safetyMet(self._currentControls):
             raise AssertionError("The initial setting is unsafe. Aborting Experiment.")

@@ -16,19 +16,15 @@ class GymWrapper(Env):
         self._config = config
         # set action space.
         self._actionSpace = spaces.Box(
-            low=np.array([self._config.actionSpace[param].low for
-                          param in self._config.usedControls], dtype=np.float32),
-            high=np.array([self._config.actionSpace[param].high for
-                           param in self._config.usedControls], dtype=np.float32),
-            shape=(len(self._config.usedControls),)
+            low=np.array([action.low for action in self._config.actionSpace.values()], dtype=np.float32),
+            high=np.array([action.high for action in self._config.actionSpace.values()], dtype=np.float32),
+            shape=(len(self._config.actionSpace),)
         )
         # set observation space.
         self._observationSpace = spaces.Box(
-            low=np.array([self._config.observationSpace[param].low for param in self.env._machine.output_names],
-                         dtype=np.float32),
-            high=np.array([self._config.observationSpace[param].high for param in self.env._machine.output_names],
-                          dtype=np.float32),
-            shape=(len(self.env._machine.output_names),)
+            low=np.array([obs.low for obs in self._config.observationSpace.values()], dtype=np.float32),
+            high=np.array([obs.high for obs in self._config.observationSpace.values()], dtype=np.float32),
+            shape=(len(self._config.observationSpace),)
         )
    
     def step(self, action: np.array):

@@ -11,18 +11,13 @@ from src import model_interface
 
 class ModelWrapper(AbstractModelWrapper):
 
-    def __init__(self, config: DictConfig, output_names: List[str]):
+    def __init__(self, config: DictConfig):
         self._config = config
-        self._output_names = tuple(output_names)
-        self._n_models = len(output_names)
+        self._n_models = len(self._config.outputModels)
 
         self._machine_models = dict()
-        for output_name in self._output_names:
-            self._allocate_model_to_output(output_name, self._config.outputModels[output_name])
-
-    @property
-    def output_names(self) -> list[str]:
-        return self._output_names
+        for output_name, model_name in self._config.outputModels.items():
+            self._allocate_model_to_output(output_name, model_name)
 
     @property
     def machine_models(self) -> dict[str, AbstractModelInterface]:
@@ -42,28 +37,27 @@ class ModelWrapper(AbstractModelWrapper):
         return outputs_array, outputs
 
     def update(self, changed_outputs: List[str]) -> None:
-        for output in changed_outputs:
-            if output in self._output_names:
-                self._allocate_model_to_output(output, self._config.outputModels[output])
+        for output_name in changed_outputs:
+            self._allocate_model_to_output(output_name, self._config.outputModels[output_name])
 
     def _call_models(self, input_model: dict[str, float], latent=False) -> (dict[str, float], dict[str, float]):
         mean_pred = dict()
         var_pred = dict()
         if latent:
-            for output_name in self._output_names:
+            for output_name, model in self._machine_models:
                 mean_pred[output_name], var_pred[output_name] = \
-                    self._machine_models[output_name].predict_f(input_model)
+                    model.predict_f(input_model)
         else:
-            for output_name in self._output_names:
+            for output_name, model in self._machine_models.items():
                 mean_pred[output_name], var_pred[output_name] = \
-                    self._machine_models[output_name].predict_y(input_model)
+                    model.predict_y(input_model)
         return mean_pred, var_pred
 
     def _interpret_model_outputs(self, mean_pred: dict[str, float], var_pred: dict[str, float]) \
             -> (np.array, dict[str, float]):
         outputs = dict()
         outputs_array = np.zeros(self._n_models)
-        for i, output_name in enumerate(self._output_names):
+        for i, output_name in enumerate(self._config.outputModels.keys()):
             outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name]))
             outputs_array[i] = outputs[output_name]
         return outputs_array, outputs

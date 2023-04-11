@@ -5,12 +5,8 @@ from omegaconf import DictConfig
 class SafetyWrapper(AbstractSafetyWrapper):
 
     def __init__(self, config: DictConfig):
-        self._config = config
-        self._safetyFlag = True
-
-    @property
-    def safetyFlag(self) -> bool:
-        return self._safetyFlag
+        self._initialconfig = config.copy()
+        self.reset()
 
     @property
     def config(self) -> DictConfig:
@@ -19,6 +15,9 @@ class SafetyWrapper(AbstractSafetyWrapper):
     @config.setter
     def config(self, c):
         self._config = c
+
+    def reset(self) -> None:
+        self._config = self._initialconfig.copy()
 
     def safetyMet(self, controls: dict[str, float]) -> bool:
 
@@ -36,7 +35,5 @@ class SafetyWrapper(AbstractSafetyWrapper):
         if (constr_sum < self._config.safety.complexConstraints.addMin) or \
                 (constr_sum > self._config.safety.complexConstraints.addMax):
             safetyFlag = False
-
-        self._safetyFlag = safetyFlag
 
         return safetyFlag

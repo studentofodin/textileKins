@@ -12,12 +12,11 @@ from src import model_interface
 class ModelWrapper(AbstractModelWrapper):
 
     def __init__(self, config: DictConfig):
-        self._config = config
-        self._n_models = len(self._config.outputModels)
+        self._initialconfig = config.copy()
+        self._n_models = len(config.outputModels)
 
         self._machine_models = dict()
-        for output_name, model_name in self._config.outputModels.items():
-            self._allocate_model_to_output(output_name, model_name)
+        self.reset()
 
     @property
     def machine_models(self) -> dict[str, AbstractModelInterface]:
@@ -39,6 +38,12 @@ class ModelWrapper(AbstractModelWrapper):
     def update(self, changed_outputs: List[str]) -> None:
         for output_name in changed_outputs:
             self._allocate_model_to_output(output_name, self._config.outputModels[output_name])
+
+    def reset(self) -> None:
+        self._config = self._initialconfig.copy()
+        for output_name, model_name in self._config.outputModels.items():
+            self._allocate_model_to_output(output_name, model_name)
+
 
     def _call_models(self, input_model: dict[str, float], latent=False) -> (dict[str, float], dict[str, float]):
         mean_pred = dict()

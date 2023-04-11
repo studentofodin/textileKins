@@ -6,7 +6,7 @@ from omegaconf import DictConfig
 class AbstractExperimentTracker(ABC):
 
     @abstractmethod
-    def initTracker(self, exp_config: DictConfig) -> None:
+    def initRun(self, exp_config: DictConfig) -> None:
         """
         initialise wandb.
         """
@@ -18,9 +18,3 @@ class AbstractExperimentTracker(ABC):
         log logVariables in wandb.
         """
         pass
-
-    @abstractmethod
-    def finish_experiment(self) -> None:
-        """
-        Tells the tracker to finish the experiment
-        """

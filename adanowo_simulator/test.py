@@ -14,14 +14,17 @@ from src.env import TrainingEnvironment
 def main(configuration: DictConfig):
 
     config = configuration
-    experimentTracker = ExperimentTracker(config.experimentTracker)
+    experimentTracker = ExperimentTracker(config.experimentTracker, config)
     reward = Reward(config.product_setup)
-    safetyWrapper = SafetyWrapper(config.process_setup)
-    modelWrapper = ModelWrapper(config.env_setup)
-    scenarioManager = ScenarioManager(config.scenario_setup, modelWrapper._config)
-    trainingEnv = TrainingEnvironment(config, modelWrapper, reward, safetyWrapper, experimentTracker, scenarioManager,
-                                      actionType=1) # actionType 0 for relative | 1 for absolute
-    env = GymWrapper(trainingEnv, config.env_setup)
+    safetyWrapper = SafetyWrapper(OmegaConf.create({"safety": config.process_setup.safety}))
+    modelWrapper = ModelWrapper(OmegaConf.merge({"pathToModels": config.env_setup.pathToModels},
+                                                {"outputModels": config.env_setup.outputModels}))
+    scenarioManager = ScenarioManager(config.scenario_setup)
+    trainingEnv = TrainingEnvironment(OmegaConf.merge({"initialControls": config.process_setup.initialControls},
+                                                      {"disturbances": config.process_setup.disturbances}), modelWrapper,
+                                      reward, safetyWrapper, experimentTracker, scenarioManager, actionType=1) # actionType 0 for relative | 1 for absolute
+    env = GymWrapper(trainingEnv, OmegaConf.merge({"actionSpace": config.env_setup.actionSpace},
+                                                  {"observationSpace": config.env_setup.observationSpace}))
 
     for _ in range(10):
         # env.step(np.random.uniform(-0.5, 0.5, len(env.env.currentControls))) # for actionType == relative

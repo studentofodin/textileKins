@@ -7,25 +7,32 @@ from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 
 class ExperimentTracker(AbstractExperimentTracker):
 
-    def __init__(self, wb_config: DictConfig):
-        self._wb_config = wb_config
+    def __init__(self, config: DictConfig, experiment_config: DictConfig):
+        self._initialconfig = config.copy()
+        self._experiment_config = experiment_config.copy()
         self._run = None
+        self.reset()
 
     @property
-    def wb_config(self) -> DictConfig:
+    def config(self) -> DictConfig:
         return self._config
 
-    @wb_config.setter
-    def wb_config(self, c):
-        self._wb_config = c
+    @config.setter
+    def config(self, c):
+        self._config = c
 
-    def initTracker(self, exp_config: DictConfig):
-        exp_config = OmegaConf.to_container(exp_config)
-        self._run = wb.init(config=exp_config, **self._wb_config)
+    def initRun(self):
+        exp_config = OmegaConf.to_container(self._experiment_config)
+        self._run = wb.init(config=exp_config, **self._config)
 
     def log(self, logVariables: dict) -> None:
         self._run.log(logVariables)
 
-    def finish_experiment(self) -> None:
-        self._run.finish()
+    def reset(self) -> None:
+        if self._run:
+            self._run.finish()
         self._run = None
+        self._config = self._initialconfig.copy()
+
+
+

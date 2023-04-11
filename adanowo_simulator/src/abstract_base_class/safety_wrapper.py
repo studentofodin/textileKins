@@ -3,11 +3,6 @@ from abc import ABC, abstractmethod
 
 class AbstractSafetyWrapper(ABC):
 
-    @property
-    @abstractmethod
-    def safetyFlag(self) -> bool:
-        pass
-
     @abstractmethod
     def safetyMet(self, controls: dict[str, float]) -> bool:
         """

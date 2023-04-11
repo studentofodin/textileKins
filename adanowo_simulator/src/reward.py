@@ -5,13 +5,8 @@ from src.abstract_base_class.reward import AbstractReward
 
 class Reward(AbstractReward):
     def __init__(self, config: DictConfig):
-        self._config = config
-        self._rewardValue = 0.0
-        self._reqsFlag = True
-
-    @property
-    def rewardValue(self) -> float:
-        return self._rewardValue
+        self._initialconfig = config.copy()
+        self.reset()
 
     @property
     def config(self) -> DictConfig:
@@ -24,12 +19,31 @@ class Reward(AbstractReward):
     def reward_range(self) -> (float, float):
         return -float("inf"), float("inf")
 
-    @property
-    def reqsFlag(self) -> bool:
-        return self._reqsFlag
+    def calculateRewardAndReqsFlag(self, state: dict[str, float], outputs: dict[str, float],
+                                   safetyFlag: bool) -> tuple[float, bool]:
 
-    def reqsMet(self, outputs: dict[str, float]) -> bool:
+        reqsFlag = self._reqsMet(outputs)
 
+        if not (reqsFlag and safetyFlag):  # penalty
+            rewardValue = -self._config.penalty
+
+        else:  # no penalty
+            targetA = outputs["min_area_weight"]
+            targetB = outputs["unevenness_card_web"]
+            cost = state["v_Arbeiter_HT"]
+            w1 = self._config.weights.w1
+            w2 = self._config.weights.w2
+            fibreCosts = self._config.fibreSettings.fibreCosts
+            rewardValue = w1*fibreCosts*targetA + w2*targetB - cost
+
+        self._rewardValue = rewardValue
+
+        return rewardValue, reqsFlag
+
+    def reset(self) -> None:
+        self._config = self._initialconfig.copy()
+
+    def _reqsMet(self, outputs: dict[str, float]) -> bool:
         reqsFlag = True
 
         # check simple fixed bounds for outputs.
@@ -51,23 +65,4 @@ class Reward(AbstractReward):
 
         return reqsFlag
 
-    def calculateRewardAndReqsFlag(self, state: dict[str, float], outputs: dict[str, float],
-                                   safetyFlag: bool) -> tuple[float, bool]:
 
-        reqsFlag = self.reqsMet(outputs)
-
-        if not (reqsFlag and safetyFlag):  # penalty
-            rewardValue = -self._config.penalty
-
-        else:  # no penalty
-            targetA = outputs["min_area_weight"]
-            targetB = outputs["unevenness_card_web"]
-            cost = state["v_Arbeiter_HT"]
-            w1 = self._config.weights.w1
-            w2 = self._config.weights.w2
-            fibreCosts = self._config.fibreSettings.fibreCosts
-            rewardValue = w1*fibreCosts*targetA + w2*targetB - cost
-
-        self._rewardValue = rewardValue
-
-        return rewardValue, reqsFlag

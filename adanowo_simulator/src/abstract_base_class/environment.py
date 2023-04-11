@@ -6,7 +6,7 @@ from omegaconf import DictConfig
 
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
 from src.abstract_base_class.reward import AbstractReward
-from src.abstract_base_class.safety_wrapper import AbstractSafetyWrapper
+from src.abstract_base_class.state_manager import AbstractStateManager
 from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
@@ -30,7 +30,7 @@ class AbstractTrainingEnvironment(ABC):
 
     @property
     @abstractmethod
-    def safetyWrapper(self) -> AbstractSafetyWrapper:
+    def stateManager(self) -> AbstractStateManager:
         pass
 
     @property
@@ -41,11 +41,6 @@ class AbstractTrainingEnvironment(ABC):
     @property
     @abstractmethod
     def scenarioManager(self) -> AbstractScenarioManager:
-        pass
-
-    @property
-    @abstractmethod
-    def currentControls(self) -> Dict[str, float]:
         pass
 
     @property
@@ -88,13 +83,5 @@ class AbstractTrainingEnvironment(ABC):
         """
         reset controls and disturbances to initial.
         determine observation based on these and return it.
-        """
-        pass
-
-    @abstractmethod
-    def _calculateControlsFromAction(self, action: np.array) -> bool:
-        """
-        calculates controls from action and assigns value to property currentControls.
-        also determines if action leads to safe controls and returns this value as safetyFlag.
         """
         pass

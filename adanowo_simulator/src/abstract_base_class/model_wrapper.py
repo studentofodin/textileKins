@@ -8,11 +8,6 @@ from src.abstract_base_class.model_interface import AbstractModelInterface
 
 class AbstractModelWrapper(ABC):
 
-    @property
-    @abstractmethod
-    def machine_models(self) -> dict[str, AbstractModelInterface]:
-        pass
-
     @abstractmethod
     def _call_models(self, input_model: dict[str, float], latent) -> (dict[str, float], dict[str, float]):
         """

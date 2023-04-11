@@ -13,14 +13,10 @@ class ModelWrapper(AbstractModelWrapper):
 
     def __init__(self, config: DictConfig):
         self._initialconfig = config.copy()
-        self._n_models = len(config.outputModels)
+        self._n_outputs = len(config.outputModels)
 
         self._machine_models = dict()
         self.reset()
-
-    @property
-    def machine_models(self) -> dict[str, AbstractModelInterface]:
-        return self._machine_models
 
     @property
     def config(self) -> DictConfig:
@@ -29,6 +25,10 @@ class ModelWrapper(AbstractModelWrapper):
     @config.setter
     def config(self, c):
         self._config = c
+
+    @property
+    def n_outputs(self) -> int:
+        return self._n_outputs
 
     def get_outputs(self, input_model: dict[str, float]) -> tuple[np.array, dict]:
         mean_pred, var_pred = self._call_models(input_model)
@@ -61,7 +61,7 @@ class ModelWrapper(AbstractModelWrapper):
     def _interpret_model_outputs(self, mean_pred: dict[str, float], var_pred: dict[str, float]) \
             -> (np.array, dict[str, float]):
         outputs = dict()
-        outputs_array = np.zeros(self._n_models)
+        outputs_array = np.zeros(self._n_outputs)
         for i, output_name in enumerate(self._config.outputModels.keys()):
             outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name]))
             outputs_array[i] = outputs[output_name]

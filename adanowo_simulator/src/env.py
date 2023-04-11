@@ -4,22 +4,21 @@ from omegaconf import DictConfig
 from src.abstract_base_class.environment import AbstractTrainingEnvironment
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
 from src.abstract_base_class.reward import AbstractReward
-from src.abstract_base_class.safety_wrapper import AbstractSafetyWrapper
+from src.abstract_base_class.state_manager import AbstractStateManager
 from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
     def __init__(self, config: DictConfig, machine: AbstractModelWrapper, reward: AbstractReward,
-                 safetyWrapper: AbstractSafetyWrapper, experimentTracker: AbstractExperimentTracker,
-                 scenarioManager: AbstractScenarioManager, actionType: int):
+                 stateManager: AbstractStateManager, experimentTracker: AbstractExperimentTracker,
+                 scenarioManager: AbstractScenarioManager):
 
         self._machine = machine
         self._reward = reward
         self._experimentTracker = experimentTracker
-        self._safetyWrapper = safetyWrapper
+        self._stateManager = stateManager
         self._scenarioManager = scenarioManager
-        self._actionType = actionType
 
         self._initialconfig = config.copy()
         self.reset()
@@ -41,8 +40,8 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         return self._reward
 
     @property
-    def safetyWrapper(self) -> AbstractSafetyWrapper:
-        return self._safetyWrapper
+    def stateManager(self) -> AbstractStateManager:
+        return self._stateManager
 
     @property
     def experimentTracker(self) -> AbstractExperimentTracker:
@@ -51,10 +50,6 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     @property
     def scenarioManager(self) -> AbstractScenarioManager:
         return self._scenarioManager
-
-    @property
-    def currentControls(self) -> dict[str, float]:
-        return self._currentControls
 
     @property
     def rewardRange(self) -> tuple[float, float]:
@@ -70,15 +65,15 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
         self._updateConfig()
 
-        safetyFlag = self._calculateControlsFromAction(action)
+        currentState, safetyFlag = self._stateManager.calculateControlsFromAction(action)
 
-        observationArray, observationDict = self._machine.get_outputs(self._currentState)
-        reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(self._currentState, observationDict, safetyFlag)
+        observationArray, observationDict = self._machine.get_outputs(currentState)
+        reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(currentState, observationDict, safetyFlag)
         logVariables = \
             {"Reward": reward} | \
             {"Safety Flag": int(safetyFlag)} | \
             {"Requirements Flag": int(reqsFlag)} | \
-            self._currentState | \
+            currentState | \
             observationDict
         self._experimentTracker.log(logVariables)
         info = dict()
@@ -91,16 +86,15 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     def reset(self) -> tuple[np.array, dict]:
         self._experimentTracker.reset()
         self._reward.reset()
-        self._safetyWrapper.reset()
+        initialState = self._stateManager.reset()
         self._machine.reset()
         self._scenarioManager.reset()
 
         self._stepIndex = 0
         self._done = False
         self._config = self._initialconfig.copy()
-        self._resetState()
 
-        observationArray, _ = self._machine.get_outputs(self._currentState)
+        observationArray, _ = self._machine.get_outputs(initialState)
         info = dict()
 
         self._status = "READY"
@@ -112,35 +106,10 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     def _initExperiment(self) -> None:
         self._experimentTracker.initRun()
 
-    def _calculateControlsFromAction(self, action: np.array) -> bool:
-        updatedControls = dict()
-
-        if self._actionType == 0:
-            for index, control in enumerate(self._currentControls.keys()):
-                updatedControls[control] = self._currentControls[control] + action[index]
-
-        else:
-            for index, control in enumerate(self._currentControls.keys()):
-                updatedControls[control] = action[index]
-
-        safetyFlag = self._safetyWrapper.safetyMet(updatedControls)
-        if safetyFlag:
-            self._currentControls = updatedControls
-        self._currentState = self._currentControls | dict(self._config.disturbances)
-
-        return safetyFlag
-
     def _updateConfig(self) -> None:
-        self._scenarioManager.update_requirements(self._stepIndex, self._reward._config.requirements)
+        self._scenarioManager.update_requirements(self._stepIndex, self._reward.config.requirements)
 
-        changed_outputs = self._scenarioManager.update_output_models(self._stepIndex, self._machine._config.outputModels)
+        changed_outputs = self._scenarioManager.update_output_models(self._stepIndex, self._machine.config.outputModels)
         self._machine.update(changed_outputs)
 
-        self._scenarioManager.update_disturbances(self._stepIndex, self._config.disturbances)
-
-    def _resetState(self):
-        self._currentControls = dict(self._config.initialControls)
-        self._currentState = self._currentControls | dict(self._config.disturbances)
-
-        if not self._safetyWrapper.safetyMet(self._currentControls):
-            raise AssertionError("The initial setting is unsafe. Aborting Experiment.")
+        self._scenarioManager.update_disturbances(self._stepIndex, self._stateManager.config.disturbances)

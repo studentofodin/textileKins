@@ -42,7 +42,7 @@ class ModelWrapper(AbstractModelWrapper):
         for output_name, model_name in self._config.outputModels.items():
             self._allocate_model_to_output(output_name, model_name)
 
-    def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, float], dict[str, float]):
+    def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()
         std_pred = dict()
         if latent:
@@ -55,7 +55,7 @@ class ModelWrapper(AbstractModelWrapper):
                     model.predict_y(inputs)
         return mean_pred, std_pred
 
-    def _sample_output_distribution(self, mean_pred: dict[str, float], std_pred: dict[str, float]) \
+    def _sample_output_distribution(self, mean_pred: dict[str, np.array], std_pred: dict[str, np.array]) \
             -> (np.array, dict[str, float]):
         outputs = dict()
         for output_name in self._config.outputModels.keys():

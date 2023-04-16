@@ -42,7 +42,7 @@ class AbstractModelWrapper(ABC):
         pass
 
     @abstractmethod
-    def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, float], dict[str, float]):
+    def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
         """
         get and return mean and standard deviation prediction of output from inputs for each model.
         latent=True includes noise, latent=False not.
@@ -50,7 +50,7 @@ class AbstractModelWrapper(ABC):
         pass
 
     @abstractmethod
-    def _sample_output_distribution(self, mean_pred: dict[str, float], std_pred: dict[str, float]) \
+    def _sample_output_distribution(self, mean_pred: dict[str, np.array], std_pred: dict[str, np.array]) \
             -> (np.array, dict[str, float]):
         """
         sample output distribution dependent on corresponding mean and standard deviation prediction (mean_pred, std_pred) for each model.

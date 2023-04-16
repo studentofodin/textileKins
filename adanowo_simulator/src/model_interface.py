@@ -2,7 +2,6 @@ import dill
 import pathlib as pl
 import numpy as np
 from sklearn.pipeline import Pipeline
-from copy import deepcopy
 
 from src.abstract_base_class.model_interface import AbstractModelInterface
 
@@ -27,31 +26,31 @@ class AdapterSVGP(AbstractModelInterface):
 
     def predict_f(self, X: dict) -> tuple[np.array, np.array]:
         X = self._unpack_func(X)
-        y_pred, var = self._predict_f_internal(X)
-        return y_pred, var
+        y_pred, std = self._predict_f_internal(X)
+        return y_pred, std
 
     def predict_y(self, X: dict[str, float]) -> tuple[np.array, np.array]:
         X = self._unpack_func(X)
-        y_pred, var = self._predict_y_internal(X)
-        return y_pred, var
+        y_pred, std = self._predict_y_internal(X)
+        return y_pred, std
 
     def _predict_f_internal(self, X: np.array) -> tuple[np.array, np.array]:
         X_trans = self._pipe.transform(X)
-        y_pred, var = self._model.predict_f(X_trans)
-        y_pred, var = y_pred.numpy(), var.numpy()
+        y_pred, std = self._model.predict_f(X_trans)
+        y_pred, std = y_pred.numpy(), std.numpy()
         if self._scaler_y is not None and self._rescale_y:
             y_pred = self._scaler_y.inverse_transform(y_pred)
-            var = var * self._scaler_y.scale_[0]
-        return y_pred.numpy(), var.numpy()
+            std = std * self._scaler_y.scale_[0]
+        return y_pred.numpy(), std.numpy()
 
     def _predict_y_internal(self, X: np.array) -> tuple[np.array, np.array]:
         X_trans = self._pipe.transform(X)
-        y_pred, var = self._model.predict_y(X_trans)
-        y_pred, var = y_pred.numpy(), var.numpy()
+        y_pred, std = self._model.predict_y(X_trans)
+        y_pred, std = y_pred.numpy(), std.numpy()
         if self._scaler_y is not None and self._rescale_y:
             y_pred = self._scaler_y.inverse_transform(y_pred)
-            var = var * self._scaler_y.scale_[0]
-        return y_pred.numpy(), var.numpy()
+            std = std * self._scaler_y.scale_[0]
+        return y_pred.numpy(), std.numpy()
 
 
 class AdapterGPy(AbstractModelInterface):
@@ -74,26 +73,26 @@ class AdapterGPy(AbstractModelInterface):
 
     def predict_f(self, X: dict[str, float]) -> tuple[np.array, np.array]:
         X = self._unpack_func(X)
-        y_pred, var = self._predict_f_internal(X)
-        return y_pred, var
+        y_pred, std = self._predict_f_internal(X)
+        return y_pred, std
 
     def predict_y(self, X: dict[str, float]) -> tuple[np.array, np.array]:
         X = self._unpack_func(X)
-        y_pred, var = self._predict_y_internal(X)
-        return y_pred, var
+        y_pred, std = self._predict_y_internal(X)
+        return y_pred, std
 
     def _predict_f_internal(self, X: np.array) -> tuple[np.array, np.array]:
         X_trans = self._pipe.transform(X)
-        y_pred, var = self._model.predict_noiseless(X_trans)
+        y_pred, std = self._model.predict_noiseless(X_trans)
         if self._scaler_y is not None and self._rescale_y:
             y_pred = self._scaler_y.inverse_transform(y_pred)
-            var = var * self._scaler_y.scale_[0]
-        return y_pred, var
+            std = std * self._scaler_y.scale_[0]
+        return y_pred, std
 
     def _predict_y_internal(self, X: np.array) -> tuple[np.array, np.array]:
         X_trans = self._pipe.transform(X)
-        y_pred, var = self._model.predict(X_trans)
+        y_pred, std = self._model.predict(X_trans)
         if self._scaler_y is not None and self._rescale_y:
             y_pred = self._scaler_y.inverse_transform(y_pred)
-            var = var * self._scaler_y.scale_[0]
-        return y_pred, var
+            std = std * self._scaler_y.scale_[0]
+        return y_pred, std

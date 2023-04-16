@@ -29,8 +29,8 @@ class ModelWrapper(AbstractModelWrapper):
         return self._n_outputs
 
     def get_outputs(self, inputs: dict[str, float]) -> tuple[np.array, dict[str, float]]:
-        mean_pred, var_pred = self._call_models(inputs)
-        outputs_array, outputs = self._sample_output_distribution(mean_pred, var_pred)
+        mean_pred, std_pred = self._call_models(inputs)
+        outputs_array, outputs = self._sample_output_distribution(mean_pred, std_pred)
         return outputs_array, outputs
 
     def update(self, changed_outputs: list[str]) -> None:
@@ -44,22 +44,22 @@ class ModelWrapper(AbstractModelWrapper):
 
     def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, float], dict[str, float]):
         mean_pred = dict()
-        var_pred = dict()
+        std_pred = dict()
         if latent:
             for output_name, model in self._machine_models.items():
-                mean_pred[output_name], var_pred[output_name] = \
+                mean_pred[output_name], std_pred[output_name] = \
                     model.predict_f(inputs)
         else:
             for output_name, model in self._machine_models.items():
-                mean_pred[output_name], var_pred[output_name] = \
+                mean_pred[output_name], std_pred[output_name] = \
                     model.predict_y(inputs)
-        return mean_pred, var_pred
+        return mean_pred, std_pred
 
-    def _sample_output_distribution(self, mean_pred: dict[str, float], var_pred: dict[str, float]) \
+    def _sample_output_distribution(self, mean_pred: dict[str, float], std_pred: dict[str, float]) \
             -> (np.array, dict[str, float]):
         outputs = dict()
         for output_name in self._config.outputModels.keys():
-            outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name])).item()
+            outputs[output_name] = np.random.normal(mean_pred[output_name], std_pred[output_name]).item()
         outputs_array = np.array(tuple(outputs.values()))
         return outputs_array, outputs
 

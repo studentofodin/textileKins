@@ -30,11 +30,11 @@ class AbstractStateManager(ABC):
         return self._n_disturbances
 
     @abstractmethod
-    def getState(self, action: np.array) -> tuple[dict[str, float], bool]:
+    def getState(self, action: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
         """
         calculate controls from action.
         the state is a concatenation of controls and disturbances (listed in own config).
-        return state and if the action meets safety constraints.
+        return state, if the action meets safety constraints and action as a dictionary.
         if the action does not meet safety constraints the controls remain the same as before.
         """
         pass

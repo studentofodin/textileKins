@@ -65,7 +65,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
         self._updateConfigs()
 
-        state, safetyMet = self._stateManager.getState(action)
+        state, safetyMet, actionDict = self._stateManager.getState(action)
 
         outputsArray, outputsDict = self._machine.get_outputs(state)
         reward, reqsMet = self._rewardManager.getReward(state, outputsDict, safetyMet)
@@ -74,6 +74,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
             {"Reward": reward} | \
             {"Safety Met": int(safetyMet)} | \
             {"Requirements Met": int(reqsMet)} | \
+            actionDict | \
             state | \
             outputsDict
         self._experimentTracker.log(logVariables)

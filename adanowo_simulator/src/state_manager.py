@@ -12,6 +12,7 @@ class StateManager(AbstractStateManager):
         self._n_disturbances = len(config.disturbances)
         self._actionType = actionType
         self.reset()
+        self._actionNames = [name+'_action' for name in list(self._controls.keys())]
 
     @property
     def config(self) -> DictConfig:
@@ -33,17 +34,15 @@ class StateManager(AbstractStateManager):
     def n_disturbances(self) -> int:
         return self._n_disturbances
 
-    def getState(self, action: np.array) -> tuple[dict[str, float], bool]:
-        updatedControls = dict()
-        
+    def getState(self, action: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
         # relative actions.
         if self._actionType == 0:
+            updatedControls = dict()
             for index, control in enumerate(self._controls.keys()):
                 updatedControls[control] = self._controls[control] + action[index]
         # absolute actions.
         else:
-            for index, control in enumerate(self._controls.keys()):
-                updatedControls[control] = action[index]
+            updatedControls = dict(zip(self._controls.keys(), action.tolist()))
 
         safetyMet = self._safetyMet(updatedControls)
         if safetyMet:
@@ -51,7 +50,9 @@ class StateManager(AbstractStateManager):
 
         state = self._controls | dict(self._config.disturbances)
 
-        return state, safetyMet
+        actionDict = dict(zip(self._actionNames, action.tolist()))
+
+        return state, safetyMet, actionDict
 
     def reset(self) -> dict[str, float]:
         self._config = self._initialConfig.copy()

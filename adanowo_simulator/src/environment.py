@@ -3,24 +3,24 @@ from omegaconf import DictConfig
 
 from src.abstract_base_class.environment import AbstractTrainingEnvironment
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
-from src.abstract_base_class.reward import AbstractReward
+from src.abstract_base_class.reward_manager import AbstractRewardManager
 from src.abstract_base_class.state_manager import AbstractStateManager
 from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
-    def __init__(self, config: DictConfig, machine: AbstractModelWrapper, reward: AbstractReward,
+    def __init__(self, config: DictConfig, machine: AbstractModelWrapper, rewardManager: AbstractRewardManager,
                  stateManager: AbstractStateManager, experimentTracker: AbstractExperimentTracker,
                  scenarioManager: AbstractScenarioManager):
 
         self._machine = machine
-        self._reward = reward
+        self._rewardManager = rewardManager
         self._experimentTracker = experimentTracker
         self._stateManager = stateManager
         self._scenarioManager = scenarioManager
 
-        self._initialconfig = config.copy()
+        self._initialConfig = config.copy()
         self.reset()
 
     @property
@@ -36,8 +36,8 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         return self._machine
 
     @property
-    def reward(self) -> AbstractReward:
-        return self._reward
+    def rewardManager(self) -> AbstractRewardManager:
+        return self._rewardManager
 
     @property
     def stateManager(self) -> AbstractStateManager:
@@ -53,7 +53,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
     @property
     def rewardRange(self) -> tuple[float, float]:
-        return self._reward.reward_range
+        return self._rewardManager.reward_range
 
     @property
     def stepIndex(self):
@@ -63,36 +63,36 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         if self._status != "RUNNING":
             self._initExperiment()
 
-        self._updateConfig()
+        self._updateConfigs()
 
-        currentState, safetyFlag = self._stateManager.calculateControlsFromAction(action)
+        state, safetyMet = self._stateManager.getState(action)
 
-        observationArray, observationDict = self._machine.get_outputs(currentState)
-        reward, reqsFlag = self._reward.calculateRewardAndReqsFlag(currentState, observationDict, safetyFlag)
+        outputsArray, outputsDict = self._machine.get_outputs(state)
+        reward, reqsMet = self._rewardManager.getReward(state, outputsDict, safetyMet)
+
         logVariables = \
             {"Reward": reward} | \
-            {"Safety Flag": int(safetyFlag)} | \
-            {"Requirements Flag": int(reqsFlag)} | \
-            currentState | \
-            observationDict
+            {"Safety Met": int(safetyMet)} | \
+            {"Requirements Met": int(reqsMet)} | \
+            state | \
+            outputsDict
         self._experimentTracker.log(logVariables)
+
         info = dict()
         self._stepIndex = self._stepIndex + 1
-
         self._status = "RUNNING"
 
-        return observationArray, reward, self._done, False, info
+        return outputsArray, reward, False, False, info
 
     def reset(self) -> tuple[np.array, dict]:
         self._experimentTracker.reset()
-        self._reward.reset()
+        self._rewardManager.reset()
         initialState = self._stateManager.reset()
         self._machine.reset()
         self._scenarioManager.reset()
 
         self._stepIndex = 0
-        self._done = False
-        self._config = self._initialconfig.copy()
+        self._config = self._initialConfig.copy()
 
         observationArray, _ = self._machine.get_outputs(initialState)
         info = dict()
@@ -106,8 +106,8 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     def _initExperiment(self) -> None:
         self._experimentTracker.initRun()
 
-    def _updateConfig(self) -> None:
-        self._scenarioManager.update_requirements(self._stepIndex, self._reward.config.requirements)
+    def _updateConfigs(self) -> None:
+        self._scenarioManager.update_requirements(self._stepIndex, self._rewardManager.config.requirements)
 
         changed_outputs = self._scenarioManager.update_output_models(self._stepIndex, self._machine.config.outputModels)
         self._machine.update(changed_outputs)

@@ -1,6 +1,5 @@
 import numpy as np
 from omegaconf import DictConfig
-from typing import Dict
 
 from src.abstract_base_class.state_manager import AbstractStateManager
 
@@ -8,7 +7,7 @@ from src.abstract_base_class.state_manager import AbstractStateManager
 class StateManager(AbstractStateManager):
 
     def __init__(self, config: DictConfig, actionType: int):
-        self._initialconfig = config.copy()
+        self._initialConfig = config.copy()
         self._n_controls = len(config.initialControls)
         self._n_disturbances = len(config.disturbances)
         self._actionType = actionType
@@ -34,47 +33,49 @@ class StateManager(AbstractStateManager):
     def n_disturbances(self) -> int:
         return self._n_disturbances
 
-    def calculateControlsFromAction(self, action: np.array) -> bool:
+    def getState(self, action: np.array) -> tuple[dict[str, float], bool]:
         updatedControls = dict()
-
+        
+        # relative actions.
         if self._actionType == 0:
-            for index, control in enumerate(self._currentControls.keys()):
-                updatedControls[control] = self._currentControls[control] + action[index]
-
+            for index, control in enumerate(self._controls.keys()):
+                updatedControls[control] = self._controls[control] + action[index]
+        # absolute actions.
         else:
-            for index, control in enumerate(self._currentControls.keys()):
+            for index, control in enumerate(self._controls.keys()):
                 updatedControls[control] = action[index]
 
-        safetyFlag = self._safetyMet()
-        if safetyFlag:
-            self._currentControls = updatedControls
-        currentState = self._currentControls | dict(self._config.disturbances)
+        safetyMet = self._safetyMet(updatedControls)
+        if safetyMet:
+            self._controls = updatedControls
 
-        return currentState, safetyFlag
+        state = self._controls | dict(self._config.disturbances)
 
-    def reset(self) -> Dict[str, float]:
-        self._config = self._initialconfig.copy()
-        self._currentControls = dict(self._config.initialControls)
-        if not self._safetyMet():
+        return state, safetyMet
+
+    def reset(self) -> dict[str, float]:
+        self._config = self._initialConfig.copy()
+        self._controls = dict(self._config.initialControls)
+        if not self._safetyMet(self._controls):
             raise AssertionError("The initial setting is unsafe. Aborting Experiment.")
-        currentState = self._currentControls | dict(self._config.disturbances)
-        return currentState
+        state = self._controls | dict(self._config.disturbances)
+        return state
 
-    def _safetyMet(self) -> bool:
-
-        safetyFlag = True
+    def _safetyMet(self, controls: dict[str, float]) -> bool:
+        # assume that safety constraints are met.
+        safetyMet = True
 
         # check simple fixed bounds for controls.
         for control, bounds in self._config.safety.simpleControlBounds.items():
-            if (self._currentControls[control] < bounds.lower) or (self._currentControls[control] > bounds.upper):
-                safetyFlag = False
+            if (controls[control] < bounds.lower) or (controls[control] > bounds.upper):
+                safetyMet = False
 
         # check more complex, relational constraints.
         constr_sum = 0
-        for control, value in self._currentControls.items():
+        for control, value in controls.items():
             constr_sum = constr_sum + value
         if (constr_sum < self._config.safety.complexConstraints.addMin) or \
                 (constr_sum > self._config.safety.complexConstraints.addMax):
-            safetyFlag = False
+            safetyMet = False
 
-        return safetyFlag
+        return safetyMet

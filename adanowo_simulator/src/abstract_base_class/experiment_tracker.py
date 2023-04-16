@@ -1,20 +1,35 @@
 from abc import ABC, abstractmethod
-
 from omegaconf import DictConfig
-
 
 class AbstractExperimentTracker(ABC):
 
+    @property
     @abstractmethod
-    def initRun(self, exp_config: DictConfig) -> None:
+    def config(self) -> DictConfig:
+        pass
+
+    @config.setter
+    @abstractmethod
+    def config(self, c):
+        pass
+
+    @abstractmethod
+    def initRun(self):
         """
-        initialise wandb.
+        initialize wandb.
         """
         pass
 
     @abstractmethod
-    def log(self, logVariables: dict) -> None:
+    def log(self, logVariables: dict[str, float]) -> None:
         """
-        log logVariables in wandb.
+        log the given logVariables in wandb.
+        """
+        pass
+
+    @abstractmethod
+    def reset(self) -> None:
+        """
+        finish wandb run and reset to initial values.
         """
         pass

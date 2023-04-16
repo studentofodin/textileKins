@@ -1,11 +1,11 @@
 from omegaconf import DictConfig
 
-from src.abstract_base_class.reward import AbstractReward
+from src.abstract_base_class.reward_manager import AbstractRewardManager
 
 
-class Reward(AbstractReward):
+class RewardManager(AbstractRewardManager):
     def __init__(self, config: DictConfig):
-        self._initialconfig = config.copy()
+        self._initialConfig = config.copy()
         self.reset()
 
     @property
@@ -16,53 +16,53 @@ class Reward(AbstractReward):
     def config(self, c):
         self._config = c
 
-    def reward_range(self) -> (float, float):
+    @property
+    def reward_range(self) -> tuple[float, float]:
         return -float("inf"), float("inf")
 
-    def calculateRewardAndReqsFlag(self, state: dict[str, float], outputs: dict[str, float],
-                                   safetyFlag: bool) -> tuple[float, bool]:
+    def getReward(self, state: dict[str, float], outputs: dict[str, float],
+                                   safetyMet: bool) -> tuple[float, bool]:
+        reqsMet = self._reqsMet(outputs)
 
-        reqsFlag = self._reqsMet(outputs)
+        # penalty.
+        if not (reqsMet and safetyMet):
+            reward = -self._config.penalty
 
-        if not (reqsFlag and safetyFlag):  # penalty
-            rewardValue = -self._config.penalty
-
-        else:  # no penalty
+        # no penalty.
+        else:
             targetA = outputs["min_area_weight"]
             targetB = outputs["unevenness_card_web"]
             cost = state["v_Arbeiter_HT"]
             w1 = self._config.weights.w1
             w2 = self._config.weights.w2
             fibreCosts = self._config.fibreSettings.fibreCosts
-            rewardValue = w1*fibreCosts*targetA + w2*targetB - cost
+            reward = w1*fibreCosts*targetA + w2*targetB - cost
 
-        self._rewardValue = rewardValue
-
-        return rewardValue, reqsFlag
+        return reward, reqsMet
 
     def reset(self) -> None:
-        self._config = self._initialconfig.copy()
+        self._config = self._initialConfig.copy()
 
     def _reqsMet(self, outputs: dict[str, float]) -> bool:
-        reqsFlag = True
+        # assume that requirement constraints are met.
+        reqsMet = True
 
         # check simple fixed bounds for outputs.
         for output, lowerBound in self._config.requirements.simpleOutputBounds.lower.items():
             if outputs[output] < lowerBound:
-                reqsFlag = False
+                reqsMet = False
         for output, upperBound in self._config.requirements.simpleOutputBounds.upper.items():
             if outputs[output] > upperBound:
-                reqsFlag = False
+                reqsMet = False
 
         # check more complex, relational constraints.
         product = 1
         for output, value in outputs.items():
             product = product * value
-        if (product < self._config.requirements.complexConstraints.multMin) or (product > self._config.requirements.complexConstraints.multMax):
-            reqsFlag = False
+        if (product < self._config.requirements.complexConstraints.multMin) or \
+                (product > self._config.requirements.complexConstraints.multMax):
+            reqsMet = False
 
-        self._reqsFlag = reqsFlag
-
-        return reqsFlag
+        return reqsMet
 
 

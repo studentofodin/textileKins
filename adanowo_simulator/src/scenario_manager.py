@@ -1,43 +1,55 @@
+from omegaconf import DictConfig
+import numpy as np
+
 from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
-
 class ScenarioManager(AbstractScenarioManager):
-    @property
-    def disturbanceSetting(self) -> dict:
-        return self._disturbanceSetting
+
+    def __init__(self, config: DictConfig):
+        self._initialConfig = config.copy()
+        self.reset()
 
     @property
-    def fibreSetting(self) -> dict:
-        return self._fibreSetting
+    def config(self) -> DictConfig:
+        return self._config
 
-    @disturbanceSetting.setter
-    def disturbanceSetting(self, disturbanceSetting):
-        if type(disturbanceSetting) == dict:  # type check for dict
-            if disturbanceSetting:  # check if dictionary not empty
-                self._disturbanceSetting = disturbanceSetting
-            else:
-                raise ValueError
-        else:
-            raise ValueError
+    @config.setter
+    def config(self, c):
+        self._config = c
 
-    @fibreSetting.setter
-    def fibreSetting(self, fibreSetting):
-        if type(fibreSetting) == dict:  # type check for dict
-            if fibreSetting:  # check if dictionary not empty
-                self._fibreSetting = fibreSetting
-            else:
-                raise ValueError
-        else:
-            raise ValueError
+    def update_output_models(self, step_index: int, output_models_config: DictConfig) -> list[str]:
+        changed = []
 
-    def __init__(self, disturbanceSetting, fibreSetting):
-        self.disturbanceSetting = dict(disturbanceSetting)
-        self.fibreSetting = dict(fibreSetting)
+        for output, scenario in self._config.outputModels.items():
+            if scenario and scenario[0][0] == step_index:
+                output_models_config[output] = scenario[0][1]
+                changed.append(output)
+                self._config.outputModels[output].pop(0)
 
-    def __str__(self):
-        print("Scenario Manager ---")
-        print("Disturbance Setting : ")
-        print(self.disturbanceSetting)
-        print("Fibre Setting : ")
-        print(self.fibreSetting)
-        return ""
+        return changed
+
+    def update_requirements(self, step_index: int, requirements_config: DictConfig) -> None:
+
+        for output, scenario in self._config.requirements.simpleOutputBounds.lower.items():
+            if scenario and scenario[0][0] == step_index:
+                requirements_config.simpleOutputBounds.lower[output] = scenario[0][1]
+                self._config.requirements.simpleOutputBounds.lower[output].pop(0)
+
+        for output, scenario in self._config.requirements.simpleOutputBounds.upper.items():
+            if scenario and scenario[0][0] == step_index:
+                requirements_config.simpleOutputBounds.upper[output] = scenario[0][1]
+                self._config.requirements.simpleOutputBounds.upper[output].pop(0)
+
+        for req, scenario in self._config.requirements.complexConstraints.items():
+            if scenario and scenario[0][0] == step_index:
+                requirements_config.complexConstraints[req] = scenario[0][1]
+                self._config.requirements.complexConstraints[req].pop(0)
+
+    def update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> None:
+        for disturbance, scenario in self._config.disturbances.items():
+            if step_index % scenario.timeStep == 0:
+                disturbance_config[disturbance] = np.random.normal(scenario.mean, scenario.std)
+
+    def reset(self) -> None:
+        self._config = self._initialConfig.copy()
+

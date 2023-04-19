@@ -2,7 +2,7 @@ import numpy as np
 import hydra
 from omegaconf import DictConfig
 
-from src.reward import Reward
+from src.reward import TestReward
 from src.safety_wrapper import SafetyWrapper
 from src.experiment_tracker import ExperimentTracker
 from src.gym_wrapper import GymWrapper
@@ -15,7 +15,7 @@ def main(configuration: DictConfig):
 
     config = configuration
     experimentTracker = ExperimentTracker(config.experimentTracker)
-    reward = Reward(config.product_setup)
+    reward = TestReward(config.product_setup)
     safetyWrapper = SafetyWrapper(config.process_setup)
     modelWrapper = ModelWrapper(config.env_setup)
     trainingEnv = TrainingEnvironment(config, modelWrapper, reward, safetyWrapper, experimentTracker)

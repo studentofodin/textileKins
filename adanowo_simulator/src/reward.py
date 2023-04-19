@@ -3,7 +3,7 @@ from omegaconf import DictConfig
 from src.abstract_base_class.reward import AbstractReward
 
 
-class Reward(AbstractReward):
+class TestReward(AbstractReward):
     def __init__(self, config: DictConfig):
         self._config = config
         self._rewardValue = 0.0

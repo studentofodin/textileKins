@@ -35,8 +35,10 @@
 - Add the requirements to the logging because they might change during our run
 - To Do Ruben: Implement OperatorFlag, a flag that gets triggered when the process is being operated in  astate where the models are not trained. This is meant to simulate "risky settings".
 - To Do Ruben: Do we have models that take other model outputs in a recursive manner?
+- TO Do Ruben: Check for Cuda GPU
 - implement logging using the logger module: https://realpython.com/python-logging/
   - events from the scenario manager
   - events from the TrainingEnvironment class: init complete, reset complete
+- Remove dependency from GPy, once framework port is complete
 # Questions
 - Can the action and observation spaces be moved to the gym class?

@@ -2,10 +2,10 @@
 *.DS_Store
 *.pyc
 *.vscode
-*outputs
-wandb/
 *.ipynb
 *.xlsx
+*outputs
+wandb/
 .idea/
 __pycache__/
 adanowo_simulator/wandb/

@@ -28,11 +28,7 @@ class ModelWrapper(AbstractModelWrapper):
 
             # load model properties dict from .yaml file
             with open(pl.Path(self._config.pathToModels) / (model_name + '.yaml'), 'r') as stream:
-                try:
-                    properties = yaml.safe_load(stream)
-                except yaml.YAMLError as exc:
-                    print(exc)
-
+                properties = yaml.safe_load(stream)
                 output_name = properties["output"]
 
                 # check if there is already a machine model that models the current output.

@@ -1,0 +1,17 @@
+outputModels:
+  # [[timestep1, modelname1], [timestep2, modelname2],...]
+  min_area_weight: [[2, "min_area_weight1"]]
+  unevenness_card_web: [[1, "unevenness_card_web1"], [7, "unevenness_card_web"]]
+requirements:
+  # [[timestep1, value1], [timestep2, value2],...]
+  simpleOutputBounds:
+    lower: {}
+    upper:
+      unevenness_card_web: [[3, 25.0], [4, 30.0]]
+  complexConstraints:
+    multMax: [[5, 180]]
+disturbances:
+  Ishikawa_WeightPerAreaCardDelivery:
+    timeStep: 2
+    mean: 0.8
+    std: 0.1

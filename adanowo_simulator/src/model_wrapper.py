@@ -1,7 +1,12 @@
 import pathlib as pl
+import importlib
+import sys
+
 import yaml
 from omegaconf import DictConfig
 import numpy as np
+import torch
+import pandas as pd
 
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
 from src import model_interface
@@ -75,10 +80,32 @@ class ModelWrapper(AbstractModelWrapper):
 
         # load machine model.
         model_class = properties["model_class"]
-        path_to_pkl = pl.Path(self._config.pathToModels) / properties["model_path"]
-        if model_class == "SVGP":
+
+        if model_class == "Gpytorch":
+            data_load = pd.read_hdf(
+                pl.Path(self._config.pathToModels) / (model_name + ".hdf5")
+            )
+            if torch.cuda.is_available():
+                map_location = None
+            else:
+                map_location = torch.device('cpu')
+                Warning("No Cuda-enabled GPU found! Code execution will still work, but is significantly slower.")
+            model_state = torch.load(
+                pl.Path(self._config.pathToModels) / (model_name + ".pth"), map_location=map_location
+            )
+            spec = importlib.util.spec_from_file_location("module.name",
+                                                          pl.Path(self._config.pathToModels) / (
+                                                                  model_name + ".py"))
+            model_lib = importlib.util.module_from_spec(spec)
+            sys.modules["module.name"] = model_lib
+            spec.loader.exec_module(model_lib)
+
+            mdl = model_interface.AdapterGpytorch(model_lib, data_load, model_state, properties, rescale_y=True)
+        elif model_class == "SVGP":
+            path_to_pkl = pl.Path(self._config.pathToModels) / properties["model_path"]
             mdl = model_interface.AdapterSVGP(path_to_pkl, True)
         elif model_class == "GPy_GPR":
+            path_to_pkl = pl.Path(self._config.pathToModels) / properties["model_path"]
             mdl = model_interface.AdapterGPy(path_to_pkl, True)
         else:
             raise (TypeError(f"The model class {model_class} is not yet supported"))

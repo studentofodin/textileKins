@@ -8,6 +8,8 @@ class RewardManager(AbstractRewardManager):
         self._initialConfig = config.copy()
         self.reset()
 
+        self._config = None
+
     @property
     def config(self) -> DictConfig:
         return self._config
@@ -21,7 +23,7 @@ class RewardManager(AbstractRewardManager):
         return -float("inf"), float("inf")
 
     def getReward(self, state: dict[str, float], outputs: dict[str, float],
-                                   safetyMet: bool) -> tuple[float, bool]:
+                  safetyMet: bool) -> tuple[float, bool]:
         reqsMet = self._reqsMet(outputs)
 
         # penalty.
@@ -64,5 +66,3 @@ class RewardManager(AbstractRewardManager):
             reqsMet = False
 
         return reqsMet
-
-

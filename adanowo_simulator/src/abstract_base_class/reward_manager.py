@@ -37,7 +37,6 @@ class AbstractRewardManager(ABC):
         """
         pass
 
-
     @abstractmethod
     def _reqsMet(self, outputs: dict[str, float]) -> bool:
         """

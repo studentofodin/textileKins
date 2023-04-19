@@ -3,11 +3,13 @@ import numpy as np
 
 from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
+
 class ScenarioManager(AbstractScenarioManager):
 
     def __init__(self, config: DictConfig):
         self._initialConfig = config.copy()
         self.reset()
+        self._config = None
 
     @property
     def config(self) -> DictConfig:
@@ -52,4 +54,3 @@ class ScenarioManager(AbstractScenarioManager):
 
     def reset(self) -> None:
         self._config = self._initialConfig.copy()
-

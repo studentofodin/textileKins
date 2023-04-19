@@ -5,7 +5,6 @@ import numpy as np
 
 class AbstractModelInterface(ABC):
 
-
     @abstractmethod
     def predict_f(self, X: dict[str, float]) -> tuple[np.array, np.array]:
         """

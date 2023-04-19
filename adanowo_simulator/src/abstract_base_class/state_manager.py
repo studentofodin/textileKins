@@ -7,27 +7,27 @@ class AbstractStateManager(ABC):
     @property
     @abstractmethod
     def config(self) -> DictConfig:
-        return self._config
+        pass
 
     @config.setter
     @abstractmethod
     def config(self, c):
-        self._config = c
+        pass
 
     @property
     @abstractmethod
     def actionType(self) -> int:
-        return self._actionType
+        pass
 
     @property
     @abstractmethod
     def n_controls(self) -> int:
-        return self._n_controls
+        pass
 
     @property
     @abstractmethod
     def n_disturbances(self) -> int:
-        return self._n_disturbances
+        pass
 
     @abstractmethod
     def getState(self, action: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:

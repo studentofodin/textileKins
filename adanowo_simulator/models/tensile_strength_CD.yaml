@@ -1,0 +1,19 @@
+name: tensile_strength_CD
+model_class: Gpytorch
+data_source: BNP
+inputs:
+  - none
+output: tensile_strength_CD
+training_inputs:
+  - CL01_LayersCalculatorLayers
+  - M_031_K_AbliefGew_g_m2
+  - M_015_NM1_Vorschub_mm_H
+  - M_007_NM1_AuszVerzug_Proznt
+  - M_011_NM1_EinzVerzug_Proznt
+  - D_018_SW_Gesamtverzug_Perc
+  - Product_UNICO-30
+training_target: Fmax_CD
+y_is_scaled: True
+X_is_scaled: False
+pca_on_inputs: False
+lengthscale_constraint: 0.5

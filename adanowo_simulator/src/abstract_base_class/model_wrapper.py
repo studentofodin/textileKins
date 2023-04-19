@@ -1,58 +1,69 @@
 from abc import ABC, abstractmethod
-
 import numpy as np
 from omegaconf import DictConfig
-
-from src.abstract_base_class.model_interface import AbstractModelInterface
 
 
 class AbstractModelWrapper(ABC):
 
     @property
     @abstractmethod
-    def n_models(self) -> int:
+    def config(self) -> DictConfig:
+        pass
+
+    @config.setter
+    @abstractmethod
+    def config(self, c):
         pass
 
     @property
     @abstractmethod
-    def output_names(self) -> list[str]:
-        pass
-
-    @property
-    @abstractmethod
-    def model_names(self) -> dict[str, str]:
-        pass
-
-    @property
-    @abstractmethod
-    def model_props(self) -> dict[str, any]:
-        pass
-
-    @property
-    @abstractmethod
-    def machine_models(self) -> dict[str, AbstractModelInterface]:
+    def n_outputs(self) -> int:
         pass
 
     @abstractmethod
-    def _call_models(self, input_model: dict[str, float], latent) -> (dict[str, float], dict[str, float]):
+    def get_outputs(self, inputs: dict[str, float]) -> tuple[np.array, dict[str, float]]:
         """
-        call all machine models to determine mean and variance (predict_y() or predict_f()) from input and assign
-        values to properties means and vars.
+        get sampled output value from inputs for each model.
+        return output values as numpy array and as dictionary.
         """
         pass
 
     @abstractmethod
-    def _interpret_model_outputs(self, mean_pred: dict[str, float], var_pred: dict[str, float]) \
+    def update(self, changed_outputs: list[str]) -> None:
+        """
+        update the models for the outputs listed in changed_outputs based on the entries in the own config.
+        """
+        pass
+
+    @abstractmethod
+    def reset(self) -> None:
+        """
+        reset to initial values.
+        """
+        pass
+
+    @abstractmethod
+    def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
+        """
+        get and return mean and standard deviation prediction of output from inputs for each model.
+        latent=True includes noise, latent=False not.
+        """
+        pass
+
+    @abstractmethod
+    def _sample_output_distribution(self, mean_pred: dict[str, np.array], std_pred: dict[str, np.array]) \
             -> (np.array, dict[str, float]):
         """
-        sample output distributions dependent on corresponding mean and variance and assign values to properties
-        outputs and outputs_array.
+        sample output distribution dependent on corresponding mean and standard deviation prediction
+        (mean_pred, std_pred) for each model.
+        Return output samples as numpy array and as dictionary.
         """
         pass
 
     @abstractmethod
-    def get_outputs(self, input_model: dict[str, float]) -> tuple[np.array, dict]:
+    def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
         """
-        call methods call_models() and interpret_model_outputs() and return properties outputs and outputs_array.
+        load model corresponding to model_name.
+        allocate this model to the output output_name.
         """
         pass

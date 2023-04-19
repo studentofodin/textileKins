@@ -9,10 +9,12 @@ initialControls:
   v_Arbeiter_VR: 0.5
   v_Wender_VR: 0.5
   v_Abnehmer: 0.5
-initialDisturbances:
+  M_015_NM1_Vorschub_mm_H: 0.5
+  D_018_SW_Gesamtverzug_Perc: 0.5
+disturbances:
   Ishikawa_WeightPerAreaCardDelivery: 1.0
   mean_cylinder_worker: 1.0
-safetyBounds:
+safety:
   simpleControlBounds:
     Ishikawa_LayersCount:
       lower: 0.1

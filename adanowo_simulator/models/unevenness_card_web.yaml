@@ -1,12 +1,11 @@
 name: unevenness_card_web
-model_class: GPy_GPR
-model_path: unevenness_card_web.pkl
+model_class: Gpytorch
 data_source: EasyVlies
-data_path: C:\Users\rkins\Documents\AdaNowo\adanowo-modeling\data\processed\data_EasyVlies.hdf5
 inputs:
   - Ishikawa_WeightPerAreaCardDelivery
   - Ishikawa_CardMassThroughputSetpoint
   - v_Vorreisser
+  - v_Haupttambour
   - v_Arbeiter_HT
   - v_Wender_HT
   - v_Arbeiter_VR
@@ -14,9 +13,10 @@ inputs:
 output: unevenness_card_web
 training_inputs:
   - FG_soll
-  - Durchsatz
+  - mean_mass_cylinders
   - Diff_ArbeiterZuWender
-  - Diff_ArbeiterVRZuWenderVR # can be removed since it does not have a huge effect
-  - Diff_VRZuArbeiterVR # can be removed since it does not have a huge effect
-training_output: Wolkigkeit
-heteroscedastic: false
+training_target: Wolkigkeit
+y_is_scaled: True
+X_is_scaled: True
+pca_on_inputs: true
+lengthscale_constraint: 0

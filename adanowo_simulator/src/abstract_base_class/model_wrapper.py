@@ -2,22 +2,23 @@ from abc import ABC, abstractmethod
 import numpy as np
 from omegaconf import DictConfig
 
+
 class AbstractModelWrapper(ABC):
 
     @property
     @abstractmethod
     def config(self) -> DictConfig:
-        return self._config
+        pass
 
     @config.setter
     @abstractmethod
     def config(self, c):
-        self._config = c
+        pass
 
     @property
     @abstractmethod
     def n_outputs(self) -> int:
-        return self._n_outputs
+        pass
 
     @abstractmethod
     def get_outputs(self, inputs: dict[str, float]) -> tuple[np.array, dict[str, float]]:
@@ -53,8 +54,9 @@ class AbstractModelWrapper(ABC):
     def _sample_output_distribution(self, mean_pred: dict[str, np.array], std_pred: dict[str, np.array]) \
             -> (np.array, dict[str, float]):
         """
-        sample output distribution dependent on corresponding mean and standard deviation prediction (mean_pred, std_pred) for each model.
-        return output samples as numpy array and as dictionary.
+        sample output distribution dependent on corresponding mean and standard deviation prediction
+        (mean_pred, std_pred) for each model.
+        Return output samples as numpy array and as dictionary.
         """
         pass
 

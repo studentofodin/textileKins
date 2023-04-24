@@ -39,6 +39,7 @@ class GymWrapper(Env):
     def render(self):
         return self.env.render()
 
+
 register(
     id='adaNowo-simulator-v0',
     entry_point='src.base_classes.gym_wrapper.GymWrapper'

@@ -8,6 +8,7 @@ class ScenarioManager(AbstractScenarioManager):
     def __init__(self, config: DictConfig):
         self._initialConfig = config.copy()
         self.reset()
+        self._config = None
 
     @property
     def config(self) -> DictConfig:
@@ -49,7 +50,8 @@ class ScenarioManager(AbstractScenarioManager):
         for disturbance, scenario in self._config.disturbances.items():
             if step_index % scenario.timeStep == 0:
                 disturbance_config[disturbance] = np.random.normal(scenario.mean, scenario.std)
+            # @Luis: We update disturbance_config, but the value is neither returned or stored internally.
+            # So it does not have an effect, right? Maybe it was meant to be stored internally via self.x = disturbance_config?
 
     def reset(self) -> None:
         self._config = self._initialConfig.copy()
-

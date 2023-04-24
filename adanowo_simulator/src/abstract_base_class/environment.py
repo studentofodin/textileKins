@@ -68,7 +68,7 @@ class AbstractTrainingEnvironment(ABC):
                 which can be positive or negative.
                 not needed here as there is no terminal state, thus always returned as False.
             truncated (bool) : whether the truncation condition outside the scope of the MDP is satisfied.
-                typically, this is a timelimit, but could also be used to indicate an agent physically going out of bounds.
+                typically, this is a timelimit, but could also indicate an agent physically going out of bounds.
                 not needed here as there is no truncation condition, thus always returned as False.
             info (dict): contains auxiliary diagnostic information (helpful for debugging, learning, and logging).
         """
@@ -101,5 +101,3 @@ class AbstractTrainingEnvironment(ABC):
         updates the configs of itself, machine, reward, stateManager and experimentTracker primarily using the
         scenarioManager.
         """
-
-

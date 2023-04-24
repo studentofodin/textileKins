@@ -1,7 +1,12 @@
 import pathlib as pl
+import importlib
+import sys
+
 import yaml
 from omegaconf import DictConfig
 import numpy as np
+import torch
+import pandas as pd
 
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
 from src import model_interface
@@ -15,6 +20,8 @@ class ModelWrapper(AbstractModelWrapper):
 
         self._machine_models = dict()
         self.reset()
+
+        self._config = None
 
     @property
     def config(self) -> DictConfig:
@@ -47,19 +54,19 @@ class ModelWrapper(AbstractModelWrapper):
         std_pred = dict()
         if latent:
             for output_name, model in self._machine_models.items():
-                mean_pred[output_name], std_pred[output_name] = \
+                mean_pred[output_name], var_pred[output_name] = \
                     model.predict_f(inputs)
         else:
             for output_name, model in self._machine_models.items():
-                mean_pred[output_name], std_pred[output_name] = \
+                mean_pred[output_name], var_pred[output_name] = \
                     model.predict_y(inputs)
-        return mean_pred, std_pred
+        return mean_pred, var_pred
 
-    def _sample_output_distribution(self, mean_pred: dict[str, np.array], std_pred: dict[str, np.array]) \
+    def _sample_output_distribution(self, mean_pred: dict[str, np.array], var_pred: dict[str, np.array]) \
             -> (np.array, dict[str, float]):
         outputs = dict()
         for output_name in self._config.outputModels.keys():
-            outputs[output_name] = np.random.normal(mean_pred[output_name], std_pred[output_name]).item()
+            outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name])).item()
         outputs_array = np.array(tuple(outputs.values()))
         return outputs_array, outputs
 
@@ -73,14 +80,33 @@ class ModelWrapper(AbstractModelWrapper):
 
         # load machine model.
         model_class = properties["model_class"]
-        path_to_pkl = pl.Path(self._config.pathToModels) / properties["model_path"]
-        if model_class == "SVGP":
+
+        if model_class == "Gpytorch":
+            data_load = pd.read_hdf(
+                pl.Path(self._config.pathToModels) / (model_name + ".hdf5")
+            )
+            if torch.cuda.is_available():
+                map_location = None
+            else:
+                map_location = torch.device('cpu')
+                Warning("No Cuda-enabled GPU found! Code execution will still work, but is significantly slower.")
+            model_state = torch.load(
+                pl.Path(self._config.pathToModels) / (model_name + ".pth"), map_location=map_location
+            )
+            spec = importlib.util.spec_from_file_location("module.name",
+                                                          pl.Path(self._config.pathToModels) / (
+                                                                  model_name + ".py"))
+            model_lib = importlib.util.module_from_spec(spec)
+            sys.modules["module.name"] = model_lib
+            spec.loader.exec_module(model_lib)
+
+            mdl = model_interface.AdapterGpytorch(model_lib, data_load, model_state, properties, rescale_y=True)
+        elif model_class == "SVGP":
+            path_to_pkl = pl.Path(self._config.pathToModels) / properties["model_path"]
             mdl = model_interface.AdapterSVGP(path_to_pkl, True)
         elif model_class == "GPy_GPR":
+            path_to_pkl = pl.Path(self._config.pathToModels) / properties["model_path"]
             mdl = model_interface.AdapterGPy(path_to_pkl, True)
         else:
             raise (TypeError(f"The model class {model_class} is not yet supported"))
         self._machine_models[output_name] = mdl
-
-
-

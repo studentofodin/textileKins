@@ -13,6 +13,8 @@ class ExperimentTracker(AbstractExperimentTracker):
         self._run = None
         self.reset()
 
+        self._config = None
+
     @property
     def config(self) -> DictConfig:
         return self._config
@@ -33,6 +35,3 @@ class ExperimentTracker(AbstractExperimentTracker):
             self._run.finish()
         self._run = None
         self._config = self._initialConfig.copy()
-
-
-

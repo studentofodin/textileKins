@@ -10,17 +10,19 @@ from src.model_wrapper import ModelWrapper
 from src.scenario_manager import ScenarioManager
 from src.environment import TrainingEnvironment
 
+
 @hydra.main(version_base=None, config_path="./config", config_name="main")
 def main(configuration: DictConfig):
 
     config = configuration
     experimentTracker = ExperimentTracker(config.experimentTracker, config)
     rewardManager = RewardManager(config.product_setup)
-    stateManager = StateManager(config.process_setup, actionType=1) # actionType 0 for relative | 1 for absolute
+    stateManager = StateManager(config.process_setup, actionType=1)  # actionType 0 for relative | 1 for absolute
     modelWrapper = ModelWrapper(OmegaConf.merge({"pathToModels": config.env_setup.pathToModels},
                                                 {"outputModels": config.env_setup.outputModels}))
     scenarioManager = ScenarioManager(config.scenario_setup)
-    trainingEnv = TrainingEnvironment({}, modelWrapper, rewardManager, stateManager, experimentTracker, scenarioManager)
+    trainingEnv = TrainingEnvironment(OmegaConf.create(), modelWrapper, rewardManager, stateManager, experimentTracker,
+                                      scenarioManager)
     env = GymWrapper(trainingEnv, OmegaConf.merge({"actionSpace": config.env_setup.actionSpace},
                                                   {"observationSpace": config.env_setup.observationSpace}))
 

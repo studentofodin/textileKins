@@ -13,6 +13,9 @@ class StateManager(AbstractStateManager):
         self._actionType = actionType
         self.reset()
         self._actionNames = [name+'_action' for name in list(self._controls.keys())]
+        self._controls = None
+
+        self._config = None
 
     @property
     def config(self) -> DictConfig:

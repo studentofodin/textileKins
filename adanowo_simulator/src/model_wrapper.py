@@ -51,7 +51,7 @@ class ModelWrapper(AbstractModelWrapper):
 
     def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()
-        std_pred = dict()
+        var_pred = dict()
         if latent:
             for output_name, model in self._machine_models.items():
                 mean_pred[output_name], var_pred[output_name] = \

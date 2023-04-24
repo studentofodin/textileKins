@@ -7,5 +7,5 @@
 *outputs
 wandb/
 .idea/
-__pycache__/
+*__pycache__*
 adanowo_simulator/wandb/

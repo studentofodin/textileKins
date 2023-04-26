@@ -6,13 +6,13 @@ from src.abstract_base_class.state_manager import AbstractStateManager
 
 class StateManager(AbstractStateManager):
 
-    def __init__(self, config: DictConfig, actionType: int):
-        self._initialConfig = config.copy()
-        self._n_controls = len(config.initialControls)
+    def __init__(self, config: DictConfig, action_type: int):
+        self._initial_config = config.copy()
+        self._n_controls = len(config.initial_controls)
         self._n_disturbances = len(config.disturbances)
-        self._actionType = actionType
+        self._action_type = action_type
         self.reset()
-        self._actionNames = [name+'_action' for name in list(self._controls.keys())]
+        self._action_names = [name + '_action' for name in list(self._controls.keys())]
         self._controls = None
 
         self._config = None
@@ -26,8 +26,8 @@ class StateManager(AbstractStateManager):
         self._config = c
 
     @property
-    def actionType(self) -> int:
-        return self._actionType
+    def action_type(self) -> int:
+        return self._action_type
 
     @property
     def n_controls(self) -> int:
@@ -37,49 +37,49 @@ class StateManager(AbstractStateManager):
     def n_disturbances(self) -> int:
         return self._n_disturbances
 
-    def getState(self, action: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
+    def get_state(self, action: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
         # relative actions.
-        if self._actionType == 0:
-            updatedControls = dict()
+        if self._action_type == 0:
+            updated_controls = dict()
             for index, control in enumerate(self._controls.keys()):
-                updatedControls[control] = self._controls[control] + action[index]
+                updated_controls[control] = self._controls[control] + action[index]
         # absolute actions.
         else:
-            updatedControls = dict(zip(self._controls.keys(), action.tolist()))
+            updated_controls = dict(zip(self._controls.keys(), action.tolist()))
 
-        safetyMet = self._safetyMet(updatedControls)
-        if safetyMet:
-            self._controls = updatedControls
+        safety_met = self._safety_met(updated_controls)
+        if safety_met:
+            self._controls = updated_controls
 
         state = self._controls | dict(self._config.disturbances)
 
-        actionDict = dict(zip(self._actionNames, action.tolist()))
+        action_dict = dict(zip(self._action_names, action.tolist()))
 
-        return state, safetyMet, actionDict
+        return state, safety_met, action_dict
 
     def reset(self) -> dict[str, float]:
-        self._config = self._initialConfig.copy()
-        self._controls = dict(self._config.initialControls)
-        if not self._safetyMet(self._controls):
+        self._config = self._initial_config.copy()
+        self._controls = dict(self._config.initial_controls)
+        if not self._safety_met(self._controls):
             raise AssertionError("The initial setting is unsafe. Aborting Experiment.")
         state = self._controls | dict(self._config.disturbances)
         return state
 
-    def _safetyMet(self, controls: dict[str, float]) -> bool:
+    def _safety_met(self, controls: dict[str, float]) -> bool:
         # assume that safety constraints are met.
-        safetyMet = True
+        safety_met = True
 
         # check simple fixed bounds for controls.
-        for control, bounds in self._config.safety.simpleControlBounds.items():
-            if (controls[control] < bounds.lower) or (controls[control] > bounds.upper):
-                safetyMet = False
+        for control_name, bounds in self._config.safety.simple_control_bounds.items():
+            if (controls[control_name] < bounds.lower) or (controls[control_name] > bounds.upper):
+                safety_met = False
 
         # check more complex, relational constraints.
         constr_sum = 0
-        for control, value in controls.items():
+        for control_name, value in controls.items():
             constr_sum = constr_sum + value
-        if (constr_sum < self._config.safety.complexConstraints.addMin) or \
-                (constr_sum > self._config.safety.complexConstraints.addMax):
-            safetyMet = False
+        if (constr_sum < self._config.safety.complex_constraints.add_min) or \
+                (constr_sum > self._config.safety.complex_constraints.add_max):
+            safety_met = False
 
-        return safetyMet
+        return safety_met

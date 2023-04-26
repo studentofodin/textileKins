@@ -10,20 +10,20 @@ from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
-    def __init__(self, config: DictConfig, machine: AbstractModelWrapper, rewardManager: AbstractRewardManager,
-                 stateManager: AbstractStateManager, experimentTracker: AbstractExperimentTracker,
-                 scenarioManager: AbstractScenarioManager):
+    def __init__(self, config: DictConfig, machine: AbstractModelWrapper, reward_manager: AbstractRewardManager,
+                 state_manager: AbstractStateManager, experiment_tracker: AbstractExperimentTracker,
+                 scenario_manager: AbstractScenarioManager):
 
         self._machine = machine
-        self._rewardManager = rewardManager
-        self._experimentTracker = experimentTracker
-        self._stateManager = stateManager
-        self._scenarioManager = scenarioManager
+        self._reward_manager = reward_manager
+        self._experiment_tracker = experiment_tracker
+        self._state_manager = state_manager
+        self._scenario_manager = scenario_manager
         self._config = None
-        self._initialConfig = config.copy()
+        self._initial_config = config.copy()
 
         self.reset()
-        self._stepIndex = 0
+        self._step_index = 0
         self._status = None
 
     @property
@@ -39,81 +39,81 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         return self._machine
 
     @property
-    def rewardManager(self) -> AbstractRewardManager:
-        return self._rewardManager
+    def reward_manager(self) -> AbstractRewardManager:
+        return self._reward_manager
 
     @property
-    def stateManager(self) -> AbstractStateManager:
-        return self._stateManager
+    def state_manager(self) -> AbstractStateManager:
+        return self._state_manager
 
     @property
-    def experimentTracker(self) -> AbstractExperimentTracker:
-        return self._experimentTracker
+    def experiment_tracker(self) -> AbstractExperimentTracker:
+        return self._experiment_tracker
 
     @property
-    def scenarioManager(self) -> AbstractScenarioManager:
-        return self._scenarioManager
+    def scenario_manager(self) -> AbstractScenarioManager:
+        return self._scenario_manager
 
     @property
-    def rewardRange(self) -> tuple[float, float]:
-        return self._rewardManager.reward_range
+    def reward_range(self) -> tuple[float, float]:
+        return self._reward_manager.reward_range
 
     @property
-    def stepIndex(self):
-        return self._stepIndex
+    def step_index(self):
+        return self._step_index
 
     def step(self, action: np.array) -> tuple[np.array, float, bool, bool, dict]:
         if self._status != "RUNNING":
-            self._initExperiment()
+            self._init_experiment()
 
-        self._updateConfigs()
+        self._update_configs()
 
-        state, safetyMet, actionDict = self._stateManager.getState(action)
+        state, safety_met, action_dict = self._state_manager.get_state(action)
 
-        outputsArray, outputsDict = self._machine.get_outputs(state)
-        reward, reqsMet = self._rewardManager.getReward(state, outputsDict, safetyMet)
+        outputs_array, outputs_dict = self._machine.get_outputs(state)
+        reward, reqs_met = self._reward_manager.get_reward(state, outputs_dict, safety_met)
 
-        logVariables = \
+        log_variables = \
             {"Reward": reward} | \
-            {"Safety Met": int(safetyMet)} | \
-            {"Requirements Met": int(reqsMet)} | \
-            actionDict | \
+            {"Safety Met": int(safety_met)} | \
+            {"Requirements Met": int(reqs_met)} | \
+            action_dict | \
             state | \
-            outputsDict
-        self._experimentTracker.log(logVariables)
+            outputs_dict
+        self._experiment_tracker.log(log_variables)
 
         info = dict()
-        self._stepIndex = self._stepIndex + 1
+        self._step_index = self._step_index + 1
         self._status = "RUNNING"
 
-        return outputsArray, reward, False, False, info
+        return outputs_array, reward, False, False, info
 
     def reset(self) -> tuple[np.array, dict]:
-        self._experimentTracker.reset()
-        self._rewardManager.reset()
-        initialState = self._stateManager.reset()
+        self._experiment_tracker.reset()
+        self._reward_manager.reset()
+        initial_state = self._state_manager.reset()
         self._machine.reset()
-        self._scenarioManager.reset()
+        self._scenario_manager.reset()
 
-        self._stepIndex = 0
-        self._config = self._initialConfig.copy()
+        self._step_index = 0
+        self._config = self._initial_config.copy()
 
-        observationArray, _ = self._machine.get_outputs(initialState)
+        observation_array, _ = self._machine.get_outputs(initial_state)
         info = dict()
 
         self._status = "READY"
-        return observationArray, info
+        return observation_array, info
 
     def render(self) -> None:
         pass
 
-    def _initExperiment(self) -> None:
-        self._experimentTracker.initRun()
+    def _init_experiment(self) -> None:
+        self._experiment_tracker.init_run()
 
-    def _updateConfigs(self) -> None:
-        self._scenarioManager.update_requirements(self._stepIndex, self._rewardManager.config.requirements)
+    def _update_configs(self) -> None:
+        self._scenario_manager.update_requirements(self._step_index, self._reward_manager.config.requirements)
 
-        changed_outputs = self._scenarioManager.update_output_models(self._stepIndex, self._machine.config.outputModels)
+        changed_outputs = self._scenario_manager.update_output_models(self._step_index, self._machine.config.output_models)
         self._machine.update(changed_outputs)
 
-        self._scenarioManager.update_disturbances(self._stepIndex, self._stateManager.config.disturbances)
+        self._scenario_manager.update_disturbances(self._step_index, self._state_manager.config.disturbances)

@@ -3,41 +3,45 @@ from gymnasium import Env, spaces
 from gymnasium.envs.registration import register
 from omegaconf import DictConfig
 
-from src.environment import TrainingEnvironment
+from src.abstract_base_class.environment import AbstractTrainingEnvironment
 
 
 class GymWrapper(Env):
     
-    def __init__(self, env: TrainingEnvironment, config: DictConfig, metadata: dict = None):
-        self.env = env
+    def __init__(self, env: AbstractTrainingEnvironment, config: DictConfig, metadata: dict = None):
+        self._env = env
         self._metadata = metadata
-        self._reward_range = self.env.rewardRange
+        self._reward_range = self._env.reward_range
         self._config = config
 
-        self._actionSpace = spaces.Box(
-            low=np.array([action.low for action in self._config.actionSpace.values()], dtype=np.float32),
-            high=np.array([action.high for action in self._config.actionSpace.values()], dtype=np.float32),
-            shape=(len(self._config.actionSpace),)
+        self._action_space = spaces.Box(
+            low=np.array([action.low for action in self._config.action_space.values()], dtype=np.float32),
+            high=np.array([action.high for action in self._config.action_space.values()], dtype=np.float32),
+            shape=(len(self._config.action_space),)
         )
 
-        self._observationSpace = spaces.Box(
-            low=np.array([obs.low for obs in self._config.observationSpace.values()], dtype=np.float32),
-            high=np.array([obs.high for obs in self._config.observationSpace.values()], dtype=np.float32),
-            shape=(len(self._config.observationSpace),)
+        self._observation_space = spaces.Box(
+            low=np.array([obs.low for obs in self._config.observation_space.values()], dtype=np.float32),
+            high=np.array([obs.high for obs in self._config.observation_space.values()], dtype=np.float32),
+            shape=(len(self._config.observation_space),)
         )
 
+    @property
+    def env(self):
+        return self._env
+    
     @property
     def reward_range(self):
         return self._reward_range
    
     def step(self, action: np.array):
-        return self.env.step(action)
+        return self._env.step(action)
 
     def reset(self, seed=None, options=None):
-        return self.env.reset()
+        return self._env.reset()
 
     def render(self):
-        return self.env.render()
+        return self._env.render()
 
 
 register(

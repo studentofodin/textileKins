@@ -1,7 +1,6 @@
 import pathlib as pl
 import importlib
 import sys
-
 import yaml
 from omegaconf import DictConfig
 import numpy as np
@@ -15,8 +14,8 @@ from src import model_interface
 class ModelWrapper(AbstractModelWrapper):
 
     def __init__(self, config: DictConfig):
-        self._initialConfig = config.copy()
-        self._n_outputs = len(config.outputModels)
+        self._initial_config = config.copy()
+        self._n_outputs = len(config.output_models)
 
         self._machine_models = dict()
         self.reset()
@@ -36,17 +35,17 @@ class ModelWrapper(AbstractModelWrapper):
         return self._n_outputs
 
     def get_outputs(self, inputs: dict[str, float]) -> tuple[np.array, dict[str, float]]:
-        mean_pred, std_pred = self._call_models(inputs)
-        outputs_array, outputs = self._sample_output_distribution(mean_pred, std_pred)
+        mean_pred, var_pred = self._call_models(inputs)
+        outputs_array, outputs = self._sample_output_distribution(mean_pred, var_pred)
         return outputs_array, outputs
 
     def update(self, changed_outputs: list[str]) -> None:
         for output_name in changed_outputs:
-            self._allocate_model_to_output(output_name, self._config.outputModels[output_name])
+            self._allocate_model_to_output(output_name, self._config.output_models[output_name])
 
     def reset(self) -> None:
-        self._config = self._initialConfig.copy()
-        for output_name, model_name in self._config.outputModels.items():
+        self._config = self._initial_config.copy()
+        for output_name, model_name in self._config.output_models.items():
             self._allocate_model_to_output(output_name, model_name)
 
     def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
@@ -65,14 +64,14 @@ class ModelWrapper(AbstractModelWrapper):
     def _sample_output_distribution(self, mean_pred: dict[str, np.array], var_pred: dict[str, np.array]) \
             -> (np.array, dict[str, float]):
         outputs = dict()
-        for output_name in self._config.outputModels.keys():
+        for output_name in self._config.output_models.keys():
             outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name])).item()
         outputs_array = np.array(tuple(outputs.values()))
         return outputs_array, outputs
 
     def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
         # load model properties dict from .yaml file.
-        with open(pl.Path(self._config.pathToModels) / (model_name + '.yaml'), 'r') as stream:
+        with open(pl.Path(self._config.path_to_models) / (model_name + '.yaml'), 'r') as stream:
             try:
                 properties = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
@@ -83,7 +82,7 @@ class ModelWrapper(AbstractModelWrapper):
 
         if model_class == "Gpytorch":
             data_load = pd.read_hdf(
-                pl.Path(self._config.pathToModels) / (model_name + ".hdf5")
+                pl.Path(self._config.path_to_models) / (model_name + ".hdf5")
             )
             if torch.cuda.is_available():
                 map_location = None
@@ -91,10 +90,10 @@ class ModelWrapper(AbstractModelWrapper):
                 map_location = torch.device('cpu')
                 Warning("No Cuda-enabled GPU found! Code execution will still work, but is significantly slower.")
             model_state = torch.load(
-                pl.Path(self._config.pathToModels) / (model_name + ".pth"), map_location=map_location
+                pl.Path(self._config.path_to_models) / (model_name + ".pth"), map_location=map_location
             )
             spec = importlib.util.spec_from_file_location("module.name",
-                                                          pl.Path(self._config.pathToModels) / (
+                                                          pl.Path(self._config.path_to_models) / (
                                                                   model_name + ".py"))
             model_lib = importlib.util.module_from_spec(spec)
             sys.modules["module.name"] = model_lib
@@ -102,10 +101,10 @@ class ModelWrapper(AbstractModelWrapper):
 
             mdl = model_interface.AdapterGpytorch(model_lib, data_load, model_state, properties, rescale_y=True)
         elif model_class == "SVGP":
-            path_to_pkl = pl.Path(self._config.pathToModels) / properties["model_path"]
+            path_to_pkl = pl.Path(self._config.path_to_models) / properties["model_path"]
             mdl = model_interface.AdapterSVGP(path_to_pkl, True)
         elif model_class == "GPy_GPR":
-            path_to_pkl = pl.Path(self._config.pathToModels) / properties["model_path"]
+            path_to_pkl = pl.Path(self._config.path_to_models) / properties["model_path"]
             mdl = model_interface.AdapterGPy(path_to_pkl, True)
         else:
             raise (TypeError(f"The model class {model_class} is not yet supported"))

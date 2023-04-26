@@ -16,7 +16,7 @@ class AbstractStateManager(ABC):
 
     @property
     @abstractmethod
-    def actionType(self) -> int:
+    def action_type(self) -> int:
         pass
 
     @property
@@ -30,7 +30,7 @@ class AbstractStateManager(ABC):
         pass
 
     @abstractmethod
-    def getState(self, action: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
+    def get_state(self, action: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
         """
         calculate controls from action.
         the state is a concatenation of controls and disturbances (listed in own config).
@@ -46,7 +46,7 @@ class AbstractStateManager(ABC):
         """
 
     @abstractmethod
-    def _safetyMet(self, controls: dict[str, float]) -> bool:
+    def _safety_met(self, controls: dict[str, float]) -> bool:
         """
         check if controls meet safety constraints.
         """

@@ -14,7 +14,7 @@ class AbstractExperimentTracker(ABC):
         pass
 
     @abstractmethod
-    def initRun(self):
+    def init_run(self):
         """
         initialize wandb.
         """
@@ -23,7 +23,7 @@ class AbstractExperimentTracker(ABC):
     @abstractmethod
     def log(self, logVariables: dict[str, float]) -> None:
         """
-        log the given logVariables in wandb.
+        log the given log_variables in wandb.
         """
         pass
 

@@ -14,11 +14,6 @@ class AbstractRewardManager(ABC):
     def config(self, c):
         pass
 
-    @property
-    @abstractmethod
-    def reward_range(self) -> tuple[float, float]:
-        pass
-
     @abstractmethod
     def get_reward(self, state: dict[str, float], outputs: dict[str, float],
                    safety_met: bool) -> tuple[float, bool]:

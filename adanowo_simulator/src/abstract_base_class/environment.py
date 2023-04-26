@@ -82,13 +82,6 @@ class AbstractTrainingEnvironment(ABC):
         pass
 
     @abstractmethod
-    def render(self) -> None:
-        """
-        not needed here.
-        """
-        pass
-
-    @abstractmethod
     def _init_experiment(self) -> None:
         """
         initializes experiment.

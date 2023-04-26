@@ -104,9 +104,6 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._status = "READY"
         return observation_array, info
 
-    def render(self) -> None:
-        pass
-
     def _init_experiment(self) -> None:
         self._experiment_tracker.init_run()
 

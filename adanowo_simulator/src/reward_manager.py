@@ -18,10 +18,6 @@ class RewardManager(AbstractRewardManager):
     def config(self, c):
         self._config = c
 
-    @property
-    def reward_range(self) -> tuple[float, float]:
-        return -float("inf"), float("inf")
-
     def get_reward(self, state: dict[str, float], outputs: dict[str, float], safety_met: bool) -> tuple[float, bool]:
         reqs_met = self._reqs_met(outputs)
 

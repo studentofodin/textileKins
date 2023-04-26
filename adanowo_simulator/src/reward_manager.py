@@ -6,9 +6,9 @@ from src.abstract_base_class.reward_manager import AbstractRewardManager
 class RewardManager(AbstractRewardManager):
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
+        self._config = None
         self.reset()
 
-        self._config = None
 
     @property
     def config(self) -> DictConfig:

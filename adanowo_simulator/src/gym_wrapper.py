@@ -12,7 +12,7 @@ class GymWrapper(Env):
         self._env = env
         self._metadata = metadata
         self._reward_range = self._env.reward_range
-        self._config = config
+        self._config = config.copy()
 
         self._action_space = spaces.Box(
             low=np.array([action.low for action in self._config.action_space.values()], dtype=np.float32),
@@ -29,7 +29,7 @@ class GymWrapper(Env):
     @property
     def env(self):
         return self._env
-    
+
     @property
     def reward_range(self):
         return self._reward_range

@@ -7,15 +7,14 @@ from src.abstract_base_class.state_manager import AbstractStateManager
 class StateManager(AbstractStateManager):
 
     def __init__(self, config: DictConfig, action_type: int):
+        self._action_type = action_type
         self._initial_config = config.copy()
+        self._action_names = [name + '_action' for name in list(config.initial_controls.keys())]
         self._n_controls = len(config.initial_controls)
         self._n_disturbances = len(config.disturbances)
-        self._action_type = action_type
-        self.reset()
-        self._action_names = [name + '_action' for name in list(self._controls.keys())]
-        self._controls = None
-
         self._config = None
+        self._controls = None
+        self.reset()
 
     @property
     def config(self) -> DictConfig:

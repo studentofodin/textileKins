@@ -7,8 +7,8 @@ class ScenarioManager(AbstractScenarioManager):
 
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
-        self.reset()
         self._config = None
+        self.reset()
 
     @property
     def config(self) -> DictConfig:

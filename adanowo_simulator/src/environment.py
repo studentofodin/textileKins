@@ -19,12 +19,12 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._experiment_tracker = experiment_tracker
         self._state_manager = state_manager
         self._scenario_manager = scenario_manager
-        self._config = None
-        self._initial_config = config.copy()
 
-        self.reset()
-        self._step_index = 0
+        self._initial_config = config.copy()
+        self._config = None
+        self._step_index = None
         self._status = None
+        self.reset()
 
     @property
     def config(self) -> DictConfig:

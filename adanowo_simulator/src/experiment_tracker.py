@@ -11,9 +11,9 @@ class ExperimentTracker(AbstractExperimentTracker):
         self._initial_config = config.copy()
         self._experiment_config = experiment_config.copy()
         self._run = None
+        self._config = None
         self.reset()
 
-        self._config = None
 
     @property
     def config(self) -> DictConfig:

@@ -15,12 +15,12 @@ class ModelWrapper(AbstractModelWrapper):
 
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
+        self._config = None
         self._n_outputs = len(config.output_models)
-
         self._machine_models = dict()
         self.reset()
 
-        self._config = None
+
 
     @property
     def config(self) -> DictConfig:

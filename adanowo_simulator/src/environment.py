@@ -111,9 +111,12 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._experiment_tracker.init_run()
 
     def _update_configs(self) -> None:
-        self._scenario_manager.update_requirements(self._step_index, self._reward_manager.config.requirements)
+        self._reward_manager.config.requirements = \
+            self._scenario_manager.update_requirements(self._step_index, self._reward_manager.config.requirements.copy())
 
-        changed_outputs = self._scenario_manager.update_output_models(self._step_index, self._machine.config.output_models)
+        self._machine.config.output_models, changed_outputs = \
+            self._scenario_manager.update_output_models(self._step_index, self._machine.config.output_models.copy())
         self._machine.update(changed_outputs)
 
-        self._scenario_manager.update_disturbances(self._step_index, self._state_manager.config.disturbances)
+        self._state_manager.config.disturbances = \
+            self._scenario_manager.update_disturbances(self._step_index, self._state_manager.config.disturbances.copy())

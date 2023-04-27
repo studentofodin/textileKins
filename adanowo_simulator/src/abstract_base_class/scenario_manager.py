@@ -13,22 +13,23 @@ class AbstractScenarioManager(ABC):
     def config(self, c):
         pass
 
-    def update_output_models(self, step_index: int, output_models_config: DictConfig) -> list[str]:
+    def update_output_models(self, step_index: int, output_models_config: DictConfig) -> tuple[DictConfig, list[str]]:
         """
         change the output_models_config according to own config.
-        return the output names which the model entry in the output_models_config was changed for.
+        return the changed output_models_config and the output names which the model entry in the output_models_config
+        was changed for.
         """
         pass
 
-    def update_requirements(self, step_index: int, requirements_config: DictConfig) -> None:
+    def update_requirements(self, step_index: int, requirements_config: DictConfig) -> DictConfig:
         """
-        change the requirements_config according to own config.
+        change and return the requirements_config according to own config.
         """
         pass
 
-    def update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> None:
+    def update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> DictConfig:
         """
-        change the disturbance_config according to own config.
+        change and return the disturbance_config according to own config.
         """
         pass
 

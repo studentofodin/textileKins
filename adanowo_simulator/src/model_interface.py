@@ -1,5 +1,4 @@
 from typing import OrderedDict
-
 import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
@@ -50,7 +49,7 @@ class AdapterGpytorch(AbstractModelInterface):
             ("identity", IdentityTransformer())
         )
         self._pipe = Pipeline(list_transform)
-        self._pipe.fit(x_numpy)
+        self._pipe = self._pipe.fit(x_numpy)
 
         if self._properties["y_is_scaled"]:
             self._scaler_y = RobustScaler().fit(y_numpy)

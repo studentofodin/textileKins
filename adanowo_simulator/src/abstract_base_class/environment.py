@@ -29,32 +29,32 @@ class AbstractTrainingEnvironment(ABC):
 
     @property
     @abstractmethod
-    def rewardManager(self) -> AbstractRewardManager:
+    def reward_manager(self) -> AbstractRewardManager:
         pass
 
     @property
     @abstractmethod
-    def stateManager(self) -> AbstractStateManager:
+    def state_manager(self) -> AbstractStateManager:
         pass
 
     @property
     @abstractmethod
-    def experimentTracker(self) -> AbstractExperimentTracker:
+    def experiment_tracker(self) -> AbstractExperimentTracker:
         pass
 
     @property
     @abstractmethod
-    def scenarioManager(self) -> AbstractScenarioManager:
+    def scenario_manager(self) -> AbstractScenarioManager:
         pass
 
     @property
     @abstractmethod
-    def rewardRange(self) -> tuple[float, float]:
+    def reward_range(self) -> tuple[float, float]:
         pass
 
     @property
     @abstractmethod
-    def stepIndex(self):
+    def step_index(self):
         pass
 
     @abstractmethod
@@ -82,22 +82,15 @@ class AbstractTrainingEnvironment(ABC):
         pass
 
     @abstractmethod
-    def render(self) -> None:
-        """
-        not needed here.
-        """
-        pass
-
-    @abstractmethod
-    def _initExperiment(self) -> None:
+    def _init_experiment(self) -> None:
         """
         initializes experiment.
         """
         pass
 
     @abstractmethod
-    def _updateConfigs(self) -> None:
+    def _update_configs(self) -> None:
         """
-        updates the configs of itself, machine, reward, stateManager and experimentTracker primarily using the
-        scenarioManager.
+        updates the configs of itself, machine, reward, state_manager and experiment_tracker primarily using the
+        scenario_manager.
         """

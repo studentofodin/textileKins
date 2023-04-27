@@ -15,27 +15,28 @@ from src.environment import TrainingEnvironment
 def main(configuration: DictConfig):
 
     config = configuration
-    experimentTracker = ExperimentTracker(config.experimentTracker, config)
-    rewardManager = RewardManager(config.product_setup)
-    stateManager = StateManager(config.process_setup, actionType=1)  # actionType 0 for relative | 1 for absolute
-    modelWrapper = ModelWrapper(OmegaConf.merge({"pathToModels": config.env_setup.pathToModels},
-                                                {"outputModels": config.env_setup.outputModels}))
-    scenarioManager = ScenarioManager(config.scenario_setup)
-    trainingEnv = TrainingEnvironment(OmegaConf.create(), modelWrapper, rewardManager, stateManager, experimentTracker,
-                                      scenarioManager)
-    env = GymWrapper(trainingEnv, OmegaConf.merge({"actionSpace": config.env_setup.actionSpace},
-                                                  {"observationSpace": config.env_setup.observationSpace}))
+    experiment_tracker = ExperimentTracker(config.experiment_tracker, config)
+    reward_manager = RewardManager(config.product_setup)
+    # action_type 0 for relative | 1 for absolute
+    state_manager = StateManager(config.process_setup, action_type=1)  
+    model_wrapper = ModelWrapper(OmegaConf.merge({"path_to_models": config.env_setup.path_to_models},
+                                                {"output_models": config.env_setup.output_models}))
+    scenario_manager = ScenarioManager(config.scenario_setup)
+    training_env = TrainingEnvironment(OmegaConf.create(), model_wrapper, reward_manager, state_manager,
+                                       experiment_tracker, scenario_manager)
+    env = GymWrapper(training_env, OmegaConf.merge({"action_space": config.env_setup.action_space},
+                                                  {"observation_space": config.env_setup.observation_space}))
 
     for _ in range(10):
-        # env.step(np.random.uniform(-0.5, 0.5, env.env.stateManager.n_controls)) # for actionType == relative
-        env.step(np.random.uniform(0, 1, env.env.stateManager.n_controls))  # for actionType == absolute
+        # env.step(np.random.uniform(-0.5, 0.5, env.env.state_manager.n_controls)) # for action_type == relative
+        env.step(np.random.uniform(0, 1, env.env.state_manager.n_controls))  # for action_type == absolute
 
     env.reset()
     pass
 
     for _ in range(10):
-        # env.step(np.random.uniform(-0.5, 0.5, env.env.stateManager.n_controls)) # for actionType == relative
-        env.step(np.random.uniform(0, 1, env.env.stateManager.n_controls))  # for actionType == absolute
+        # env.step(np.random.uniform(-0.5, 0.5, env.env.state_manager.n_controls)) # for action_type == relative
+        env.step(np.random.uniform(0, 1, env.env.state_manager.n_controls))  # for action_type == absolute
 
     pass
 

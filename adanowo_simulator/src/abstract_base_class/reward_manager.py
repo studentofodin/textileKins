@@ -14,14 +14,9 @@ class AbstractRewardManager(ABC):
     def config(self, c):
         pass
 
-    @property
     @abstractmethod
-    def reward_range(self) -> tuple[float, float]:
-        pass
-
-    @abstractmethod
-    def getReward(self, state: dict[str, float], outputs: dict[str, float],
-                  safetyMet: bool) -> tuple[float, bool]:
+    def get_reward(self, state: dict[str, float], outputs: dict[str, float],
+                   safety_met: bool) -> tuple[float, bool]:
         """
         determine reward value from state and outputs.
         also determine if outputs meet requirement constraints.
@@ -38,7 +33,7 @@ class AbstractRewardManager(ABC):
         pass
 
     @abstractmethod
-    def _reqsMet(self, outputs: dict[str, float]) -> bool:
+    def _reqs_met(self, outputs: dict[str, float]) -> bool:
         """
         check if outputs meet requirement constraints.
         """

@@ -1,16 +1,16 @@
-outputModels:
-  # [[timestep1, modelname1], [timestep2, modelname2],...]
+output_models:
+  # [[step_index_1, model_name_1], [step_index_2, model_name_2],...]
   min_area_weight: [[2, "min_area_weight1"]]
 requirements:
-  # [[timestep1, value1], [timestep2, value2],...]
-  simpleOutputBounds:
+  # [[step_index_1, value_1], [step_index_2, value_2],...]
+  simple_output_bounds:
     lower: {}
     upper:
       unevenness_card_web: [[3, 25.0], [4, 30.0]]
-  complexConstraints:
-    multMax: [[5, 180]]
+  complex_constraints:
+    mult_max: [[5, 180]]
 disturbances:
   Ishikawa_WeightPerAreaCardDelivery:
-    timeStep: 2
+    trigger_duration: 2
     mean: 0.8
     std: 0.1

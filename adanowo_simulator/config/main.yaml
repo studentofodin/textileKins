@@ -4,6 +4,6 @@ defaults:
   - product_setup: test
   - scenario_setup: test
   - _self_
-experimentTracker:
+experiment_tracker:
   project: adanowo-simulator
   mode: online

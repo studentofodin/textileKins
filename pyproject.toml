@@ -19,9 +19,6 @@ scipy = "^1.10.1"
 Kivy = "^2.1.0"
 gpytorch = ">=1.9.1"
 
-[tool.poetry.dev-dependencies]
-pytest = "^5.2"
-
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

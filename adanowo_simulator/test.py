@@ -9,12 +9,16 @@ from src.gym_wrapper import GymWrapper
 from src.model_wrapper import ModelWrapper
 from src.scenario_manager import ScenarioManager
 from src.environment import TrainingEnvironment
+from src.config_checker import ConfigChecker
 
 
 @hydra.main(version_base=None, config_path="./config", config_name="main")
 def main(configuration: DictConfig):
 
     config = configuration
+    config_checker = ConfigChecker(config)
+    config_checker.check_config()
+
     experiment_tracker = ExperimentTracker(config.experiment_tracker, config)
     reward_manager = RewardManager(config.product_setup)
     # action_type 0 for relative | 1 for absolute
@@ -26,6 +30,7 @@ def main(configuration: DictConfig):
                                        experiment_tracker, scenario_manager)
     env = GymWrapper(training_env, OmegaConf.merge({"action_space": config.env_setup.action_space},
                                                   {"observation_space": config.env_setup.observation_space}))
+
 
     for _ in range(10):
         # env.step(np.random.uniform(-0.5, 0.5, env.env.state_manager.n_controls)) # for action_type == relative

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from omegaconf import DictConfig
 
+
 class AbstractExperimentTracker(ABC):
 
     @property

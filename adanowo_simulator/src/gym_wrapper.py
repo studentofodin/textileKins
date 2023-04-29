@@ -44,6 +44,7 @@ class GymWrapper(Env):
         return self._env.reset()
 
 
+
 register(
     id='adaNowo-simulator-v0',
     entry_point='src.base_classes.gym_wrapper.GymWrapper'

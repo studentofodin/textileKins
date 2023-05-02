@@ -71,11 +71,11 @@ class ExactGPModel(gpytorch.models.ExactGP):
             ),
             ScaleKernel(
                 RQKernel(ard_num_dims=1, active_dims=(3,),
-                         lengthscale_constraint=GreaterThan(45.0)),
+                         lengthscale_constraint=GreaterThan(60.0)),
             ),
             ScaleKernel(
                 RQKernel(ard_num_dims=1, active_dims=(5,),
-                         lengthscale_constraint=GreaterThan(45.0)),
+                         lengthscale_constraint=GreaterThan(60.0)),
             ),
             ScaleKernel(
                 RQKernel(ard_num_dims=1, active_dims=(6,),

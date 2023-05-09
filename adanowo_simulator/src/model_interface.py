@@ -20,6 +20,7 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
     def fit(self, input_array, y=None):
         return self
 
+    @staticmethod
     def transform(self, input_array, y=None):
         return input_array * 1
 
@@ -63,8 +64,7 @@ class AdapterGpytorch(AbstractModelInterface):
                 y_numpy
             ))
             self._likelihood = model_module.likelihood.cuda()
-            self._model = model_module.ExactGPModel(x_tensor, y_tensor, self._likelihood,
-                                                    model_properties["lengthscale_constraint"]).cuda()
+            self._model = model_module.ExactGPModel(x_tensor, y_tensor, self._likelihood).cuda()
         else:
             self._Tensor = torch.FloatTensor
             x_tensor = self._numpy_to_model_input(x_numpy)
@@ -72,8 +72,7 @@ class AdapterGpytorch(AbstractModelInterface):
                 y_numpy
             ))
             self._likelihood = model_module.likelihood
-            self._model = model_module.ExactGPModel(x_tensor, y_tensor, self._likelihood,
-                                                    model_properties["lengthscale_constraint"])
+            self._model = model_module.ExactGPModel(x_tensor, y_tensor, self._likelihood)
         self._model.load_state_dict(model_state)
         self._model.eval()
         self._likelihood.eval()

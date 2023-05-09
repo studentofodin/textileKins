@@ -1,0 +1,25 @@
+penalty : 100.0
+requirements:
+  simple_output_bounds:
+    lower:
+        areaWeightLane1: 140.0
+        areaWeightLane2: 140.0
+        areaWeightLane3: 140.0
+        tensileStrengthCD: 650.0
+        tensileStrengthMD: 400.0
+    upper:
+        areaWeightLane1: 300.0
+        areaWeightLane2: 300.0
+        areaWeightLane3: 300.0
+  complex_constraints:
+    mult_min:
+    mult_max:
+reward_function:
+  fibre_costs: 1.20 # € per kg
+  energy_costs: 0.28 # € per kWh
+  selling_price: 2.50 # € per sqm
+  floor_quality_weight: 10.0
+reward_range:
+  lower: -2000
+  upper: 10000
+

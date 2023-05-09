@@ -20,8 +20,6 @@ class ModelWrapper(AbstractModelWrapper):
         self._machine_models = dict()
         self.reset()
 
-
-
     @property
     def config(self) -> DictConfig:
         return self._config
@@ -100,12 +98,6 @@ class ModelWrapper(AbstractModelWrapper):
             spec.loader.exec_module(model_lib)
 
             mdl = model_interface.AdapterGpytorch(model_lib, data_load, model_state, properties, rescale_y=True)
-        elif model_class == "SVGP":
-            path_to_pkl = pl.Path(self._config.path_to_models) / properties["model_path"]
-            mdl = model_interface.AdapterSVGP(path_to_pkl, True)
-        elif model_class == "GPy_GPR":
-            path_to_pkl = pl.Path(self._config.path_to_models) / properties["model_path"]
-            mdl = model_interface.AdapterGPy(path_to_pkl, True)
         else:
             raise (TypeError(f"The model class {model_class} is not yet supported"))
         self._machine_models[output_name] = mdl

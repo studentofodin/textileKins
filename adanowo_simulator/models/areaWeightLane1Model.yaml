@@ -1,0 +1,17 @@
+name: areaWeightLane1Model
+model_class: Gpytorch
+data_source: Augsburg
+inputs:
+  - WeightPerAreaCardDelivery
+  - LayersCount
+  - DraftRatioNeedleloom1Intake
+  - DraftRatioNeedleloom
+  - Profiling
+  - DrawFrameDraftRatio
+output: areaWeightLane1
+training_inputs:
+  - weight_per_area_theoretical
+training_target: areaWeightLane1Labor
+y_is_scaled: True
+X_is_scaled: True
+pca_on_inputs: False

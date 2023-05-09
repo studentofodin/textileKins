@@ -1,7 +1,6 @@
-import numpy as np
 import gpytorch
-from gpytorch.kernels import ScaleKernel, PolynomialKernel, RBFKernel, AdditiveKernel, ProductKernel
-from gpytorch.constraints import Interval
+import numpy as np
+from gpytorch.kernels import (PolynomialKernel, ScaleKernel)
 
 
 def unpack_dict(X: dict, training_features: list[str]) -> np.array:
@@ -15,21 +14,20 @@ def unpack_dict(X: dict, training_features: list[str]) -> np.array:
     for f in training_features:
         if f == "weight_per_area_theoretical":
             weight_per_area_theoretical = \
-                X["Ishikawa_WeightPerAreaCardDelivery"] * \
-                X["Ishikawa_LayersCount"] / \
-                prcnt_to_mult(X["Ishikawa_DraftRatioNeedleloom1Intake"]) / \
-                prcnt_to_mult(X["Ishikawa_DraftRatioNeedleloom"])
+                X["CardDeliveryWeightPerArea"] * \
+                X["Cross-lapperLayersCount"].round()*2 / \
+                prcnt_to_mult(X["Needleloom1DraftRatioIntake"]) / \
+                prcnt_to_mult(X["Needleloom1DraftRatio"]) / \
+                prcnt_to_mult(X["DrawFrameDraftRatio"])
             X_unpacked.append(weight_per_area_theoretical)
     return np.concatenate(X_unpacked, axis=1)
 
 
-likelihood = gpytorch.likelihoods.GaussianLikelihood(noise_constraint=Interval(0.148, 0.149))
-# noise is constrained because we assume three samples are taken each time, decreasing the expected sample variance by
-# 1/3rd. Original noise was 0.447.
+likelihood = gpytorch.likelihoods.GaussianLikelihood()
 
 
 class ExactGPModel(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood_mdl, lengthscale_constraint):
+    def __init__(self, train_x, train_y, likelihood_mdl):
         super(ExactGPModel, self).__init__(train_x, train_y, likelihood_mdl)
 
         kernel = ScaleKernel(

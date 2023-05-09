@@ -74,11 +74,11 @@ class StateManager(AbstractStateManager):
                 safety_met = False
 
         # check more complex, relational constraints.
-        constr_sum = 0
-        for control_name, value in controls.items():
-            constr_sum = constr_sum + value
-        if (constr_sum < self._config.safety.complex_constraints.add_min) or \
-                (constr_sum > self._config.safety.complex_constraints.add_max):
-            safety_met = False
+        # constr_sum = 0
+        # for control_name, value in controls.items():
+        #     constr_sum = constr_sum + value
+        # if (constr_sum < self._config.safety.complex_constraints.add_min) or \
+        #         (constr_sum > self._config.safety.complex_constraints.add_max):
+        #     safety_met = False
 
         return safety_met

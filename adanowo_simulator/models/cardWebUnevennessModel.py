@@ -1,7 +1,12 @@
-import numpy as np
 import gpytorch
-from gpytorch.kernels import ScaleKernel, PolynomialKernel, RBFKernel, AdditiveKernel, ProductKernel
-from gpytorch.constraints import GreaterThan
+import numpy as np
+from gpytorch.constraints import GreaterThan, Interval
+from gpytorch.kernels import (AdditiveKernel, PolynomialKernel, ProductKernel,
+                              RBFKernel, ScaleKernel)
+
+
+SCALE_AREA_WEIGHT = 0.158
+SCALE_THROUGHPUT = 0.030
 
 
 def unpack_dict(X: dict, training_features: list[str]) -> np.array:
@@ -10,21 +15,22 @@ def unpack_dict(X: dict, training_features: list[str]) -> np.array:
     X_unpacked = []
     for f in training_features:
         if f == "FG_soll":
-            X_unpacked.append(X["Ishikawa_WeightPerAreaCardDelivery"])
+            X_unpacked.append(X["CardDeliveryWeightPerArea"] * SCALE_AREA_WEIGHT)
         elif f == "mean_mass_cylinders":
             velocities = np.concatenate(
                 (
-                    X["v_Vorreisser"],
-                    X["v_Arbeiter_HT"],
-                    X["v_Wender_HT"],
-                    X["v_Arbeiter_VR"],
-                    X["v_Wender_VR"]
+                    X["v_PreRoll"],
+                    X["v_MainCylinder"],
+                    X["v_WorkerMain"],
+                    X["v_StripperMain"],
+                    X["v_WorkerPre"],
+                    X["v_StripperPre"]
                 ), axis=1
             )
-            mean_masses = np.divide(X["Ishikawa_CardMassThroughputSetpoint"], velocities)
+            mean_masses = np.divide(X["CardMassThroughputSetpoint"] * SCALE_THROUGHPUT, velocities)
             X_unpacked.append(np.mean(mean_masses, axis=1).reshape(-1, 1))
         elif f == "Diff_ArbeiterZuWender":
-            X_unpacked.append(X["v_Arbeiter_HT"] - X["v_Wender_HT"])
+            X_unpacked.append(X["v_WorkerMain"] - X["v_StripperMain"])
     return np.concatenate(X_unpacked, axis=1)
 
 
@@ -32,7 +38,7 @@ likelihood = gpytorch.likelihoods.GaussianLikelihood()
 
 
 class ExactGPModel(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood_mdl, lengthscale_constraint):
+    def __init__(self, train_x, train_y, likelihood_mdl):
         super(ExactGPModel, self).__init__(train_x, train_y, likelihood_mdl)
 
         kernel = AdditiveKernel(
@@ -40,7 +46,7 @@ class ExactGPModel(gpytorch.models.ExactGP):
                 ProductKernel(PolynomialKernel(power=1, ard_num_dims=1, active_dims=(0,)),
                               RBFKernel(ard_num_dims=1, active_dims=(0,)))
             ),
-            ScaleKernel(RBFKernel(ard_num_dims=3, lengthscale_constraint=GreaterThan(lengthscale_constraint)))
+            ScaleKernel(RBFKernel(ard_num_dims=3, lengthscale_constraint=GreaterThan(0.4)))
         )
 
         self.mean_module = gpytorch.means.ConstantMean()

@@ -16,10 +16,12 @@ def unpack_dict(X: dict, training_features: list[str]) -> np.array:
             weight_per_area_theoretical = \
                 X["CardDeliveryWeightPerArea"] * \
                 X["Cross-lapperLayersCount"].round()*2 / \
+                prcnt_to_mult(X["Needleloom2DraftRatio"]) / \
                 prcnt_to_mult(X["Needleloom1DraftRatioIntake"]) / \
                 prcnt_to_mult(X["Needleloom1DraftRatio"]) / \
-                prcnt_to_mult(X["Cross-lapperProfiling"]) / \
-                prcnt_to_mult(X["DrawFrameDraftRatio"])
+                prcnt_to_mult(X["Cross-lapperProfiling"]*-1) / \
+                prcnt_to_mult(X["DrawFrameDraftRatio"]) - \
+                X["SmileEffectStrength"]
             X_unpacked.append(weight_per_area_theoretical)
     return np.concatenate(X_unpacked, axis=1)
 

@@ -1,23 +1,10 @@
-KG_H_TO_G_MIN = 100/6
+from src.helper_functions import calc_line_speed
+
 MIN_TO_H = 60
 
 
-def prcnt_to_mult(prcnt: float) -> float:
-    return (prcnt / 100) + 1
-
-
 def baseline_reward(state: dict[str, float], outputs: dict[str, float], config) -> float:
-    weight_per_area_theoretical = \
-        state["CardDeliveryWeightPerArea"] * \
-        state["Cross-lapperLayersCount"] * 2 / \
-        prcnt_to_mult(state["Needleloom1DraftRatioIntake"]) / \
-        prcnt_to_mult(state["Needleloom1DraftRatio"]) / \
-        prcnt_to_mult(state["DrawFrameDraftRatio"])
-    line_speed = \
-        state["CardMassThroughputSetpoint"] / \
-        weight_per_area_theoretical / \
-        state["ProductWidth"] * \
-        KG_H_TO_G_MIN
+    line_speed = calc_line_speed(state)
 
     # material costs
     material_costs = state["CardMassThroughputSetpoint"] * config.fibre_costs

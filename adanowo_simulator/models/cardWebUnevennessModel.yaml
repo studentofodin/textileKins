@@ -19,3 +19,4 @@ training_target: Wolkigkeit
 y_is_scaled: True
 X_is_scaled: True
 pca_on_inputs: True
+keep_y_scaled: True

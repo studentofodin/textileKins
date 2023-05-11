@@ -97,7 +97,13 @@ class ModelWrapper(AbstractModelWrapper):
             sys.modules["module.name"] = model_lib
             spec.loader.exec_module(model_lib)
 
-            mdl = model_interface.AdapterGpytorch(model_lib, data_load, model_state, properties, rescale_y=True)
+            if "keep_y_scaled" in properties:
+                rescale_y_temp = not bool(properties["keep_y_scaled"])
+            else:
+                rescale_y_temp = True
+
+            mdl = model_interface.AdapterGpytorch(model_lib, data_load, model_state, properties,
+                                                  rescale_y=rescale_y_temp)
         else:
             raise (TypeError(f"The model class {model_class} is not yet supported"))
         self._machine_models[output_name] = mdl

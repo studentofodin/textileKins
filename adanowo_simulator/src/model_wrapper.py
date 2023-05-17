@@ -56,7 +56,7 @@ class ModelWrapper(AbstractModelWrapper):
         else:
             for output_name, model in self._machine_models.items():
                 mean_pred[output_name], var_pred[output_name] = \
-                    model.predict_y(inputs)
+                    model.predict_y(inputs, observation_noise_only=True)
         return mean_pred, var_pred
 
     def _sample_output_distribution(self, mean_pred: dict[str, np.array], var_pred: dict[str, np.array]) \

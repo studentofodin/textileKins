@@ -13,7 +13,7 @@ class AbstractModelInterface(ABC):
         pass
 
     @abstractmethod
-    def predict_y(self, X: dict[str, float]) -> tuple[np.array, np.array]:
+    def predict_y(self, X: dict[str, float], **kwargs) -> tuple[np.array, np.array]:
         """
         predict mean and standard deviation of output from input X with inclusion of noise.
         """

@@ -1,6 +1,6 @@
 name: areaWeightLane2Model
-model_class: Gpytorch
-data_source: Augsburg
+model_class: Python_script
+data_source: None
 inputs:
   - WeightPerAreaCardDelivery
   - LayersCount
@@ -9,9 +9,3 @@ inputs:
   - Profiling
   - DrawFrameDraftRatio
 output: areaWeightLane2
-training_inputs:
-  - weight_per_area_theoretical
-training_target: areaWeightLane1Labor
-y_is_scaled: True
-X_is_scaled: True
-pca_on_inputs: False

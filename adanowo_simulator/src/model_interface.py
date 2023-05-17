@@ -1,4 +1,5 @@
 from typing import OrderedDict
+
 import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
@@ -9,6 +10,7 @@ from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from src.abstract_base_class.model_interface import AbstractModelInterface
+from src.abstract_base_class.python_script_model import AbstractPyScriptModule
 
 CUDA_GPU_AVAILABLE = torch.cuda.is_available()
 
@@ -117,6 +119,28 @@ class AdapterGpytorch(AbstractModelInterface):
         y_pred, var = self._predict_y_internal(X)
         return y_pred, var
 
+
+class AdapterPyScript(AbstractModelInterface):
+
+    def __init__(self, model_module: AbstractPyScriptModule, model_properties: dict) -> None:
+        self._properties = model_properties
+        self._scaler_y = None
+        self._model = model_module.model
+
+    def _predict_f_internal(self, X: np.array) -> [np.array, np.array]:
+        pass
+
+    def _predict_y_internal(self, X: np.array) -> [np.array, np.array]:
+        pass
+
+    def predict_f(self, X: dict) -> np.array:
+        f_pred, var = self._model(X)
+        var = np.zeros_like(var)
+        return f_pred, var
+
+    def predict_y(self, X: dict) -> np.array:
+        f_pred, var = self._model(X)
+        return f_pred, var
 
 # class AdapterSVGP(AbstractModelInterface):
 #

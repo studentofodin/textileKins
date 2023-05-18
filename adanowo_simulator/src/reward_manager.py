@@ -1,14 +1,17 @@
+from typing import Callable
+
 from omegaconf import DictConfig
 
 from src.abstract_base_class.reward_manager import AbstractRewardManager
 
 
 class RewardManager(AbstractRewardManager):
-    def __init__(self, config: DictConfig):
+    def __init__(self, config: DictConfig, reward_function: Callable):
         self._initial_config = config.copy()
         self._config = None
+        self._reward_function = reward_function
+        self._reward_range = (config.reward_range.lower, config.reward_range.upper)
         self.reset()
-
 
     @property
     def config(self) -> DictConfig:
@@ -17,6 +20,10 @@ class RewardManager(AbstractRewardManager):
     @config.setter
     def config(self, c):
         self._config = c
+
+    @property
+    def reward_range(self) -> tuple[float, float]:
+        return self._reward_range
 
     def get_reward(self, state: dict[str, float], outputs: dict[str, float], safety_met: bool) -> tuple[float, bool]:
         reqs_met = self._reqs_met(outputs)
@@ -27,13 +34,7 @@ class RewardManager(AbstractRewardManager):
 
         # no penalty.
         else:
-            target_a = outputs["min_area_weight"]
-            target_b = outputs["unevenness_card_web"]
-            cost = state["v_Arbeiter_HT"]
-            w1 = self._config.weights.w1
-            w2 = self._config.weights.w2
-            fibre_costs = self._config.fibre_settings.fibre_costs
-            reward = w1*fibre_costs*target_a + w2*target_b - cost
+            reward = self._reward_function(state, outputs, self._config.reward_function)
 
         return reward, reqs_met
 
@@ -53,11 +54,11 @@ class RewardManager(AbstractRewardManager):
                 reqs_met = False
 
         # check more complex, relational constraints.
-        product = 1
-        for output_name, value in outputs.items():
-            product = product * value
-        if (product < self._config.requirements.complex_constraints.mult_min) or \
-                (product > self._config.requirements.complex_constraints.mult_max):
-            reqs_met = False
+        # product = 1
+        # for output_name, value in outputs.items():
+        #     product = product * value
+        # if (product < self._config.requirements.complex_constraints.mult_min) or \
+        #         (product > self._config.requirements.complex_constraints.mult_max):
+        #     reqs_met = False
 
         return reqs_met

@@ -14,7 +14,6 @@ class ExperimentTracker(AbstractExperimentTracker):
         self._config = None
         self.reset()
 
-
     @property
     def config(self) -> DictConfig:
         return self._config

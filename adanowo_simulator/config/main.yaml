@@ -1,9 +1,9 @@
 defaults:
-  - env_setup: test
-  - process_setup: test
-  - product_setup: test
-  - scenario_setup: test
+  - env_setup: baseline
+  - process_setup: baseline
+  - product_setup: baseline
+  - scenario_setup: baseline
   - _self_
 experiment_tracker:
   project: adanowo-simulator
-  mode: offline
+  mode: online

@@ -1,0 +1,26 @@
+name: tensileStrengthMDModel
+model_class: Gpytorch
+data_source: BNP
+inputs:
+  - Cross-lapperLayersCount
+  - CardDeliveryWeightPerArea
+  - Needleloom1FeedPerStroke
+  - Needleloom1DraftRatio
+  - Needleloom2NeedlepunchDepth
+  - DrawFrameDraftRatio
+  - ProductUnico30
+  - Needleloom2DraftRatio
+output: TensileStrengthMD
+training_inputs:
+  - CL01_LayersCalculatorLayers
+  - M_031_K_AbliefGew_g_m2
+  - M_015_NM1_Vorschub_mm_H
+  - M_007_NM1_AuszVerzug_Proznt
+  - M_017_NM2_Einsttiefe_mm
+  - D_018_SW_Gesamtverzug_Perc
+  - Product_UNICO-30
+  - M_010_NM2_AuszVerzug_Proz
+training_target: Fmax_MD
+y_is_scaled: True
+X_is_scaled: False
+pca_on_inputs: False

@@ -1,0 +1,26 @@
+name: linePowerConsumptionModel
+model_class: Gpytorch
+data_source: BNP
+inputs:
+  - LineDeliverySpeed
+  - CardMassThroughputSetpoint
+  - FeederDeliverySpeed
+  - Cross-lapperBeltSpeed
+  - Needleloom1FeedPerStroke
+  - Needleloom1FeedPerStroke
+output: LinePowerConsumption
+training_inputs:
+  # line setting
+  - D_009_NM2_AuszGeschwS_m_min
+  - D_036_K_Durchsatz_Ist_kg_h
+  # card
+  - M_010_FS_Zufuehr_m_min
+  # cross-lapper
+  - CL01_BeltSpeedActual
+  # needlelooms
+  - M_015_NM1_Vorschub_mm_H
+  - M_005_NM2_Vorschub_mm_H
+training_target: LeistungsmessungGesamtlinie
+y_is_scaled: True
+X_is_scaled: True
+pca_on_inputs: False

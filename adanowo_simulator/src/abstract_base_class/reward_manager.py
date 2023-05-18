@@ -32,9 +32,18 @@ class AbstractRewardManager(ABC):
         """
         pass
 
+
     @abstractmethod
     def _reqs_met(self, outputs: dict[str, float]) -> bool:
         """
         check if outputs meet requirement constraints.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def reward_range(self) -> tuple[float, float]:
+        """
+        Return interval of possible reward values.
         """
         pass

@@ -28,3 +28,5 @@ safety:
   complex_constraints:
     add_min: 2.0
     add_max: 8.0
+
+    # do not forget to add line speed constraint

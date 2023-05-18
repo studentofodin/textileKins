@@ -1,4 +1,6 @@
 from typing import OrderedDict
+from copy import copy
+
 import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
@@ -9,6 +11,7 @@ from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from src.abstract_base_class.model_interface import AbstractModelInterface
+from src.abstract_base_class.python_script_model import AbstractPyScriptModule
 
 CUDA_GPU_AVAILABLE = torch.cuda.is_available()
 
@@ -20,6 +23,7 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
     def fit(self, input_array, y=None):
         return self
 
+    @staticmethod
     def transform(self, input_array, y=None):
         return input_array * 1
 
@@ -63,8 +67,7 @@ class AdapterGpytorch(AbstractModelInterface):
                 y_numpy
             ))
             self._likelihood = model_module.likelihood.cuda()
-            self._model = model_module.ExactGPModel(x_tensor, y_tensor, self._likelihood,
-                                                    model_properties["lengthscale_constraint"]).cuda()
+            self._model = model_module.ExactGPModel(x_tensor, y_tensor, self._likelihood).cuda()
         else:
             self._Tensor = torch.FloatTensor
             x_tensor = self._numpy_to_model_input(x_numpy)
@@ -72,11 +75,14 @@ class AdapterGpytorch(AbstractModelInterface):
                 y_numpy
             ))
             self._likelihood = model_module.likelihood
-            self._model = model_module.ExactGPModel(x_tensor, y_tensor, self._likelihood,
-                                                    model_properties["lengthscale_constraint"])
+            self._model = model_module.ExactGPModel(x_tensor, y_tensor, self._likelihood)
+
         self._model.load_state_dict(model_state)
         self._model.eval()
         self._likelihood.eval()
+
+        noise_var_scaled = self._likelihood.noise.cpu().detach().numpy().reshape(-1, 1)
+        _, self._noise_variance = self._rescaler_y(noise_var_scaled, noise_var_scaled)
 
     def _numpy_to_model_input(self, x_temp: np.array) -> torch.FloatTensor:
         tensor_out = self._Tensor(
@@ -113,11 +119,39 @@ class AdapterGpytorch(AbstractModelInterface):
         y_pred, var = self._predict_f_internal(X)
         return y_pred, var
 
-    def predict_y(self, X: dict) -> np.array:
+    def predict_y(self, X: dict, **kwargs) -> np.array:
         X = self._unpack_func(X, self._properties["training_inputs"])
         y_pred, var = self._predict_y_internal(X)
+        if "observation_noise_only" in kwargs:
+            if kwargs["observation_noise_only"]:
+                var_scalar = copy(self._noise_variance)
+                var = np.ones_like(y_pred) * var_scalar
+        else:
+            ValueError("Nope")
         return y_pred, var
 
+
+class AdapterPyScript(AbstractModelInterface):
+
+    def __init__(self, model_module: AbstractPyScriptModule, model_properties: dict) -> None:
+        self._properties = model_properties
+        self._scaler_y = None
+        self._model = model_module.model
+
+    def _predict_f_internal(self, X: np.array) -> [np.array, np.array]:
+        pass
+
+    def _predict_y_internal(self, X: np.array) -> [np.array, np.array]:
+        pass
+
+    def predict_f(self, X: dict) -> np.array:
+        f_pred, var = self._model(X)
+        var = np.zeros_like(var)
+        return f_pred, var
+
+    def predict_y(self, X: dict, **kwargs) -> np.array:
+        f_pred, var = self._model(X)
+        return f_pred, var
 
 # class AdapterSVGP(AbstractModelInterface):
 #

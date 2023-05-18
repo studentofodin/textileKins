@@ -1,5 +1,6 @@
 import numpy as np
 from gymnasium import Env, spaces
+from gymnasium.core import RenderFrame
 from gymnasium.envs.registration import register
 from omegaconf import DictConfig
 
@@ -7,7 +8,7 @@ from src.abstract_base_class.environment import AbstractTrainingEnvironment
 
 
 class GymWrapper(Env):
-    
+
     def __init__(self, env: AbstractTrainingEnvironment, config: DictConfig):
         self._env = env
         self._config = config.copy()
@@ -43,6 +44,8 @@ class GymWrapper(Env):
         super().reset(seed=seed)
         return self._env.reset()
 
+    def render(self) -> RenderFrame | list[RenderFrame] | None:
+        pass
 
 
 register(

@@ -20,8 +20,6 @@ class ModelWrapper(AbstractModelWrapper):
         self._machine_models = dict()
         self.reset()
 
-
-
     @property
     def config(self) -> DictConfig:
         return self._config
@@ -58,7 +56,7 @@ class ModelWrapper(AbstractModelWrapper):
         else:
             for output_name, model in self._machine_models.items():
                 mean_pred[output_name], var_pred[output_name] = \
-                    model.predict_y(inputs)
+                    model.predict_y(inputs, observation_noise_only=True)
         return mean_pred, var_pred
 
     def _sample_output_distribution(self, mean_pred: dict[str, np.array], var_pred: dict[str, np.array]) \
@@ -79,6 +77,10 @@ class ModelWrapper(AbstractModelWrapper):
 
         # load machine model.
         model_class = properties["model_class"]
+        if "keep_y_scaled" in properties:
+            rescale_y_temp = not bool(properties["keep_y_scaled"])
+        else:
+            rescale_y_temp = True
 
         if model_class == "Gpytorch":
             data_load = pd.read_hdf(
@@ -99,13 +101,18 @@ class ModelWrapper(AbstractModelWrapper):
             sys.modules["module.name"] = model_lib
             spec.loader.exec_module(model_lib)
 
-            mdl = model_interface.AdapterGpytorch(model_lib, data_load, model_state, properties, rescale_y=True)
-        elif model_class == "SVGP":
-            path_to_pkl = pl.Path(self._config.path_to_models) / properties["model_path"]
-            mdl = model_interface.AdapterSVGP(path_to_pkl, True)
-        elif model_class == "GPy_GPR":
-            path_to_pkl = pl.Path(self._config.path_to_models) / properties["model_path"]
-            mdl = model_interface.AdapterGPy(path_to_pkl, True)
+            mdl = model_interface.AdapterGpytorch(model_lib, data_load, model_state, properties,
+                                                  rescale_y=rescale_y_temp)
+        elif model_class == "Python_script":
+            spec = importlib.util.spec_from_file_location("module.name",
+                                                          pl.Path(self._config.path_to_models) / (
+                                                                  model_name + ".py"))
+            model_lib = importlib.util.module_from_spec(spec)
+            sys.modules["module.name"] = model_lib
+            spec.loader.exec_module(model_lib)
+
+            mdl = model_interface.AdapterPyScript(model_lib, properties)
+
         else:
             raise (TypeError(f"The model class {model_class} is not yet supported"))
         self._machine_models[output_name] = mdl

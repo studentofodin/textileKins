@@ -1,0 +1,22 @@
+name: cardWebUnevennessModel
+model_class: Gpytorch
+data_source: EasyVlies
+inputs:
+  - CardDeliveryWeightPerArea
+  - CardMassThroughputSetpoint
+  - v_PreRoll
+  - v_MainCylinder
+  - v_WorkerMain
+  - v_StripperMain
+  - v_WorkerPre
+  - v_StripperPre
+output: CardWebUnevenness
+training_inputs:
+  - FG_soll
+  - mean_mass_cylinders
+  - Diff_ArbeiterZuWender
+training_target: Wolkigkeit
+y_is_scaled: True
+X_is_scaled: True
+pca_on_inputs: True
+keep_y_scaled: True

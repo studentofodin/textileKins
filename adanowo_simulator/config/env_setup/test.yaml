@@ -26,7 +26,7 @@ output_models:
 
 action_space:
   Ishikawa_LayersCount:
-    low:  0.0
+    low: 0.0
     high: 100.0
   Ishikawa_DraftRatioNeedleloom1Intake:
     low:  0.0

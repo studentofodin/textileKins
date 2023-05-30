@@ -34,7 +34,7 @@ class AbstractRewardManager(ABC):
 
 
     @abstractmethod
-    def _reqs_met(self, outputs: dict[str, float]) -> bool:
+    def _output_constraints_met(self, outputs: dict[str, float]) -> bool:
         """
         check if outputs meet requirement constraints.
         """

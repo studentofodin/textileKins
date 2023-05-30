@@ -1,14 +1,13 @@
 penalty : 10.0
-requirements:
-  simple_output_bounds:
-    lower:
-        min_area_weight: 0.0
-        unevenness_card_web: 0.0
-    upper:
-        unevenness_card_web: 20.0
-  complex_constraints:
-    mult_min: 0.0
-    mult_max: 200.0
+output_bounds:
+  lower:
+      min_area_weight: 0.0
+      unevenness_card_web: 0.0
+  upper:
+      unevenness_card_web: 20.0
+complex_constraints:
+  mult_min: 0.0
+  mult_max: 200.0
 fibre_settings:
   fibre_costs: 1.0
 weights:

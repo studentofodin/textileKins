@@ -26,32 +26,32 @@ class RewardManager(AbstractRewardManager):
         return self._reward_range
 
     def get_reward(self, state: dict[str, float], outputs: dict[str, float], safety_met: bool) -> tuple[float, bool]:
-        reqs_met = self._reqs_met(outputs)
+        output_constraints_met = self._output_constraints_met(outputs)
 
         # penalty.
-        if not (reqs_met and safety_met):
+        if not (output_constraints_met and safety_met):
             reward = -self._config.penalty
 
         # no penalty.
         else:
             reward = self._reward_function(state, outputs, self._config.reward_function)
 
-        return reward, reqs_met
+        return reward, output_constraints_met
 
     def reset(self) -> None:
         self._config = self._initial_config.copy()
 
-    def _reqs_met(self, outputs: dict[str, float]) -> bool:
+    def _output_constraints_met(self, outputs: dict[str, float]) -> bool:
         # assume that requirement constraints are met.
-        reqs_met = True
+        output_constraints_met = True
 
         # check simple fixed bounds for outputs.
-        for output_name, lower_bound in self._config.requirements.simple_output_bounds.lower.items():
+        for output_name, lower_bound in self._config.output_bounds.lower.items():
             if outputs[output_name] < lower_bound:
-                reqs_met = False
-        for output_name, upper_bound in self._config.requirements.simple_output_bounds.upper.items():
+                output_constraints_met = False
+        for output_name, upper_bound in self._config.output_bounds.upper.items():
             if outputs[output_name] > upper_bound:
-                reqs_met = False
+                output_constraints_met = False
 
         # check more complex, relational constraints.
         # product = 1
@@ -59,6 +59,6 @@ class RewardManager(AbstractRewardManager):
         #     product = product * value
         # if (product < self._config.requirements.complex_constraints.mult_min) or \
         #         (product > self._config.requirements.complex_constraints.mult_max):
-        #     reqs_met = False
+        #     output_constraints_met = False
 
-        return reqs_met
+        return output_constraints_met

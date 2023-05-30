@@ -21,9 +21,9 @@ class AbstractScenarioManager(ABC):
         """
         pass
 
-    def update_requirements(self, step_index: int, requirements_config: DictConfig) -> DictConfig:
+    def update_output_bounds(self, step_index: int, output_bounds_config: DictConfig) -> DictConfig:
         """
-        change and return the requirements_config according to own config.
+        change and return the output_bounds_config according to own config.
         """
         pass
 

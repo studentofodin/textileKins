@@ -108,9 +108,9 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._experiment_tracker.init_run()
 
     def _update_configs(self) -> None:
-        self._reward_manager.config.requirements = \
-            self._scenario_manager.update_requirements(self._step_index,
-                                                       self._reward_manager.config.requirements.copy())
+        self._reward_manager.config.output_bounds = \
+            self._scenario_manager.update_output_bounds(self._step_index,
+                                                       self._reward_manager.config.output_bounds.copy())
 
         self._machine.config.output_models, changed_outputs = \
             self._scenario_manager.update_output_models(self._step_index, self._machine.config.output_models.copy())

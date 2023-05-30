@@ -1,10 +1,7 @@
-output_models:
+output_models: {}
   # [[step_index_1, model_name_1], [step_index_2, model_name_2],...]
-requirements:
+output_bounds:
   # [[step_index_1, value_1], [step_index_2, value_2],...]
-  simple_output_bounds:
-    lower: {}
-    upper: {}
-  complex_constraints:
-    mult_max: {}
+  lower: {}
+  upper: {}
 disturbances: {}

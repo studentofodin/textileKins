@@ -22,36 +22,27 @@ class ScenarioManager(AbstractScenarioManager):
     def update_output_models(self, step_index: int, output_models_config: DictConfig) -> tuple[DictConfig, list[str]]:
         changed = []
 
-        if self._config.output_models is not None:
-            for output_name, scenario in self._config.output_models.items():
-                if scenario and scenario[0][0] == step_index:
-                    output_models_config[output_name] = scenario[0][1]
-                    changed.append(output_name)
-                    self._config.output_models[output_name].pop(0)
+        for output_name, scenario in self._config.output_models.items():
+            if scenario and scenario[0][0] == step_index:
+                output_models_config[output_name] = scenario[0][1]
+                changed.append(output_name)
+                self._config.output_models[output_name].pop(0)
 
         return output_models_config, changed
 
-    def update_requirements(self, step_index: int, requirements_config: DictConfig) -> DictConfig:
+    def update_output_bounds(self, step_index: int, output_bounds_config: DictConfig) -> DictConfig:
 
-        if self._config.requirements.simple_output_bounds.lower is not None:
-            for output_name, scenario in self._config.requirements.simple_output_bounds.lower.items():
-                if scenario and scenario[0][0] == step_index:
-                    requirements_config.simple_output_bounds.lower[output_name] = scenario[0][1]
-                    self._config.requirements.simple_output_bounds.lower[output_name].pop(0)
+        for output_name, scenario in self._config.output_bounds.lower.items():
+            if scenario and scenario[0][0] == step_index:
+                output_bounds_config.simple_output_bounds.lower[output_name] = scenario[0][1]
+                self._config.output_bounds.lower[output_name].pop(0)
 
-        if self._config.requirements.simple_output_bounds.upper is not None:
-            for output_name, scenario in self._config.requirements.simple_output_bounds.upper.items():
-                if scenario and scenario[0][0] == step_index:
-                    requirements_config.simple_output_bounds.upper[output_name] = scenario[0][1]
-                    self._config.requirements.simple_output_bounds.upper[output_name].pop(0)
+        for output_name, scenario in self._config.output_bounds.upper.items():
+            if scenario and scenario[0][0] == step_index:
+                output_bounds_config.simple_output_bounds.upper[output_name] = scenario[0][1]
+                self._config.output_bounds.upper[output_name].pop(0)
 
-        if self._config.requirements.complex_constraints is not None:
-            for req, scenario in self._config.requirements.complex_constraints.items():
-                if scenario and scenario[0][0] == step_index:
-                    requirements_config.complex_constraints[req] = scenario[0][1]
-                    self._config.requirements.complex_constraints[req].pop(0)
-
-        return requirements_config
+        return output_bounds_config
 
     def update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> DictConfig:
         for disturbance_name, scenario in self._config.disturbances.items():

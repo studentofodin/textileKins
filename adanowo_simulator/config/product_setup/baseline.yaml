@@ -1,21 +1,17 @@
 penalty : 100.0
-requirements:
-  simple_output_bounds:
-    lower:
-        areaWeightLane1: 200.0
-        areaWeightLane2: 200.0
-        areaWeightLane3: 200.0
-        tensileStrengthCD: 650.0
-        tensileStrengthMD: 400.0
-        lineSpeed: 0.0
-    upper:
-        areaWeightLane1: 500.0
-        areaWeightLane2: 500.0
-        areaWeightLane3: 500.0
-        lineSpeed: 11.0
-  complex_constraints:
-    mult_min:
-    mult_max:
+output_bounds:
+  lower:
+      areaWeightLane1: 200.0
+      areaWeightLane2: 200.0
+      areaWeightLane3: 200.0
+      tensileStrengthCD: 650.0
+      tensileStrengthMD: 400.0
+      lineSpeed: 0.0
+  upper:
+      areaWeightLane1: 500.0
+      areaWeightLane2: 500.0
+      areaWeightLane3: 500.0
+      lineSpeed: 11.0
 reward_function:
   fibre_costs: 1.20 # € per kg
   energy_costs: 0.28 # € per kWh

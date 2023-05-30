@@ -1,14 +1,11 @@
 output_models:
   # [[step_index_1, model_name_1], [step_index_2, model_name_2],...]
   min_area_weight: [[2, "min_area_weight1"]]
-requirements:
+output_bounds:
   # [[step_index_1, value_1], [step_index_2, value_2],...]
-  simple_output_bounds:
-    lower: {}
-    upper:
-      unevenness_card_web: [[3, 25.0], [4, 30.0]]
-  complex_constraints:
-    mult_max: [[5, 180]]
+  lower: {}
+  upper:
+    unevenness_card_web: [[3, 25.0], [4, 30.0]]
 disturbances:
   Ishikawa_WeightPerAreaCardDelivery:
     trigger_duration: 2

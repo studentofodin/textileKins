@@ -34,7 +34,7 @@ used_outputs:
   - TensileStrengthCD # N
   - TensileStrengthMD # N
   - CardWebUnevenness # -
-  - lineSpeed # g per min
+  - lineSpeed # m per min
 path_to_models: ./models
 output_models:
   areaWeightLane1: areaWeightLane1Model

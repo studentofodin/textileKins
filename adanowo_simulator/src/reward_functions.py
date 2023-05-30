@@ -1,4 +1,4 @@
-MIN_TO_H = 60
+H_TO_MIN = 60
 
 
 def baseline_reward(state: dict[str, float], outputs: dict[str, float], config) -> float:
@@ -8,7 +8,7 @@ def baseline_reward(state: dict[str, float], outputs: dict[str, float], config) 
     # energy costs
     energy_costs = outputs["linePowerConsumption"] * config.energy_costs
     # Production income
-    income = config.selling_price * outputs["lineSpeed"] * MIN_TO_H * state["ProductWidth"]
+    income = config.selling_price * outputs["lineSpeed"] * H_TO_MIN * state["ProductWidth"]
 
     # Component 1: Calculate economic efficiency
     contribution_margin = income - energy_costs - material_costs

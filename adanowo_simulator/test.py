@@ -9,19 +9,14 @@ from src.gym_wrapper import GymWrapper
 from src.model_wrapper import ModelWrapper
 from src.scenario_manager import ScenarioManager
 from src.environment import TrainingEnvironment
-<<<<<<< HEAD
 from src.config_checker import ConfigChecker
-=======
 from src.reward_functions import baseline_reward
->>>>>>> main
 
 
 @hydra.main(version_base=None, config_path="./config", config_name="main")
 def main(configuration: DictConfig):
 
     config = configuration
-    config_checker = ConfigChecker(config)
-    config_checker.check_config()
     experiment_tracker = ExperimentTracker(config.experiment_tracker, config)
     reward_manager = RewardManager(config.product_setup, baseline_reward)
     # action_type 0 for relative | 1 for absolute

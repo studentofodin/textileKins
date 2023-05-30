@@ -7,10 +7,12 @@ requirements:
         areaWeightLane3: 200.0
         tensileStrengthCD: 650.0
         tensileStrengthMD: 400.0
+        lineSpeed: 0.0
     upper:
         areaWeightLane1: 500.0
         areaWeightLane2: 500.0
         areaWeightLane3: 500.0
+        lineSpeed: 11.0
   complex_constraints:
     mult_min:
     mult_max:

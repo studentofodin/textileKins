@@ -1,3 +1,4 @@
+actions_are_relative: True
 initial_controls:
   Ishikawa_LayersCount: 0.5
   Ishikawa_DraftRatioNeedleloom1Intake: 0.5

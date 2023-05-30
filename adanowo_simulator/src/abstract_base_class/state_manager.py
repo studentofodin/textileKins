@@ -16,11 +16,6 @@ class AbstractStateManager(ABC):
 
     @property
     @abstractmethod
-    def action_type(self) -> int:
-        pass
-
-    @property
-    @abstractmethod
     def n_controls(self) -> int:
         pass
 

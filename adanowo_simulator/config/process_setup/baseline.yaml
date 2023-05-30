@@ -1,3 +1,4 @@
+actions_are_relative: True
 initial_controls:
   CardDeliveryWeightPerArea: 63.7
   Cross-lapperLayersCount: 6.0

@@ -6,8 +6,7 @@ from src.abstract_base_class.state_manager import AbstractStateManager
 
 class StateManager(AbstractStateManager):
 
-    def __init__(self, config: DictConfig, action_type: int):
-        self._action_type = action_type
+    def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
         self._action_names = [name + '_action' for name in list(config.initial_controls.keys())]
         self._n_controls = len(config.initial_controls)
@@ -25,10 +24,6 @@ class StateManager(AbstractStateManager):
         self._config = c
 
     @property
-    def action_type(self) -> int:
-        return self._action_type
-
-    @property
     def n_controls(self) -> int:
         return self._n_controls
 
@@ -38,7 +33,7 @@ class StateManager(AbstractStateManager):
 
     def get_state(self, action: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
         # relative actions.
-        if self._action_type == 0:
+        if self._config.actions_are_relative:
             updated_controls = dict()
             for index, control in enumerate(self._controls.keys()):
                 updated_controls[control] = self._controls[control] + action[index]

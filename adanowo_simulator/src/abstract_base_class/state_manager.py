@@ -46,7 +46,7 @@ class AbstractStateManager(ABC):
         """
 
     @abstractmethod
-    def _safety_met(self, controls: dict[str, float]) -> bool:
+    def _control_constraints_met(self, controls: dict[str, float]) -> bool:
         """
         check if controls meet safety constraints.
         """

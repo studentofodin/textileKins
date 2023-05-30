@@ -14,19 +14,13 @@ initial_controls:
 disturbances:
   Ishikawa_WeightPerAreaCardDelivery: 1.0
   mean_cylinder_worker: 1.0
-safety:
-  simple_control_bounds:
-    Ishikawa_LayersCount:
-      lower: 0.1
-      upper: 0.9
-    Ishikawa_DraftRatioNeedleloom1Intake:
-      lower: 0.1
-      upper: 0.9
-    Ishikawa_DraftRatioNeedleloom:
-      lower: 0.1
-      upper: 0.9
-  complex_constraints:
-    add_min: 2.0
-    add_max: 8.0
-
-    # do not forget to add line speed constraint
+simple_control_bounds:
+  Ishikawa_LayersCount:
+    lower: 0.1
+    upper: 0.9
+  Ishikawa_DraftRatioNeedleloom1Intake:
+    lower: 0.1
+    upper: 0.9
+  Ishikawa_DraftRatioNeedleloom:
+    lower: 0.1
+    upper: 0.9

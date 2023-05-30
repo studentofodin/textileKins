@@ -46,39 +46,31 @@ class StateManager(AbstractStateManager):
         else:
             updated_controls = dict(zip(self._controls.keys(), action.tolist()))
 
-        safety_met = self._safety_met(updated_controls)
-        if safety_met:
+        control_constraints_met = self._control_constraints_met(updated_controls)
+        if control_constraints_met:
             self._controls = updated_controls
 
         state = self._controls | dict(self._config.disturbances)
 
         action_dict = dict(zip(self._action_names, action.tolist()))
 
-        return state, safety_met, action_dict
+        return state, control_constraints_met, action_dict
 
     def reset(self) -> dict[str, float]:
         self._config = self._initial_config.copy()
         self._controls = dict(self._config.initial_controls)
-        if not self._safety_met(self._controls):
-            raise AssertionError("The initial setting is unsafe. Aborting Experiment.")
+        if not self._control_constraints_met(self._controls):
+            raise AssertionError("The initial setting does not meet control constraints. Aborting Experiment.")
         state = self._controls | dict(self._config.disturbances)
         return state
 
-    def _safety_met(self, controls: dict[str, float]) -> bool:
+    def _control_constraints_met(self, controls: dict[str, float]) -> bool:
         # assume that safety constraints are met.
-        safety_met = True
+        control_constraints_met = True
 
         # check simple fixed bounds for controls.
-        for control_name, bounds in self._config.safety.simple_control_bounds.items():
+        for control_name, bounds in self._config.control_bounds.items():
             if (controls[control_name] < bounds.lower) or (controls[control_name] > bounds.upper):
-                safety_met = False
+                control_constraints_met = False
 
-        # check more complex, relational constraints.
-        # constr_sum = 0
-        # for control_name, value in controls.items():
-        #     constr_sum = constr_sum + value
-        # if (constr_sum < self._config.safety.complex_constraints.add_min) or \
-        #         (constr_sum > self._config.safety.complex_constraints.add_max):
-        #     safety_met = False
-
-        return safety_met
+        return control_constraints_met

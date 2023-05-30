@@ -21,50 +21,46 @@ disturbances:
   Needleloom2DraftRatio: 23.0
   Needleloom1DraftRatioIntake: 10.0
   Needleloom2FeedPerStroke: 11.25
-safety:
-  simple_control_bounds:
-    CardDeliveryWeightPerArea:
-      lower: 45
-      upper: 85
-    Cross-lapperLayersCount:
-      lower: 2.0
-      upper: 13.0
-    Needleloom1DraftRatio:
-      lower: 25
-      upper: 65
-    Cross-lapperProfiling:
-      lower: 0
-      upper: 40
-    DrawFrameDraftRatio:
-      lower: 20
-      upper: 90
-    CardMassThroughputSetpoint:
-      lower: 350
-      upper: 1100
-    Needleloom1FeedPerStroke:
-      lower: 9
-      upper: 15
-    Needleloom2NeedlepunchDepth:
-      lower: 9
-      upper: 14
-    v_PreRoll:
-      lower: 180
-      upper: 400
-    v_MainCylinder:
-      lower: 400
-      upper: 1400
-    v_WorkerMain:
-      lower: 20
-      upper: 130
-    v_StripperMain:
-      lower: 45
-      upper: 250
-    v_WorkerPre:
-      lower: 15
-      upper: 27
-    v_StripperPre:
-      lower: 40
-      upper: 85
-  complex_constraints:
-    add_min:
-    add_max:
+control_bounds:
+  CardDeliveryWeightPerArea:
+    lower: 45
+    upper: 85
+  Cross-lapperLayersCount:
+    lower: 2.0
+    upper: 13.0
+  Needleloom1DraftRatio:
+    lower: 25
+    upper: 65
+  Cross-lapperProfiling:
+    lower: 0
+    upper: 40
+  DrawFrameDraftRatio:
+    lower: 20
+    upper: 90
+  CardMassThroughputSetpoint:
+    lower: 350
+    upper: 1100
+  Needleloom1FeedPerStroke:
+    lower: 9
+    upper: 15
+  Needleloom2NeedlepunchDepth:
+    lower: 9
+    upper: 14
+  v_PreRoll:
+    lower: 180
+    upper: 400
+  v_MainCylinder:
+    lower: 400
+    upper: 1400
+  v_WorkerMain:
+    lower: 20
+    upper: 130
+  v_StripperMain:
+    lower: 45
+    upper: 250
+  v_WorkerPre:
+    lower: 15
+    upper: 27
+  v_StripperPre:
+    lower: 40
+    upper: 85

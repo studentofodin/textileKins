@@ -1,5 +1,7 @@
 import numpy as np
 from omegaconf import DictConfig
+import logging
+import sys
 
 from src.abstract_base_class.environment import AbstractTrainingEnvironment
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
@@ -7,6 +9,10 @@ from src.abstract_base_class.reward_manager import AbstractRewardManager
 from src.abstract_base_class.state_manager import AbstractStateManager
 from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 from src.abstract_base_class.scenario_manager import AbstractScenarioManager
+
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
@@ -65,6 +71,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     def step(self, action: np.array) -> tuple[np.array, float, bool, bool, dict]:
         if self._status != "RUNNING":
             self._init_experiment()
+            logger.info("Experiment tracking has been initialized.")
 
         self._update_configs()
 
@@ -102,6 +109,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         info = dict()
 
         self._status = "READY"
+        logger.info("Environment has been reset.")
         return observation_array, info
 
     def _init_experiment(self) -> None:

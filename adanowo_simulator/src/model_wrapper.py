@@ -6,9 +6,13 @@ from omegaconf import DictConfig
 import numpy as np
 import torch
 import pandas as pd
+import logging
 
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
 from src import model_interface
+
+
+logger = logging.getLogger(__name__)
 
 
 class ModelWrapper(AbstractModelWrapper):
@@ -18,7 +22,6 @@ class ModelWrapper(AbstractModelWrapper):
         self._config = None
         self._n_outputs = len(config.output_models)
         self._machine_models = dict()
-        self.reset()
 
     @property
     def config(self) -> DictConfig:
@@ -44,7 +47,12 @@ class ModelWrapper(AbstractModelWrapper):
     def reset(self) -> None:
         self._config = self._initial_config.copy()
         for output_name, model_name in self._config.output_models.items():
-            self._allocate_model_to_output(output_name, model_name)
+            try:
+                self._allocate_model_to_output(output_name, model_name)
+                logger.info(f"Allocated model {model_name} to output {output_name}.")
+            except Exception as e:
+                logger.exception(f"Could not allocate model {model_name} to output {output_name}.")
+                raise e
 
     def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()
@@ -90,7 +98,7 @@ class ModelWrapper(AbstractModelWrapper):
                 map_location = None
             else:
                 map_location = torch.device('cpu')
-                Warning("No Cuda-enabled GPU found! Code execution will still work, but is significantly slower.")
+                logger.warning(f"No Cuda GPU found for model {model_name}. Step execution will be much slower.")
             model_state = torch.load(
                 pl.Path(self._config.path_to_models) / (model_name + ".pth"), map_location=map_location
             )

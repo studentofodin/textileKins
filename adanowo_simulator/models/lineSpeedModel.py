@@ -11,13 +11,11 @@ def model(X: dict) -> [np.array, np.array]:
 
     weight_per_area_theoretical = \
         X["CardDeliveryWeightPerArea"] * \
-        X["Cross-lapperLayersCount"].round() * 2 / \
+        X["Cross-lapperLayersCount"] * 2 / \
         prcnt_to_mult(X["Needleloom2DraftRatio"]) / \
         prcnt_to_mult(X["Needleloom1DraftRatioIntake"]) / \
         prcnt_to_mult(X["Needleloom1DraftRatio"]) / \
-        prcnt_to_mult(X["Cross-lapperProfiling"] / 2) / \
-        prcnt_to_mult(X["DrawFrameDraftRatio"]) + \
-        X["SmileEffectStrength"] / 2
+        prcnt_to_mult(X["DrawFrameDraftRatio"])
 
     line_speed = \
         X["CardMassThroughputSetpoint"] / \

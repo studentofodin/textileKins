@@ -5,7 +5,8 @@ from omegaconf import DictConfig
 
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
 from src.abstract_base_class.reward_manager import AbstractRewardManager
-from src.abstract_base_class.state_manager import AbstractStateManager
+from src.abstract_base_class.control_manager import AbstractControlManager
+from src.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
 from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
@@ -34,7 +35,12 @@ class AbstractTrainingEnvironment(ABC):
 
     @property
     @abstractmethod
-    def state_manager(self) -> AbstractStateManager:
+    def control_manager(self) -> AbstractControlManager:
+        pass
+
+    @property
+    @abstractmethod
+    def disturbance_manager(self) -> AbstractDisturbanceManager:
         pass
 
     @property
@@ -58,11 +64,11 @@ class AbstractTrainingEnvironment(ABC):
         pass
 
     @abstractmethod
-    def step(self, action: np.array) -> Tuple[np.array, float, bool, bool, dict]:
+    def step(self, actions: np.array) -> Tuple[np.array, float, bool, bool, dict]:
         """
         run one timestep of the environment’s dynamics using the agent actions.
         return:
-            observation (ObsType): observation due to the agent actions.
+            observations (ObsType): observations due to the agent actions.
             reward (float): the reward as a result of taking the action.
             terminated (bool): whether the agent reaches the terminal state (as defined under the MDP of the task)
                 which can be positive or negative.

@@ -3,7 +3,7 @@ from omegaconf import DictConfig
 import numpy as np
 
 
-class AbstractStateManager(ABC):
+class AbstractControlManager(ABC):
     @property
     @abstractmethod
     def config(self) -> DictConfig:
@@ -19,18 +19,12 @@ class AbstractStateManager(ABC):
     def n_controls(self) -> int:
         pass
 
-    @property
     @abstractmethod
-    def n_disturbances(self) -> int:
-        pass
-
-    @abstractmethod
-    def get_state(self, action: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
+    def get_controls(self, actions: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
         """
-        calculate controls from action.
-        the state is a concatenation of controls and disturbances (listed in own config).
-        return state, if the action meets safety constraints and action as a dictionary.
-        if the action does not meet safety constraints the controls remain the same as before.
+        calculate controls from actions.
+        return controls, if the actions meet safety constraints and actions as a dictionary.
+        if the actions do not meet safety constraints the controls remain the same as before.
         """
         pass
 

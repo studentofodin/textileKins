@@ -1,16 +1,15 @@
 import numpy as np
 from omegaconf import DictConfig
 
-from src.abstract_base_class.state_manager import AbstractStateManager
+from src.abstract_base_class.control_manager import AbstractControlManager
 
 
-class StateManager(AbstractStateManager):
+class ControlManager(AbstractControlManager):
 
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
         self._action_names = [name + '_action' for name in list(config.initial_controls.keys())]
         self._n_controls = len(config.initial_controls)
-        self._n_disturbances = len(config.disturbances)
         self._config = None
         self._controls = None
         self.reset()
@@ -27,37 +26,30 @@ class StateManager(AbstractStateManager):
     def n_controls(self) -> int:
         return self._n_controls
 
-    @property
-    def n_disturbances(self) -> int:
-        return self._n_disturbances
-
-    def get_state(self, action: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
+    def get_controls(self, actions: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
         # relative actions.
         if self._config.actions_are_relative:
-            updated_controls = dict()
+            potential_controls = dict()
             for index, control in enumerate(self._controls.keys()):
-                updated_controls[control] = self._controls[control] + action[index]
+                potential_controls[control] = self._controls[control] + actions[index]
         # absolute actions.
         else:
-            updated_controls = dict(zip(self._controls.keys(), action.tolist()))
+            potential_controls = dict(zip(self._controls.keys(), actions.tolist()))
 
-        control_constraints_met = self._control_constraints_met(updated_controls)
+        control_constraints_met = self._control_constraints_met(potential_controls)
         if control_constraints_met:
-            self._controls = updated_controls
+            self._controls = potential_controls
 
-        state = self._controls | dict(self._config.disturbances)
+        actions_dict = dict(zip(self._action_names, actions.tolist()))
 
-        action_dict = dict(zip(self._action_names, action.tolist()))
-
-        return state, control_constraints_met, action_dict
+        return self._controls, control_constraints_met, actions_dict
 
     def reset(self) -> dict[str, float]:
         self._config = self._initial_config.copy()
         self._controls = dict(self._config.initial_controls)
         if not self._control_constraints_met(self._controls):
-            raise AssertionError("The initial setting does not meet control constraints. Aborting Experiment.")
-        state = self._controls | dict(self._config.disturbances)
-        return state
+            raise AssertionError("The initial controls do not meet safety constraints. Aborting Experiment.")
+        return self._controls
 
     def _control_constraints_met(self, controls: dict[str, float]) -> bool:
         # assume that safety constraints are met.

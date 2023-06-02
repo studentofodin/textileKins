@@ -2,14 +2,15 @@ import numpy as np
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
+
 from src.reward_manager import RewardManager
-from src.state_manager import StateManager
-from src.experiment_tracker import ExperimentTracker
-from src.gym_wrapper import GymWrapper
+from src.control_manager import ControlManager
+from src.disturbance_manager import DisturbanceManager
 from src.model_wrapper import ModelWrapper
 from src.scenario_manager import ScenarioManager
+from src.experiment_tracker import ExperimentTracker
 from src.environment import TrainingEnvironment
-from src.config_checker import ConfigChecker
+from src.gym_wrapper import GymWrapper
 from src.reward_functions import baseline_reward
 
 
@@ -17,20 +18,22 @@ from src.reward_functions import baseline_reward
 def main(configuration: DictConfig):
 
     config = configuration
-    experiment_tracker = ExperimentTracker(config.experiment_tracker, config)
     reward_manager = RewardManager(config.product_setup, baseline_reward)
-    # action_type 0 for relative | 1 for absolute
-    state_manager = StateManager(config.process_setup)
+    control_manager = ControlManager(OmegaConf.merge({"actions_are_relative": config.process_setup.actions_are_relative},
+                                                         {"initial_controls": config.process_setup.initial_controls},
+                                                         {"control_bounds": config.process_setup.control_bounds}))
+    disturbance_manager = DisturbanceManager(OmegaConf.merge({"disturbances": config.process_setup.disturbances}))
     model_wrapper = ModelWrapper(OmegaConf.merge({"path_to_models": config.env_setup.path_to_models},
-                                                 {"output_models": config.env_setup.output_models}))
+                                                     {"output_models": config.env_setup.output_models}))
     scenario_manager = ScenarioManager(config.scenario_setup)
-    training_env = TrainingEnvironment(OmegaConf.create(), model_wrapper, reward_manager, state_manager,
-                                       experiment_tracker, scenario_manager)
+    experiment_tracker = ExperimentTracker(config.experiment_tracker, config)
+    training_env = TrainingEnvironment(OmegaConf.create(), model_wrapper, reward_manager, control_manager,
+                                       disturbance_manager, experiment_tracker, scenario_manager)
     env = GymWrapper(training_env, OmegaConf.merge({"action_space": config.env_setup.action_space},
                                                    {"observation_space": config.env_setup.observation_space}))
 
     for _ in range(100):
-        env.step(np.random.uniform(low=0.0, high=0.5, size=env.env.state_manager.n_controls))
+        env.step(np.random.uniform(low=0.0, high=0.5, size=env.env.control_manager.n_controls))
     env.reset()
     pass
 

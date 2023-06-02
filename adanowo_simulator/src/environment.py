@@ -4,20 +4,22 @@ from omegaconf import DictConfig
 from src.abstract_base_class.environment import AbstractTrainingEnvironment
 from src.abstract_base_class.model_wrapper import AbstractModelWrapper
 from src.abstract_base_class.reward_manager import AbstractRewardManager
-from src.abstract_base_class.state_manager import AbstractStateManager
+from src.abstract_base_class.control_manager import AbstractControlManager
+from src.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
 from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
     def __init__(self, config: DictConfig, machine: AbstractModelWrapper, reward_manager: AbstractRewardManager,
-                 state_manager: AbstractStateManager, experiment_tracker: AbstractExperimentTracker,
-                 scenario_manager: AbstractScenarioManager):
+                 control_manager: AbstractControlManager, disturbance_manager: AbstractDisturbanceManager,
+                 experiment_tracker: AbstractExperimentTracker, scenario_manager: AbstractScenarioManager):
 
         self._machine = machine
         self._reward_manager = reward_manager
         self._experiment_tracker = experiment_tracker
-        self._state_manager = state_manager
+        self._control_manager = control_manager
+        self._disturbance_manager = disturbance_manager
         self._scenario_manager = scenario_manager
 
         self._initial_config = config.copy()
@@ -43,8 +45,12 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         return self._reward_manager
 
     @property
-    def state_manager(self) -> AbstractStateManager:
-        return self._state_manager
+    def control_manager(self) -> AbstractControlManager:
+        return self._control_manager
+
+    @property
+    def disturbance_manager(self) -> AbstractDisturbanceManager:
+        return self._disturbance_manager
 
     @property
     def experiment_tracker(self) -> AbstractExperimentTracker:
@@ -62,23 +68,26 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     def step_index(self):
         return self._step_index
 
-    def step(self, action: np.array) -> tuple[np.array, float, bool, bool, dict]:
+    def step(self, actions: np.array) -> tuple[np.array, float, bool, bool, dict]:
         if self._status != "RUNNING":
             self._init_experiment()
 
         self._update_configs()
 
-        state, safety_met, action_dict = self._state_manager.get_state(action)
+        disturbances = self._disturbance_manager.get_disturbances()
+        controls, safety_met, actions_dict = self._control_manager.get_controls(actions)
+        states = controls | disturbances
 
-        outputs_array, outputs_dict = self._machine.get_outputs(state)
-        reward, reqs_met = self._reward_manager.get_reward(state, outputs_dict, safety_met)
+
+        outputs_array, outputs_dict = self._machine.get_outputs(states)
+        reward, reqs_met = self._reward_manager.get_reward(states, outputs_dict, safety_met)
 
         log_variables = \
             {"Reward": reward} | \
             {"Safety Met": int(safety_met)} | \
             {"Requirements Met": int(reqs_met)} | \
-            action_dict | \
-            state | \
+            actions_dict | \
+            states | \
             outputs_dict
         self._experiment_tracker.log(log_variables)
 
@@ -91,14 +100,16 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     def reset(self) -> tuple[np.array, dict]:
         self._experiment_tracker.reset()
         self._reward_manager.reset()
-        initial_state = self._state_manager.reset()
+        initial_controls = self._control_manager.reset()
+        initial_disturbances = self._disturbance_manager.reset()
+        initial_states = initial_controls | initial_disturbances
         self._machine.reset()
         self._scenario_manager.reset()
 
         self._step_index = 0
         self._config = self._initial_config.copy()
 
-        observation_array, _ = self._machine.get_outputs(initial_state)
+        observation_array, _ = self._machine.get_outputs(initial_states)
         info = dict()
 
         self._status = "READY"
@@ -116,5 +127,5 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
             self._scenario_manager.update_output_models(self._step_index, self._machine.config.output_models.copy())
         self._machine.update(changed_outputs)
 
-        self._state_manager.config.disturbances = \
-            self._scenario_manager.update_disturbances(self._step_index, self._state_manager.config.disturbances.copy())
+        self._control_manager.config.disturbances = \
+            self._scenario_manager.update_disturbances(self._step_index, self._disturbance_manager.config.disturbances.copy())

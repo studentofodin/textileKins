@@ -13,7 +13,7 @@ class AbstractScenarioManager(ABC):
     def config(self, c):
         pass
 
-    def update_output_models(self, step_index: int, output_models_config: DictConfig) -> tuple[DictConfig, list[str]]:
+    def update_model_allocation(self, step_index: int, output_models_config: DictConfig) -> tuple[DictConfig, list[str]]:
         """
         change the output_models_config according to own config.
         return the changed output_models_config and the output names which the model entry in the output_models_config

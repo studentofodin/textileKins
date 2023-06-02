@@ -8,8 +8,7 @@ class ScenarioManager(AbstractScenarioManager):
 
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
-        self._config = None
-        self.reset()
+        self._config = config.copy()
 
     @property
     def config(self) -> DictConfig:
@@ -19,7 +18,7 @@ class ScenarioManager(AbstractScenarioManager):
     def config(self, c):
         self._config = c
 
-    def update_output_models(self, step_index: int, output_models_config: DictConfig) -> tuple[DictConfig, list[str]]:
+    def update_model_allocation(self, step_index: int, output_models_config: DictConfig) -> tuple[DictConfig, list[str]]:
         changed = []
 
         if self._config.output_models is not None:
@@ -44,12 +43,6 @@ class ScenarioManager(AbstractScenarioManager):
                 if scenario and scenario[0][0] == step_index:
                     requirements_config.simple_output_bounds.upper[output_name] = scenario[0][1]
                     self._config.requirements.simple_output_bounds.upper[output_name].pop(0)
-
-        if self._config.requirements.complex_constraints is not None:
-            for req, scenario in self._config.requirements.complex_constraints.items():
-                if scenario and scenario[0][0] == step_index:
-                    requirements_config.complex_constraints[req] = scenario[0][1]
-                    self._config.requirements.complex_constraints[req].pop(0)
 
         return requirements_config
 

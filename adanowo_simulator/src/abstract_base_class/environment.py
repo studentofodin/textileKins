@@ -3,7 +3,7 @@ from typing import Tuple
 import numpy as np
 from omegaconf import DictConfig
 
-from src.abstract_base_class.model_wrapper import AbstractModelWrapper
+from src.abstract_base_class.model_manager import AbstractModelManager
 from src.abstract_base_class.reward_manager import AbstractRewardManager
 from src.abstract_base_class.state_manager import AbstractStateManager
 from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
@@ -24,7 +24,7 @@ class AbstractTrainingEnvironment(ABC):
 
     @property
     @abstractmethod
-    def machine(self) -> AbstractModelWrapper:
+    def machine(self) -> AbstractModelManager:
         pass
 
     @property

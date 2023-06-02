@@ -10,13 +10,17 @@ from sklearn.preprocessing import RobustScaler
 from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from src.abstract_base_class.model_interface import AbstractModelInterface
+from src.abstract_base_class.model_adapter import AbstractModelInterface
 from src.abstract_base_class.python_script_model import AbstractPyScriptModule
 
 CUDA_GPU_AVAILABLE = torch.cuda.is_available()
 
 
 class IdentityTransformer(BaseEstimator, TransformerMixin):
+    """
+    This transformer is a dummy that does nothing to its input.
+    It is used to make the pipeline work without a final estimator.
+    """
     def __init__(self):
         pass
 

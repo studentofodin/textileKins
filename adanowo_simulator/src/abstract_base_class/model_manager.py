@@ -3,7 +3,7 @@ import numpy as np
 from omegaconf import DictConfig
 
 
-class AbstractModelWrapper(ABC):
+class AbstractModelManager(ABC):
 
     @property
     @abstractmethod
@@ -15,13 +15,8 @@ class AbstractModelWrapper(ABC):
     def config(self, c):
         pass
 
-    @property
     @abstractmethod
-    def n_outputs(self) -> int:
-        pass
-
-    @abstractmethod
-    def get_outputs(self, inputs: dict[str, float]) -> tuple[np.array, dict[str, float]]:
+    def get_model_outputs(self, inputs: dict[str, float]) -> tuple[np.array, dict[str, float]]:
         """
         get sampled output value from inputs for each model.
         return output values as numpy array and as dictionary.
@@ -29,7 +24,7 @@ class AbstractModelWrapper(ABC):
         pass
 
     @abstractmethod
-    def update(self, changed_outputs: list[str]) -> None:
+    def update_model_allocation(self, changed_outputs: list[str]) -> None:
         """
         update the models for the outputs listed in changed_outputs based on the entries in the own config.
         """

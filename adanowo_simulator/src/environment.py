@@ -4,7 +4,7 @@ import logging
 import sys
 
 from src.abstract_base_class.environment import AbstractTrainingEnvironment
-from src.abstract_base_class.model_wrapper import AbstractModelWrapper
+from src.abstract_base_class.model_manager import AbstractModelManager
 from src.abstract_base_class.reward_manager import AbstractRewardManager
 from src.abstract_base_class.state_manager import AbstractStateManager
 from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
-    def __init__(self, config: DictConfig, machine: AbstractModelWrapper, reward_manager: AbstractRewardManager,
+    def __init__(self, config: DictConfig, machine: AbstractModelManager, reward_manager: AbstractRewardManager,
                  state_manager: AbstractStateManager, experiment_tracker: AbstractExperimentTracker,
                  scenario_manager: AbstractScenarioManager):
 
@@ -27,10 +27,9 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._scenario_manager = scenario_manager
 
         self._initial_config = config.copy()
-        self._config = None
-        self._step_index = None
-        self._status = None
-        self.reset()
+        self._config = config.copy()
+        self._step_index = 0
+        self._status = "READY"
 
     @property
     def config(self) -> DictConfig:
@@ -41,7 +40,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._config = c
 
     @property
-    def machine(self) -> AbstractModelWrapper:
+    def machine(self) -> AbstractModelManager:
         return self._machine
 
     @property
@@ -75,10 +74,10 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
         self._update_configs()
 
-        state, safety_met, action_dict = self._state_manager.get_state(action)
+        state, safety_met, action_dict = self._state_manager.update_state(action)
 
-        outputs_array, outputs_dict = self._machine.get_outputs(state)
-        reward, reqs_met = self._reward_manager.get_reward(state, outputs_dict, safety_met)
+        outputs_array, outputs_dict = self._machine.get_model_outputs(state)
+        reward, reqs_met = self._reward_manager.calculate_reward(state, outputs_dict, safety_met)
 
         log_variables = \
             {"Reward": reward} | \
@@ -105,7 +104,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._step_index = 0
         self._config = self._initial_config.copy()
 
-        observation_array, _ = self._machine.get_outputs(initial_state)
+        observation_array, _ = self._machine.get_model_outputs(initial_state)
         info = dict()
 
         self._status = "READY"
@@ -121,8 +120,8 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
                                                        self._reward_manager.config.requirements.copy())
 
         self._machine.config.output_models, changed_outputs = \
-            self._scenario_manager.update_output_models(self._step_index, self._machine.config.output_models.copy())
-        self._machine.update(changed_outputs)
+            self._scenario_manager.update_model_allocation(self._step_index, self._machine.config.output_models.copy())
+        self._machine.update_model_allocation(changed_outputs)
 
         self._state_manager.config.disturbances = \
             self._scenario_manager.update_disturbances(self._step_index, self._state_manager.config.disturbances.copy())

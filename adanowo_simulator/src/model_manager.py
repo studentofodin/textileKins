@@ -1,6 +1,5 @@
 import pathlib as pl
-import importlib
-import sys
+from importlib import util as importlib_utils
 import yaml
 from omegaconf import DictConfig
 import numpy as np
@@ -8,20 +7,27 @@ import torch
 import pandas as pd
 import logging
 
-from src.abstract_base_class.model_wrapper import AbstractModelWrapper
-from src import model_interface
+from src.abstract_base_class.model_manager import AbstractModelManager
+from src import model_adapters
 
 
 logger = logging.getLogger(__name__)
 
 
-class ModelWrapper(AbstractModelWrapper):
+def load_model_from_script(path: pl.Path) -> any:
+    spec = importlib_utils.spec_from_file_location("module.name", path)
+    model_module = importlib_utils.module_from_spec(spec)
+    spec.loader.exec_module(model_module)
+    return model_module
+
+
+class ModelManager(AbstractModelManager):
 
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
-        self._config = None
-        self._n_outputs = len(config.output_models)
-        self._machine_models = dict()
+        self._config = config.copy()
+        self._process_models = dict()
+        self.init_model_allocation()
 
     @property
     def config(self) -> DictConfig:
@@ -31,21 +37,12 @@ class ModelWrapper(AbstractModelWrapper):
     def config(self, c):
         self._config = c
 
-    @property
-    def n_outputs(self) -> int:
-        return self._n_outputs
-
-    def get_outputs(self, inputs: dict[str, float]) -> tuple[np.array, dict[str, float]]:
+    def get_model_outputs(self, inputs: dict[str, float]) -> tuple[np.array, dict[str, float]]:
         mean_pred, var_pred = self._call_models(inputs)
         outputs_array, outputs = self._sample_output_distribution(mean_pred, var_pred)
         return outputs_array, outputs
 
-    def update(self, changed_outputs: list[str]) -> None:
-        for output_name in changed_outputs:
-            self._allocate_model_to_output(output_name, self._config.output_models[output_name])
-
-    def reset(self) -> None:
-        self._config = self._initial_config.copy()
+    def init_model_allocation(self) -> None:
         for output_name, model_name in self._config.output_models.items():
             try:
                 self._allocate_model_to_output(output_name, model_name)
@@ -54,15 +51,23 @@ class ModelWrapper(AbstractModelWrapper):
                 logger.exception(f"Could not allocate model {model_name} to output {output_name}.")
                 raise e
 
+    def update_model_allocation(self, changed_outputs: list[str]) -> None:
+        for changed_output in changed_outputs:
+            self._allocate_model_to_output(changed_output, self._config.output_models[changed_output])
+
+    def reset(self) -> None:
+        self._config = self._initial_config.copy()
+        self.init_model_allocation()
+
     def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()
         var_pred = dict()
         if latent:
-            for output_name, model in self._machine_models.items():
+            for output_name, model in self._process_models.items():
                 mean_pred[output_name], var_pred[output_name] = \
                     model.predict_f(inputs)
         else:
-            for output_name, model in self._machine_models.items():
+            for output_name, model in self._process_models.items():
                 mean_pred[output_name], var_pred[output_name] = \
                     model.predict_y(inputs, observation_noise_only=True)
         return mean_pred, var_pred
@@ -76,14 +81,15 @@ class ModelWrapper(AbstractModelWrapper):
         return outputs_array, outputs
 
     def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
-        # load model properties dict from .yaml file.
+        # load model properties dict from .yaml file
         with open(pl.Path(self._config.path_to_models) / (model_name + '.yaml'), 'r') as stream:
             try:
                 properties = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
-                print(exc)
+                logger.exception(f"Could not load model properties for model {model_name}.")
+                raise exc
 
-        # load machine model.
+        # load process model
         model_class = properties["model_class"]
         if "keep_y_scaled" in properties:
             rescale_y_temp = not bool(properties["keep_y_scaled"])
@@ -102,25 +108,18 @@ class ModelWrapper(AbstractModelWrapper):
             model_state = torch.load(
                 pl.Path(self._config.path_to_models) / (model_name + ".pth"), map_location=map_location
             )
-            spec = importlib.util.spec_from_file_location("module.name",
-                                                          pl.Path(self._config.path_to_models) / (
-                                                                  model_name + ".py"))
-            model_lib = importlib.util.module_from_spec(spec)
-            sys.modules["module.name"] = model_lib
-            spec.loader.exec_module(model_lib)
+            model_module = load_model_from_script(
+                pl.Path(self._config.path_to_models) / (model_name + ".py")
+            )
 
-            mdl = model_interface.AdapterGpytorch(model_lib, data_load, model_state, properties,
-                                                  rescale_y=rescale_y_temp)
+            mdl = model_adapters.AdapterGpytorch(model_module, data_load, model_state, properties,
+                                                 rescale_y=rescale_y_temp)
         elif model_class == "Python_script":
-            spec = importlib.util.spec_from_file_location("module.name",
-                                                          pl.Path(self._config.path_to_models) / (
-                                                                  model_name + ".py"))
-            model_lib = importlib.util.module_from_spec(spec)
-            sys.modules["module.name"] = model_lib
-            spec.loader.exec_module(model_lib)
-
-            mdl = model_interface.AdapterPyScript(model_lib, properties)
+            model_module = load_model_from_script(
+                pl.Path(self._config.path_to_models) / (model_name + ".py")
+            )
+            mdl = model_adapters.AdapterPyScript(model_module, properties)
 
         else:
             raise (TypeError(f"The model class {model_class} is not yet supported"))
-        self._machine_models[output_name] = mdl
+        self._process_models[output_name] = mdl

@@ -1,11 +1,15 @@
 import pathlib as pl
 from importlib import util as importlib_utils
+import logging
+
 import yaml
 from omegaconf import DictConfig
 import numpy as np
-import torch
+from torch import load as torch_load
+from torch import device as torch_device
+from torch.cuda import is_available as torch_is_available
 import pandas as pd
-import logging
+
 
 from src.abstract_base_class.model_manager import AbstractModelManager
 from src import model_adapters
@@ -100,12 +104,12 @@ class ModelManager(AbstractModelManager):
             data_load = pd.read_hdf(
                 pl.Path(self._config.path_to_models) / (model_name + ".hdf5")
             )
-            if torch.cuda.is_available():
+            if torch_is_available():
                 map_location = None
             else:
-                map_location = torch.device('cpu')
+                map_location = torch_device('cpu')
                 logger.warning(f"No Cuda GPU found for model {model_name}. Step execution will be much slower.")
-            model_state = torch.load(
+            model_state = torch_load(
                 pl.Path(self._config.path_to_models) / (model_name + ".pth"), map_location=map_location
             )
             model_module = load_model_from_script(

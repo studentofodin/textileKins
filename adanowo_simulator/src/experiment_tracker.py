@@ -1,6 +1,5 @@
 import wandb as wb
-from omegaconf import DictConfig
-from omegaconf import OmegaConf
+from omegaconf import DictConfig, OmegaConf
 
 from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 

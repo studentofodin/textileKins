@@ -1,5 +1,4 @@
-from abc import ABC, abstractmethod
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 from src.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
 
@@ -24,10 +23,10 @@ class DisturbanceManager(AbstractDisturbanceManager):
         return self._n_disturbances
 
     def get_disturbances(self) -> dict[str, float]:
-        disturbances = dict(self._config.disturbances)
+        disturbances = OmegaConf.to_container(self._config.disturbances)
         return disturbances
 
     def reset(self) -> dict[str, float]:
         self._config = self._initial_config.copy()
-        disturbances = dict(self._config.disturbances)
+        disturbances = OmegaConf.to_container(self._config.disturbances)
         return disturbances

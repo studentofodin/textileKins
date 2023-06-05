@@ -1,5 +1,6 @@
 import numpy as np
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
+
 
 from src.abstract_base_class.control_manager import AbstractControlManager
 
@@ -46,7 +47,7 @@ class ControlManager(AbstractControlManager):
 
     def reset(self) -> dict[str, float]:
         self._config = self._initial_config.copy()
-        self._controls = dict(self._config.initial_controls)
+        self._controls = OmegaConf.to_container(self._config.initial_controls)
         if not self._control_constraints_met(self._controls):
             raise AssertionError("The initial controls do not meet safety constraints. Aborting Experiment.")
         return self._controls

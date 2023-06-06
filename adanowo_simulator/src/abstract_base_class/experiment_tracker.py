@@ -22,7 +22,7 @@ class AbstractExperimentTracker(ABC):
         pass
 
     @abstractmethod
-    def log(self, logVariables: dict[str, float]) -> None:
+    def step(self, logVariables: dict[str, float]) -> None:
         """
         log the given log_variables in wandb.
         """

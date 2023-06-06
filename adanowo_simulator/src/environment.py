@@ -11,11 +11,11 @@ from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
-    def __init__(self, config: DictConfig, machine: AbstractOutputManager, reward_manager: AbstractRewardManager,
+    def __init__(self, config: DictConfig, output_manager: AbstractOutputManager, reward_manager: AbstractRewardManager,
                  control_manager: AbstractControlManager, disturbance_manager: AbstractDisturbanceManager,
                  experiment_tracker: AbstractExperimentTracker, scenario_manager: AbstractScenarioManager):
 
-        self._machine = machine
+        self._output_manager = output_manager
         self._reward_manager = reward_manager
         self._experiment_tracker = experiment_tracker
         self._control_manager = control_manager
@@ -37,8 +37,8 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._config = c
 
     @property
-    def machine(self) -> AbstractOutputManager:
-        return self._machine
+    def output_manager(self) -> AbstractOutputManager:
+        return self._output_manager
 
     @property
     def reward_manager(self) -> AbstractRewardManager:
@@ -74,13 +74,13 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
         self._update_configs()
 
-        disturbances = self._disturbance_manager.get_disturbances()
-        controls, safety_met, actions_dict = self._control_manager.get_controls(actions)
+        disturbances = self._disturbance_manager.step()
+        controls, safety_met, actions_dict = self._control_manager.step(actions)
         states = controls | disturbances
 
 
-        outputs_array, outputs_dict = self._machine.get_outputs(states)
-        reward, reqs_met = self._reward_manager.get_reward(states, outputs_dict, safety_met)
+        outputs_array, outputs_dict = self._output_manager.step(states)
+        reward, reqs_met = self._reward_manager.step(states, outputs_dict, safety_met)
 
         log_variables = \
             {"Reward": reward} | \
@@ -89,7 +89,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
             actions_dict | \
             states | \
             outputs_dict
-        self._experiment_tracker.log(log_variables)
+        self._experiment_tracker.step(log_variables)
 
         info = dict()
         self._step_index = self._step_index + 1
@@ -103,29 +103,29 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         initial_controls = self._control_manager.reset()
         initial_disturbances = self._disturbance_manager.reset()
         initial_states = initial_controls | initial_disturbances
-        self._machine.reset()
+        self._output_manager.reset()
         self._scenario_manager.reset()
 
         self._step_index = 0
         self._config = self._initial_config.copy()
 
-        observation_array, _ = self._machine.get_outputs(initial_states)
+        observation_array, _ = self._output_manager.step(initial_states)
         info = dict()
 
         self._status = "READY"
         return observation_array, info
 
     def _init_experiment(self) -> None:
-        self._experiment_tracker.init_run()
+        self._experiment_tracker.init_experiment()
 
     def _update_configs(self) -> None:
         self._reward_manager.config.output_bounds = \
             self._scenario_manager.update_output_bounds(self._step_index,
                                                        self._reward_manager.config.output_bounds.copy())
 
-        self._machine.config.output_models, changed_outputs = \
-            self._scenario_manager.update_output_models(self._step_index, self._machine.config.output_models.copy())
-        self._machine.update(changed_outputs)
+        self._output_manager.config.output_models, changed_outputs = \
+            self._scenario_manager.update_output_models(self._step_index, self._output_manager.config.output_models.copy())
+        self._output_manager.update(changed_outputs)
 
         self._control_manager.config.disturbances = \
             self._scenario_manager.update_disturbances(self._step_index, self._disturbance_manager.config.disturbances.copy())

@@ -25,11 +25,6 @@ class AbstractTrainingEnvironment(ABC):
 
     @property
     @abstractmethod
-    def machine(self) -> AbstractOutputManager:
-        pass
-
-    @property
-    @abstractmethod
     def reward_manager(self) -> AbstractRewardManager:
         pass
 

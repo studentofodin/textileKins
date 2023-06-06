@@ -49,14 +49,14 @@ class OutputManager(AbstractOutputManager):
     def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()
         var_pred = dict()
-        if latent:
+        if self._config.outputs_are_latent:
             for output_name, model in self._machine_models.items():
                 mean_pred[output_name], var_pred[output_name] = \
                     model.predict_f(inputs)
         else:
             for output_name, model in self._machine_models.items():
                 mean_pred[output_name], var_pred[output_name] = \
-                    model.predict_y(inputs, observation_noise_only=True)
+                    model.predict_y(inputs, observation_noise_only=self._config.observation_noise_only)
         return mean_pred, var_pred
 
     def _sample_output_distribution(self, mean_pred: dict[str, np.array], var_pred: dict[str, np.array]) \

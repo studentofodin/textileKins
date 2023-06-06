@@ -32,9 +32,24 @@ class OutputManager(AbstractOutputManager):
     def n_outputs(self) -> int:
         return self._n_outputs
 
-    def step(self, inputs: dict[str, float]) -> tuple[np.array, dict[str, float]]:
-        mean_pred, var_pred = self._call_models(inputs)
-        outputs_array, outputs = self._sample_output_distribution(mean_pred, var_pred)
+    def step(self, states: dict[str, float]) -> tuple[np.array, dict[str, float]]:
+        mean_pred = dict()
+        var_pred = dict()
+        outputs = dict()
+        if self._config.outputs_are_latent:
+            for output_name, model in self._machine_models.items():
+                X = states | outputs
+                mean_pred[output_name], var_pred[output_name] = \
+                    model.predict_f(X)
+                outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name])).item()
+        else:
+            for output_name, model in self._machine_models.items():
+                X = states | outputs
+                mean_pred[output_name], var_pred[output_name] = \
+                    model.predict_y(X, observation_noise_only=self._config.observation_noise_only)
+                outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name])).item()
+        outputs_array = np.array(tuple(outputs.values()))
+
         return outputs_array, outputs
 
     def update(self, changed_outputs: list[str]) -> None:
@@ -45,27 +60,6 @@ class OutputManager(AbstractOutputManager):
         self._config = self._initial_config.copy()
         for output_name, model_name in self._config.output_models.items():
             self._allocate_model_to_output(output_name, model_name)
-
-    def _call_models(self, inputs: dict[str, float]) -> (dict[str, np.array], dict[str, np.array]):
-        mean_pred = dict()
-        var_pred = dict()
-        if self._config.outputs_are_latent:
-            for output_name, model in self._machine_models.items():
-                mean_pred[output_name], var_pred[output_name] = \
-                    model.predict_f(inputs)
-        else:
-            for output_name, model in self._machine_models.items():
-                mean_pred[output_name], var_pred[output_name] = \
-                    model.predict_y(inputs, observation_noise_only=self._config.observation_noise_only)
-        return mean_pred, var_pred
-
-    def _sample_output_distribution(self, mean_pred: dict[str, np.array], var_pred: dict[str, np.array]) \
-            -> (np.array, dict[str, float]):
-        outputs = dict()
-        for output_name in self._config.output_models.keys():
-            outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name])).item()
-        outputs_array = np.array(tuple(outputs.values()))
-        return outputs_array, outputs
 
     def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
         # load model properties dict from .yaml file.

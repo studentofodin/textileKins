@@ -46,7 +46,7 @@ class OutputManager(AbstractOutputManager):
         for output_name, model_name in self._config.output_models.items():
             self._allocate_model_to_output(output_name, model_name)
 
-    def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
+    def _call_models(self, inputs: dict[str, float]) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()
         var_pred = dict()
         if self._config.outputs_are_latent:

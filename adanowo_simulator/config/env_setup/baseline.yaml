@@ -45,6 +45,8 @@ output_models:
   tensileStrengthMD: tensileStrengthMDModel
   cardWebUnevenness: cardWebUnevennessModel
   lineSpeed: lineSpeedModel
+outputs_are_latent: False
+observation_noise_only: True
 action_space:
   CardDeliveryWeightPerArea:
     low: 0.0

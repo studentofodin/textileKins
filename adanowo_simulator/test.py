@@ -24,7 +24,9 @@ def main(configuration: DictConfig):
                                                          {"control_bounds": config.process_setup.control_bounds}))
     disturbance_manager = DisturbanceManager(OmegaConf.merge({"disturbances": config.process_setup.disturbances}))
     output_manager = OutputManager(OmegaConf.merge({"path_to_models": config.env_setup.path_to_models},
-                                                     {"output_models": config.env_setup.output_models}))
+                                                   {"output_models": config.env_setup.output_models},
+                                                   {"outputs_are_latent": config.env_setup.outputs_are_latent},
+                                                   {"observation_noise_only": config.env_setup.observation_noise_only}))
     scenario_manager = ScenarioManager(config.scenario_setup)
     experiment_tracker = ExperimentTracker(config.experiment_tracker, config)
     training_env = TrainingEnvironment(OmegaConf.create(), output_manager, reward_manager, control_manager,

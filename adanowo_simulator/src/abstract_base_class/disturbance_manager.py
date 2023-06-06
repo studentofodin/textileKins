@@ -19,7 +19,7 @@ class AbstractDisturbanceManager(ABC):
         pass
 
     @abstractmethod
-    def get_disturbances(self) -> dict[str, float]:
+    def step(self) -> dict[str, float]:
         """
         get disturbances.
         """

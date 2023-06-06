@@ -22,7 +22,7 @@ class DisturbanceManager(AbstractDisturbanceManager):
     def n_disturbances(self) -> int:
         return self._n_disturbances
 
-    def get_disturbances(self) -> dict[str, float]:
+    def step(self) -> dict[str, float]:
         disturbances = OmegaConf.to_container(self._config.disturbances)
         return disturbances
 

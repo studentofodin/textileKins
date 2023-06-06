@@ -25,7 +25,7 @@ class RewardManager(AbstractRewardManager):
     def reward_range(self) -> tuple[float, float]:
         return self._reward_range
 
-    def get_reward(self, state: dict[str, float], outputs: dict[str, float], safety_met: bool) -> tuple[float, bool]:
+    def step(self, state: dict[str, float], outputs: dict[str, float], safety_met: bool) -> tuple[float, bool]:
         output_constraints_met = self._output_constraints_met(outputs)
 
         # penalty.
@@ -52,13 +52,5 @@ class RewardManager(AbstractRewardManager):
         for output_name, upper_bound in self._config.output_bounds.upper.items():
             if outputs[output_name] > upper_bound:
                 output_constraints_met = False
-
-        # check more complex, relational constraints.
-        # product = 1
-        # for output_name, value in outputs.items():
-        #     product = product * value
-        # if (product < self._config.requirements.complex_constraints.mult_min) or \
-        #         (product > self._config.requirements.complex_constraints.mult_max):
-        #     output_constraints_met = False
 
         return output_constraints_met

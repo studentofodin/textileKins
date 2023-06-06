@@ -20,7 +20,7 @@ class AbstractControlManager(ABC):
         pass
 
     @abstractmethod
-    def get_controls(self, actions: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
+    def step(self, actions: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
         """
         calculate controls from actions.
         return controls, if the actions meet safety constraints and actions as a dictionary.

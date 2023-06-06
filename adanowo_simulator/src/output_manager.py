@@ -32,7 +32,7 @@ class OutputManager(AbstractOutputManager):
     def n_outputs(self) -> int:
         return self._n_outputs
 
-    def get_outputs(self, inputs: dict[str, float]) -> tuple[np.array, dict[str, float]]:
+    def step(self, inputs: dict[str, float]) -> tuple[np.array, dict[str, float]]:
         mean_pred, var_pred = self._call_models(inputs)
         outputs_array, outputs = self._sample_output_distribution(mean_pred, var_pred)
         return outputs_array, outputs

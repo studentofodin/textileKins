@@ -21,11 +21,11 @@ class ExperimentTracker(AbstractExperimentTracker):
     def config(self, c):
         self._config = c
 
-    def init_run(self):
+    def init_experiment(self):
         exp_config = OmegaConf.to_container(self._experiment_config)
         self._run = wb.init(config=exp_config, **self._config)
 
-    def log(self, log_variables: dict) -> None:
+    def step(self, log_variables: dict) -> None:
         self._run.log(log_variables)
 
     def reset(self) -> None:

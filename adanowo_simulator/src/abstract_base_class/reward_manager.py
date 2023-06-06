@@ -15,7 +15,7 @@ class AbstractRewardManager(ABC):
         pass
 
     @abstractmethod
-    def get_reward(self, state: dict[str, float], outputs: dict[str, float],
+    def step(self, state: dict[str, float], outputs: dict[str, float],
                    safety_met: bool) -> tuple[float, bool]:
         """
         determine reward value from state and outputs.

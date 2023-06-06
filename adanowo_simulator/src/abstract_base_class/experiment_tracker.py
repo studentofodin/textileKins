@@ -15,7 +15,7 @@ class AbstractExperimentTracker(ABC):
         pass
 
     @abstractmethod
-    def init_run(self):
+    def init_experiment(self):
         """
         initialize wandb.
         """

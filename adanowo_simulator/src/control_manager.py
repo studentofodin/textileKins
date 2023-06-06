@@ -27,7 +27,7 @@ class ControlManager(AbstractControlManager):
     def n_controls(self) -> int:
         return self._n_controls
 
-    def get_controls(self, actions: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
+    def step(self, actions: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
         # relative actions.
         if self._config.actions_are_relative:
             potential_controls = dict()

@@ -32,25 +32,24 @@ class OutputManager(AbstractOutputManager):
     def n_outputs(self) -> int:
         return self._n_outputs
 
-    def step(self, states: dict[str, float]) -> tuple[np.array, dict[str, float]]:
+    def step(self, controls: dict[str, float], disturbances: dict[str, float]) -> dict[str, float]:
         mean_pred = dict()
         var_pred = dict()
         outputs = dict()
         if self._config.outputs_are_latent:
             for output_name, model in self._machine_models.items():
-                X = states | outputs
+                X = controls | disturbances | outputs
                 mean_pred[output_name], var_pred[output_name] = \
                     model.predict_f(X)
                 outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name])).item()
         else:
             for output_name, model in self._machine_models.items():
-                X = states | outputs
+                X = controls | disturbances | outputs
                 mean_pred[output_name], var_pred[output_name] = \
                     model.predict_y(X, observation_noise_only=self._config.observation_noise_only)
                 outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name])).item()
-        outputs_array = np.array(tuple(outputs.values()))
 
-        return outputs_array, outputs
+        return outputs
 
     def update(self, changed_outputs: list[str]) -> None:
         for output_name in changed_outputs:

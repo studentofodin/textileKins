@@ -21,10 +21,9 @@ class AbstractOutputManager(ABC):
         pass
 
     @abstractmethod
-    def step(self, inputs: dict[str, float]) -> tuple[np.array, dict[str, float]]:
+    def step(self, controls: dict[str, float], disturbances: dict[str, float]) -> dict[str, float]:
         """
-        get sampled output value from inputs for each model.
-        return output values as numpy array and as dictionary.
+        get sampled output values from inputs for each model.
         """
         pass
 

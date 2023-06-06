@@ -75,45 +75,49 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._update_configs()
 
         disturbances = self._disturbance_manager.step()
-        controls, safety_met, actions_dict = self._control_manager.step(actions)
+        controls, safety_met, actions = self._control_manager.step(actions)
         states = controls | disturbances
 
 
-        outputs_array, outputs_dict = self._output_manager.step(states)
-        reward, reqs_met = self._reward_manager.step(states, outputs_dict, safety_met)
+        outputs = self._output_manager.step(controls, disturbances)
+        reward, reqs_met = self._reward_manager.step(states, outputs, safety_met)
 
         log_variables = \
             {"Reward": reward} | \
             {"Safety Met": int(safety_met)} | \
             {"Requirements Met": int(reqs_met)} | \
-            actions_dict | \
-            states | \
-            outputs_dict
+            actions | \
+            controls | \
+            disturbances | \
+            outputs
         self._experiment_tracker.step(log_variables)
 
         info = dict()
         self._step_index = self._step_index + 1
         self._status = "RUNNING"
 
-        return outputs_array, reward, False, False, info
+        observations = np.array(tuple(outputs.values()))
+
+        return observations, reward, False, False, info
 
     def reset(self) -> tuple[np.array, dict]:
         self._experiment_tracker.reset()
         self._reward_manager.reset()
         initial_controls = self._control_manager.reset()
         initial_disturbances = self._disturbance_manager.reset()
-        initial_states = initial_controls | initial_disturbances
         self._output_manager.reset()
         self._scenario_manager.reset()
 
         self._step_index = 0
         self._config = self._initial_config.copy()
 
-        observation_array, _ = self._output_manager.step(initial_states)
-        info = dict()
+        outputs = self._output_manager.step(initial_controls, initial_disturbances)
 
+        observations = np.array(tuple(outputs.values()))
+        info = dict()
         self._status = "READY"
-        return observation_array, info
+
+        return observations, info
 
     def _init_experiment(self) -> None:
         self._experiment_tracker.init_experiment()

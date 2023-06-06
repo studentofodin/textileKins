@@ -7,11 +7,11 @@ import numpy as np
 import torch
 import pandas as pd
 
-from src.abstract_base_class.model_wrapper import AbstractModelWrapper
+from src.abstract_base_class.output_manager import AbstractOutputManager
 from src import model_interface
 
 
-class ModelWrapper(AbstractModelWrapper):
+class OutputManager(AbstractOutputManager):
 
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()

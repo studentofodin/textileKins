@@ -2,7 +2,7 @@ import numpy as np
 from omegaconf import DictConfig
 
 from src.abstract_base_class.environment import AbstractTrainingEnvironment
-from src.abstract_base_class.model_wrapper import AbstractModelWrapper
+from src.abstract_base_class.output_manager import AbstractOutputManager
 from src.abstract_base_class.reward_manager import AbstractRewardManager
 from src.abstract_base_class.control_manager import AbstractControlManager
 from src.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
@@ -11,7 +11,7 @@ from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
 
 class TrainingEnvironment(AbstractTrainingEnvironment):
-    def __init__(self, config: DictConfig, machine: AbstractModelWrapper, reward_manager: AbstractRewardManager,
+    def __init__(self, config: DictConfig, machine: AbstractOutputManager, reward_manager: AbstractRewardManager,
                  control_manager: AbstractControlManager, disturbance_manager: AbstractDisturbanceManager,
                  experiment_tracker: AbstractExperimentTracker, scenario_manager: AbstractScenarioManager):
 
@@ -37,7 +37,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._config = c
 
     @property
-    def machine(self) -> AbstractModelWrapper:
+    def machine(self) -> AbstractOutputManager:
         return self._machine
 
     @property

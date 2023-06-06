@@ -3,7 +3,7 @@ import numpy as np
 from omegaconf import DictConfig
 
 
-class AbstractModelWrapper(ABC):
+class AbstractOutputManager(ABC):
 
     @property
     @abstractmethod

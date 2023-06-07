@@ -18,4 +18,4 @@ def baseline_reward(state: dict[str, float], outputs: dict[str, float], config) 
 
     reward = contribution_margin - floor_quality
 
-    return reward.item()
+    return reward

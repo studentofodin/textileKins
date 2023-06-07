@@ -9,7 +9,6 @@ class ControlManager(AbstractControlManager):
 
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
-        self._action_names = [name + '_action' for name in list(config.initial_controls.keys())]
         self._n_controls = len(config.initial_controls)
         self._config = None
         self._controls = None
@@ -28,20 +27,21 @@ class ControlManager(AbstractControlManager):
         return self._n_controls
 
     def step(self, actions: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
+
+        actions_dict = dict(zip(self._controls.keys(), actions.tolist()))
+
         # relative actions.
         if self._config.actions_are_relative:
             potential_controls = dict()
-            for index, control in enumerate(self._controls.keys()):
-                potential_controls[control] = self._controls[control] + actions[index]
+            for control_name in self._controls.keys():
+                potential_controls[control_name] = self._controls[control_name] + actions_dict[control_name]
         # absolute actions.
         else:
-            potential_controls = dict(zip(self._controls.keys(), actions.tolist()))
+            potential_controls = actions_dict
 
         control_constraints_met = self._control_constraints_met(potential_controls)
         if control_constraints_met:
             self._controls = potential_controls
-
-        actions_dict = dict(zip(self._action_names, actions.tolist()))
 
         return self._controls, control_constraints_met, actions_dict
 
@@ -56,7 +56,6 @@ class ControlManager(AbstractControlManager):
         # assume that safety constraints are met.
         control_constraints_met = True
 
-        # check simple fixed bounds for controls.
         for control_name, bounds in self._config.control_bounds.items():
             if (controls[control_name] < bounds.lower) or (controls[control_name] > bounds.upper):
                 control_constraints_met = False

@@ -25,11 +25,11 @@ class RewardManager(AbstractRewardManager):
     def reward_range(self) -> tuple[float, float]:
         return self._reward_range
 
-    def step(self, state: dict[str, float], outputs: dict[str, float], safety_met: bool) -> tuple[float, bool]:
+    def step(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: bool) -> tuple[float, bool]:
         output_constraints_met = self._output_constraints_met(outputs)
 
         # penalty.
-        if not (output_constraints_met and safety_met):
+        if not (output_constraints_met and control_constraints_met):
             reward = -self._config.penalty
 
         # no penalty.
@@ -42,7 +42,7 @@ class RewardManager(AbstractRewardManager):
         self._config = self._initial_config.copy()
 
     def _output_constraints_met(self, outputs: dict[str, float]) -> bool:
-        # assume that requirement constraints are met.
+        # assume that output constraints are met.
         output_constraints_met = True
 
         # check simple fixed bounds for outputs.

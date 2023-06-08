@@ -23,8 +23,8 @@ class AbstractControlManager(ABC):
     def step(self, actions: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
         """
         calculate controls from actions.
-        return controls, if the actions meet safety constraints and actions as a dictionary.
-        if the actions do not meet safety constraints the controls remain the same as before.
+        return controls, if the control constraints are met with the given actions and actions as a dictionary.
+        if the control constraints are not met the controls remain the same as before.
         """
         pass
 
@@ -37,6 +37,6 @@ class AbstractControlManager(ABC):
     @abstractmethod
     def _control_constraints_met(self, controls: dict[str, float]) -> bool:
         """
-        check if controls meet safety constraints.
+        check if control constraints are met.
         """
         pass

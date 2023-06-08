@@ -16,12 +16,12 @@ class AbstractRewardManager(ABC):
 
     @abstractmethod
     def step(self, state: dict[str, float], outputs: dict[str, float],
-                   safety_met: bool) -> tuple[float, bool]:
+                   control_constraints_met: bool) -> tuple[float, bool]:
         """
         determine reward value from state and outputs.
-        also determine if outputs meet requirement constraints.
+        also determine if output constraints are met.
         return these values.
-        if safety or requirement constraints are not met then fixed penalty is used for reward value.
+        if control or output constraints are not met then fixed penalty is used for reward value.
         """
         pass
 
@@ -36,7 +36,7 @@ class AbstractRewardManager(ABC):
     @abstractmethod
     def _output_constraints_met(self, outputs: dict[str, float]) -> bool:
         """
-        check if outputs meet requirement constraints.
+        check if outputs constraints are met.
         """
         pass
 

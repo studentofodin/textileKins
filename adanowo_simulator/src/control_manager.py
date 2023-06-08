@@ -49,11 +49,11 @@ class ControlManager(AbstractControlManager):
         self._config = self._initial_config.copy()
         self._controls = OmegaConf.to_container(self._config.initial_controls)
         if not self._control_constraints_met(self._controls):
-            raise AssertionError("The initial controls do not meet safety constraints. Aborting Experiment.")
+            raise AssertionError("The initial controls do not meet control constraints. Aborting Experiment.")
         return self._controls
 
     def _control_constraints_met(self, controls: dict[str, float]) -> bool:
-        # assume that safety constraints are met.
+        # assume that control constraints are met.
         control_constraints_met = True
 
         for control_name, bounds in self._config.control_bounds.items():

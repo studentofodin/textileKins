@@ -75,17 +75,17 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         self._update_configs()
 
         disturbances = self._disturbance_manager.step()
-        controls, safety_met, actions = self._control_manager.step(actions)
+        controls, control_constraints_met, actions = self._control_manager.step(actions)
         states = controls | disturbances
 
 
         outputs = self._output_manager.step(controls, disturbances)
-        reward, reqs_met = self._reward_manager.step(states, outputs, safety_met)
+        reward, output_constraints_met = self._reward_manager.step(states, outputs, control_constraints_met)
 
         log_variables = \
             {"Reward": reward} | \
-            {"Safety Met": int(safety_met)} | \
-            {"Requirements Met": int(reqs_met)} | \
+            {"Control Constraints Met": int(control_constraints_met)} | \
+            {"Output Constraints Met": int(output_constraints_met)} | \
             actions | \
             controls | \
             disturbances | \

@@ -76,7 +76,6 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
         disturbances = self._disturbance_manager.step()
         controls, control_constraints_met, actions = self._control_manager.step(actions)
-        states = controls | disturbances
 
 
         outputs = self._output_manager.step(controls, disturbances)
@@ -84,13 +83,12 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
                                                                    control_constraints_met)
 
         log_variables = \
-            {"Reward": reward} | \
-            {"Control Constraints Met": int(control_constraints_met)} | \
-            {"Output Constraints Met": int(output_constraints_met)} | \
-            actions | \
-            controls | \
-            disturbances | \
-            outputs
+            {"Performance-Metrics": {"Reward": reward, "Control-Constraints-Met": int(control_constraints_met),
+                                    "Output-Constraints-Met": int(output_constraints_met)},
+             "Actions": actions,
+             "Controls": controls,
+             "Disturbances": disturbances,
+             "Outputs": outputs}
         self._experiment_tracker.step(log_variables)
 
         info = dict()

@@ -15,7 +15,7 @@ class AbstractRewardManager(ABC):
         pass
 
     @abstractmethod
-    def step(self, state: dict[str, float], outputs: dict[str, float],
+    def step(self, controls: dict[str, float], disturbances: dict[str, float], outputs: dict[str, float],
                    control_constraints_met: bool) -> tuple[float, bool]:
         """
         determine reward value from state and outputs.

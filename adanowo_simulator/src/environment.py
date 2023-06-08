@@ -80,7 +80,8 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
 
 
         outputs = self._output_manager.step(controls, disturbances)
-        reward, output_constraints_met = self._reward_manager.step(states, outputs, control_constraints_met)
+        reward, output_constraints_met = self._reward_manager.step(controls, disturbances, outputs,
+                                                                   control_constraints_met)
 
         log_variables = \
             {"Reward": reward} | \

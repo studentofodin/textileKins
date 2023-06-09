@@ -49,46 +49,46 @@ outputs_are_latent: False
 observation_noise_only: True
 action_space:
   CardDeliveryWeightPerArea:
-    low: 0.0
+    low: -100.0
     high: 100.0
   Cross-lapperLayersCount:
-    low: 0.0
+    low: -100.0
     high: 100.0
   Needleloom1DraftRatio:
-    low: 0.0
+    low: -100.0
     high: 100.0
   Cross-lapperProfiling:
-    low: 0.0
+    low: -1000.0
     high: 1000.0
   DrawFrameDraftRatio:
-    low: 0.0
+    low: -1000.0
     high: 1000.0
   CardMassThroughputSetpoint:
-    low: 0.0
+    low: -10000.0
     high: 10000.0
   Needleloom1FeedPerStroke:
-    low: 0.0
+    low: -100.0
     high: 100.0
   Needleloom2NeedlepunchDepth:
-    low: 0.0
+    low: -100.0
     high: 100.0
   v_PreRoll:
-    low: 0.0
+    low: -1000.0
     high: 1000.0
   v_MainCylinder:
-    low: 0.0
+    low: -10000.0
     high: 10000.0
   v_WorkerMain:
-    low: 0.0
+    low: -1000.0
     high: 1000.0
   v_StripperMain:
-    low: 0.0
+    low: -1000.0
     high: 1000.0
   v_WorkerPre:
-    low: 0.0
+    low: -10000.o
     high: 10000.0
   v_StripperPre:
-    low: 0.0
+    low: -1000.0
     high: 1000.0
 observation_space:
   areaWeightLane1:
@@ -112,3 +112,6 @@ observation_space:
   CardWebUnevenness:
     low: -100.0
     high: 100.0
+  lineSpeed:
+    low: -1.0
+    high: 20.0

@@ -85,7 +85,7 @@ action_space:
     low: -1000.0
     high: 1000.0
   v_WorkerPre:
-    low: -10000.o
+    low: -10000.0
     high: 10000.0
   v_StripperPre:
     low: -1000.0

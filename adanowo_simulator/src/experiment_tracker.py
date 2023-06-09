@@ -25,10 +25,10 @@ class ExperimentTracker(AbstractExperimentTracker):
         exp_config = OmegaConf.to_container(self._experiment_config)
         self._run = wb.init(config=exp_config, **self._config)
 
-    def step(self, log_variables: dict[str, dict[str, float]]) -> None:
+    def step(self, log_variables: dict[str, dict[str, float]], step_index: int) -> None:
         for category, variables in log_variables.items():
             for name, value in variables.items():
-                self._run.log({f"{category}/{name}": value})
+                self._run.log({f"{category}/{name}": value}, step_index)
 
     def reset(self) -> None:
         if self._run:

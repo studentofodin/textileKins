@@ -89,7 +89,7 @@ class Environment(AbstractEnvironment):
              "Controls": controls,
              "Disturbances": disturbances,
              "Outputs": outputs}
-        self._experiment_tracker.step(log_variables)
+        self._experiment_tracker.step(log_variables, self._step_index)
 
         info = dict()
         self._step_index = self._step_index + 1

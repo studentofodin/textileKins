@@ -59,12 +59,12 @@ class RewardManager(AbstractRewardManager):
         # assume that output constraints are met.
         output_constraints_met = True
 
-        # check simple fixed bounds for outputs.
-        for output_name, lower_bound in self._config.output_bounds.lower.items():
-            if outputs[output_name] < lower_bound:
-                output_constraints_met = False
-        for output_name, upper_bound in self._config.output_bounds.upper.items():
-            if outputs[output_name] > upper_bound:
-                output_constraints_met = False
+        for output_name, bounds in self._config.output_bounds.items():
+            if "lower" in bounds.keys():
+                if outputs[output_name] < bounds.lower:
+                    output_constraints_met = False
+            if "upper" in bounds.keys():
+                if outputs[output_name] > bounds.upper:
+                    output_constraints_met = False
 
         return output_constraints_met

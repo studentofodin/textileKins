@@ -57,7 +57,11 @@ class ControlManager(AbstractControlManager):
         control_constraints_met = True
 
         for control_name, bounds in self._config.control_bounds.items():
-            if (controls[control_name] < bounds.lower) or (controls[control_name] > bounds.upper):
-                control_constraints_met = False
+            if "lower" in bounds.keys():
+                if controls[control_name] < bounds.lower:
+                    control_constraints_met = False
+            if "upper" in bounds.keys():
+                if controls[control_name] > bounds.upper:
+                    control_constraints_met = False
 
         return control_constraints_met

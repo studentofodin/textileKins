@@ -32,21 +32,23 @@ class ScenarioManager(AbstractScenarioManager):
 
     def update_output_bounds(self, step_index: int, output_bounds_config: DictConfig) -> DictConfig:
 
-        for output_name, scenario in self._config.output_bounds.lower.items():
-            if scenario and scenario[0][0] == step_index:
-                output_bounds_config.simple_output_bounds.lower[output_name] = scenario[0][1]
-                self._config.output_bounds.lower[output_name].pop(0)
-
-        for output_name, scenario in self._config.output_bounds.upper.items():
-            if scenario and scenario[0][0] == step_index:
-                output_bounds_config.simple_output_bounds.upper[output_name] = scenario[0][1]
-                self._config.output_bounds.upper[output_name].pop(0)
+        for output_name, scenarios in self._config.output_bounds.items():
+            if "lower" in scenarios.keys():
+                scenario = scenarios.lower
+                if scenario and scenario[0][0] == step_index:
+                    output_bounds_config[output_name]["lower"] = scenario[0][1]
+                    self._config.output_bounds[output_name]["lower"].pop(0)
+            if "upper" in scenarios.keys():
+                scenario = scenarios.upper
+                if scenario and scenario[0][0] == step_index:
+                    output_bounds_config[output_name]["upper"] = scenario[0][1]
+                    self._config.output_bounds[output_name]["upper"].pop(0)
 
         return output_bounds_config
 
     def update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> DictConfig:
         for disturbance_name, scenario in self._config.disturbances.items():
-            if step_index % scenario.trigger_duration == 0:
+            if step_index % scenario.trigger_interval == 0:
                 disturbance_config[disturbance_name] = np.random.normal(scenario.mean, scenario.std)
 
         return disturbance_config

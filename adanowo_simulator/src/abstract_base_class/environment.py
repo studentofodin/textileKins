@@ -40,6 +40,11 @@ class AbstractTrainingEnvironment(ABC):
 
     @property
     @abstractmethod
+    def output_manager(self) -> AbstractOutputManager:
+        pass
+
+    @property
+    @abstractmethod
     def experiment_tracker(self) -> AbstractExperimentTracker:
         pass
 

@@ -4,13 +4,13 @@ from gymnasium.core import RenderFrame
 from gymnasium.envs.registration import register
 from omegaconf import DictConfig
 
-from src.abstract_base_class.environment import AbstractTrainingEnvironment
+from src.abstract_base_class.environment import AbstractEnvironment
 
 
 class GymWrapper(Env):
 
-    def __init__(self, env: AbstractTrainingEnvironment, config: DictConfig):
-        self._env = env
+    def __init__(self, environment: AbstractEnvironment, config: DictConfig):
+        self._environment = environment
         self._config = config.copy()
 
         self._action_space = spaces.Box(
@@ -26,8 +26,8 @@ class GymWrapper(Env):
         )
 
     @property
-    def env(self) -> AbstractTrainingEnvironment:
-        return self._env
+    def environment(self) -> AbstractEnvironment:
+        return self._environment
 
     @property
     def action_space(self) -> spaces.Box:
@@ -38,11 +38,11 @@ class GymWrapper(Env):
         return self._observation_space
    
     def step(self, action: np.array) -> tuple[np.array, float, bool, bool, dict]:
-        return self._env.step(action)
+        return self._environment.step(action)
 
     def reset(self, seed=None, options=None) -> tuple[np.array, dict]:
         super().reset(seed=seed)
-        return self._env.reset()
+        return self._environment.reset()
 
     def render(self) -> RenderFrame | list[RenderFrame] | None:
         pass

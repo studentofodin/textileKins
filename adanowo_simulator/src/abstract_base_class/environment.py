@@ -11,7 +11,7 @@ from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 from src.abstract_base_class.scenario_manager import AbstractScenarioManager
 
 
-class AbstractTrainingEnvironment(ABC):
+class AbstractEnvironment(ABC):
 
     @property
     @abstractmethod

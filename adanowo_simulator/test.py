@@ -9,7 +9,7 @@ from src.disturbance_manager import DisturbanceManager
 from src.output_manager import OutputManager
 from src.scenario_manager import ScenarioManager
 from src.experiment_tracker import ExperimentTracker
-from src.environment import TrainingEnvironment
+from src.environment import Environment
 from src.gym_wrapper import GymWrapper
 from src.reward_functions import baseline_reward
 
@@ -29,14 +29,14 @@ def main(configuration: DictConfig):
                                                    {"observation_noise_only": config.env_setup.observation_noise_only}))
     scenario_manager = ScenarioManager(config.scenario_setup)
     experiment_tracker = ExperimentTracker(config.experiment_tracker, config)
-    training_env = TrainingEnvironment(OmegaConf.create(), output_manager, reward_manager, control_manager,
-                                       disturbance_manager, experiment_tracker, scenario_manager)
-    env = GymWrapper(training_env, OmegaConf.merge({"action_space": config.env_setup.action_space},
+    environment = Environment(OmegaConf.create(), output_manager, reward_manager, control_manager,
+                              disturbance_manager, experiment_tracker, scenario_manager)
+    gym_wrapper = GymWrapper(environment, OmegaConf.merge({"action_space": config.env_setup.action_space},
                                                    {"observation_space": config.env_setup.observation_space}))
 
     for _ in range(100):
-        env.step(np.random.uniform(low=0.0, high=0.5, size=env.env.control_manager.n_controls))
-    env.reset()
+        gym_wrapper.step(np.random.uniform(low=0.0, high=0.5, size=gym_wrapper.environment.control_manager.n_controls))
+    gym_wrapper.reset()
     pass
 
 

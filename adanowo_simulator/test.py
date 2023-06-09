@@ -13,7 +13,8 @@ from src.environment import Environment
 from src.gym_wrapper import GymWrapper
 
 
-@hydra.main(version_base=None, config_path="./config", config_name="main")
+@hydra.main(version_base=None, config_path="C:/Users/luisk/Desktop/adanowo-simulator/adanowo_simulator/config",
+            config_name="main")
 def main(configuration: DictConfig):
 
     config = configuration

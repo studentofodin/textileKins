@@ -11,14 +11,13 @@ from src.scenario_manager import ScenarioManager
 from src.experiment_tracker import ExperimentTracker
 from src.environment import Environment
 from src.gym_wrapper import GymWrapper
-from src.reward_functions import baseline_reward
 
 
 @hydra.main(version_base=None, config_path="./config", config_name="main")
 def main(configuration: DictConfig):
 
     config = configuration
-    reward_manager = RewardManager(config.product_setup, baseline_reward)
+    reward_manager = RewardManager(config.product_setup)
     control_manager = ControlManager(OmegaConf.merge({"actions_are_relative": config.process_setup.actions_are_relative},
                                                          {"initial_controls": config.process_setup.initial_controls},
                                                          {"control_bounds": config.process_setup.control_bounds}))

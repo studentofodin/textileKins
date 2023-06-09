@@ -32,6 +32,12 @@ class AbstractRewardManager(ABC):
         """
         pass
 
+    @abstractmethod
+    def _get_reward(self, controls: dict[str, float], disturbances: dict[str, float], outputs: dict[str, float]) -> float:
+        """
+        determines reward.
+        """
+        pass
 
     @abstractmethod
     def _output_constraints_met(self, outputs: dict[str, float]) -> bool:

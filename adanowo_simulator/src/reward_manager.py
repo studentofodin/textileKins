@@ -1,4 +1,5 @@
-from typing import Callable
+import importlib
+import pathlib as pl
 
 from omegaconf import DictConfig
 
@@ -6,12 +7,19 @@ from src.abstract_base_class.reward_manager import AbstractRewardManager
 
 
 class RewardManager(AbstractRewardManager):
-    def __init__(self, config: DictConfig, reward_function: Callable):
+    def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
         self._config = None
-        self._reward_function = reward_function
         self._reward_range = (config.reward_range.lower, config.reward_range.upper)
         self.reset()
+
+        # reward function.
+        spec = importlib.util.spec_from_file_location("module.name",
+                                                      pl.Path(self._config.path_to_reward_functions) /
+                                                      (self._config.reward_function + ".py"))
+        reward_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(reward_module)
+        self.__get_reward = reward_module.get_reward
 
     @property
     def config(self) -> DictConfig:
@@ -35,12 +43,17 @@ class RewardManager(AbstractRewardManager):
 
         # no penalty.
         else:
-            reward = self._reward_function(controls, disturbances, outputs, self._config.reward_function)
+            reward = self._get_reward(controls, disturbances, outputs)
 
         return reward, output_constraints_met
 
     def reset(self) -> None:
         self._config = self._initial_config.copy()
+
+    def _get_reward(self, controls: dict[str, float], disturbances: dict[str, float],
+                    outputs: dict[str, float]) -> float:
+        reward = self.__get_reward(controls, disturbances, outputs, self._config.reward_parameters)
+        return reward
 
     def _output_constraints_met(self, outputs: dict[str, float]) -> bool:
         # assume that output constraints are met.

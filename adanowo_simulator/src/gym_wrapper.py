@@ -15,14 +15,12 @@ class GymWrapper(Env):
 
         self._action_space = spaces.Box(
             low=np.array([action_name.low for action_name in self._config.action_space.values()], dtype=np.float32),
-            high=np.array([action_name.high for action_name in self._config.action_space.values()], dtype=np.float32),
-            shape=(len(self._config.action_space),)
+            high=np.array([action_name.high for action_name in self._config.action_space.values()], dtype=np.float32)
         )
 
         self._observation_space = spaces.Box(
             low=np.array([obs_name.low for obs_name in self._config.observation_space.values()], dtype=np.float32),
-            high=np.array([obs_name.high for obs_name in self._config.observation_space.values()], dtype=np.float32),
-            shape=(len(self._config.observation_space),)
+            high=np.array([obs_name.high for obs_name in self._config.observation_space.values()], dtype=np.float32)
         )
 
     @property

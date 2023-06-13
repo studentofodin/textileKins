@@ -95,7 +95,7 @@ class Environment(AbstractEnvironment):
         self._step_index = self._step_index + 1
         self._status = "RUNNING"
 
-        observations = np.array(tuple(outputs.values()))
+        observations = np.array(tuple(outputs.values()), dtype=np.float32)
 
         return observations, reward, False, False, info
 
@@ -112,7 +112,7 @@ class Environment(AbstractEnvironment):
 
         outputs = self._output_manager.step(initial_controls, initial_disturbances)
 
-        observations = np.array(tuple(outputs.values()))
+        observations = np.array(tuple(outputs.values()), dtype=np.float32)
         info = dict()
         self._status = "READY"
 

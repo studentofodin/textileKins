@@ -104,7 +104,7 @@ class OutputManager(AbstractOutputManager):
             sys.modules["module.name"] = model_lib
             spec.loader.exec_module(model_lib)
 
-            mdl = model_interface.AdapterPyScript(model_lib, properties)
+            mdl = model_interface.AdapterPyScript(model_lib)
 
         else:
             raise (TypeError(f"The model class {model_class} is not yet supported"))

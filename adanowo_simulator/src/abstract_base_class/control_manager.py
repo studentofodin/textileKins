@@ -14,11 +14,6 @@ class AbstractControlManager(ABC):
     def config(self, c):
         pass
 
-    @property
-    @abstractmethod
-    def n_controls(self) -> int:
-        pass
-
     @abstractmethod
     def step(self, actions: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
         """
@@ -34,9 +29,4 @@ class AbstractControlManager(ABC):
         reset to initial values.
         """
 
-    @abstractmethod
-    def _control_constraints_met(self, controls: dict[str, float]) -> bool:
-        """
-        check if control constraints are met.
-        """
-        pass
+

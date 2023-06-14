@@ -86,17 +86,3 @@ class AbstractEnvironment(ABC):
         resets the environment to an initial internal state, returning an initial observation and info.
         """
         pass
-
-    @abstractmethod
-    def _init_experiment(self) -> None:
-        """
-        initializes experiment.
-        """
-        pass
-
-    @abstractmethod
-    def _update_configs(self) -> None:
-        """
-        updates the configs of itself, machine, reward, state_manager and experiment_tracker primarily using the
-        scenario_manager.
-        """

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from omegaconf import DictConfig
+from typing import Any
 
 
 class AbstractExperimentTracker(ABC):
@@ -22,7 +23,7 @@ class AbstractExperimentTracker(ABC):
         pass
 
     @abstractmethod
-    def step(self, log_variables: dict[str, any], step_index: int) -> None:
+    def step(self, log_variables: dict[str, Any], step_index: int) -> None:
         """
         log the given log_variables in wandb.
         """

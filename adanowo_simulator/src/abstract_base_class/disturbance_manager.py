@@ -13,11 +13,6 @@ class AbstractDisturbanceManager(ABC):
     def config(self, c):
         pass
 
-    @property
-    @abstractmethod
-    def n_disturbances(self) -> int:
-        pass
-
     @abstractmethod
     def step(self) -> dict[str, float]:
         """

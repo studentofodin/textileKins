@@ -2,6 +2,11 @@ from omegaconf import DictConfig
 import numpy as np
 
 from src.abstract_base_class.scenario_manager import AbstractScenarioManager
+from src.abstract_base_class.output_manager import AbstractOutputManager
+from src.abstract_base_class.reward_manager import AbstractRewardManager
+from src.abstract_base_class.control_manager import AbstractControlManager
+from src.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
+from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 
 
 class ScenarioManager(AbstractScenarioManager):
@@ -19,7 +24,15 @@ class ScenarioManager(AbstractScenarioManager):
     def config(self, c):
         self._config = c
 
-    def update_output_models(self, step_index: int, output_models_config: DictConfig) -> tuple[DictConfig, list[str]]:
+    def step(self, step_index: int, disturbance_manager: AbstractDisturbanceManager,
+             output_manager: AbstractOutputManager, reward_manager: AbstractRewardManager):
+
+        self._update_disturbances(step_index, disturbance_manager.config.disturbances)
+        self._update_output_bounds(step_index, reward_manager.config.output_bounds)
+        _, changed_outputs = self._update_output_models(step_index, output_manager.config.output_models)
+        output_manager.update(changed_outputs)
+
+    def _update_output_models(self, step_index: int, output_models_config: DictConfig) -> tuple[DictConfig, list[str]]:
         changed = []
 
         for output_name, scenario in self._config.output_models.items():
@@ -30,7 +43,7 @@ class ScenarioManager(AbstractScenarioManager):
 
         return output_models_config, changed
 
-    def update_output_bounds(self, step_index: int, output_bounds_config: DictConfig) -> DictConfig:
+    def _update_output_bounds(self, step_index: int, output_bounds_config: DictConfig) -> DictConfig:
 
         for output_name, scenarios in self._config.output_bounds.items():
             if "lower" in scenarios.keys():
@@ -46,7 +59,7 @@ class ScenarioManager(AbstractScenarioManager):
 
         return output_bounds_config
 
-    def update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> DictConfig:
+    def _update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> DictConfig:
         for disturbance_name, scenario in self._config.disturbances.items():
             if step_index % scenario.trigger_interval == 0:
                 disturbance_config[disturbance_name] = np.random.normal(scenario.mean, scenario.std)

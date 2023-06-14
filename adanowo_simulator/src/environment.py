@@ -72,7 +72,7 @@ class Environment(AbstractEnvironment):
         if self._status != "RUNNING":
             self._init_experiment()
 
-        self._update_configs()
+        self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager, self._reward_manager)
 
         disturbances = self._disturbance_manager.step()
         controls, control_constraints_met, actions = self._control_manager.step(actions)
@@ -120,15 +120,3 @@ class Environment(AbstractEnvironment):
 
     def _init_experiment(self) -> None:
         self._experiment_tracker.init_experiment()
-
-    def _update_configs(self) -> None:
-        self._reward_manager.config.output_bounds = \
-            self._scenario_manager.update_output_bounds(self._step_index,
-                                                       self._reward_manager.config.output_bounds.copy())
-
-        self._output_manager.config.output_models, changed_outputs = \
-            self._scenario_manager.update_output_models(self._step_index, self._output_manager.config.output_models.copy())
-        self._output_manager.update(changed_outputs)
-
-        self._disturbance_manager.config.disturbances = \
-            self._scenario_manager.update_disturbances(self._step_index, self._disturbance_manager.config.disturbances.copy())

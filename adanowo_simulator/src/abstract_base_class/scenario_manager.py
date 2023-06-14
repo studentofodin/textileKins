@@ -1,6 +1,11 @@
 from abc import ABC, abstractmethod
 from omegaconf import DictConfig
 
+from src.abstract_base_class.output_manager import AbstractOutputManager
+from src.abstract_base_class.reward_manager import AbstractRewardManager
+from src.abstract_base_class.control_manager import AbstractControlManager
+from src.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
+
 
 class AbstractScenarioManager(ABC):
     @property
@@ -13,23 +18,11 @@ class AbstractScenarioManager(ABC):
     def config(self, c):
         pass
 
-    def update_output_models(self, step_index: int, output_models_config: DictConfig) -> tuple[DictConfig, list[str]]:
+    @abstractmethod
+    def step(self, step_index: int, *managers: AbstractControlManager | AbstractDisturbanceManager | \
+             AbstractOutputManager | AbstractRewardManager) -> None:
         """
-        change the output_models_config according to own config.
-        return the changed output_models_config and the output names which the model entry in the output_models_config
-        was changed for.
-        """
-        pass
-
-    def update_output_bounds(self, step_index: int, output_bounds_config: DictConfig) -> DictConfig:
-        """
-        change and return the output_bounds_config according to own config.
-        """
-        pass
-
-    def update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> DictConfig:
-        """
-        change and return the disturbance_config according to own config.
+        update the configs of the managers according to own config.
         """
         pass
 

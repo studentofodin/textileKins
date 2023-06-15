@@ -11,7 +11,7 @@ from sklearn.preprocessing import RobustScaler
 from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from src.abstract_base_class.model_interface import AbstractModelInterface
+from adanowo_simulator.abstract_base_class.model_interface import AbstractModelInterface
 
 CUDA_GPU_AVAILABLE = torch.cuda.is_available()
 

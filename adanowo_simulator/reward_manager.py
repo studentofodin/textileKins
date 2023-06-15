@@ -3,7 +3,7 @@ import pathlib as pl
 
 from omegaconf import DictConfig
 
-from src.abstract_base_class.reward_manager import AbstractRewardManager
+from adanowo_simulator.abstract_base_class.reward_manager import AbstractRewardManager
 
 
 class RewardManager(AbstractRewardManager):

@@ -4,7 +4,7 @@ from gymnasium.core import RenderFrame
 from gymnasium.envs.registration import register
 from omegaconf import DictConfig
 
-from src.abstract_base_class.environment import AbstractEnvironment
+from adanowo_simulator.abstract_base_class.environment import AbstractEnvironment
 
 
 class GymWrapper(Env):

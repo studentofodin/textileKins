@@ -1,8 +1,6 @@
 from omegaconf import DictConfig, OmegaConf
 from numbers import Number
 
-from src.model_wrapper import ModelWrapper
-
 
 class ConfigChecker:
 

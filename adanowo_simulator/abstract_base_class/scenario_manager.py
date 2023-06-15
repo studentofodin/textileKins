@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from omegaconf import DictConfig
 
-from src.abstract_base_class.output_manager import AbstractOutputManager
-from src.abstract_base_class.reward_manager import AbstractRewardManager
-from src.abstract_base_class.control_manager import AbstractControlManager
-from src.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
+from adanowo_simulator.abstract_base_class.output_manager import AbstractOutputManager
+from adanowo_simulator.abstract_base_class.reward_manager import AbstractRewardManager
+from adanowo_simulator.abstract_base_class.control_manager import AbstractControlManager
+from adanowo_simulator.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
 
 
 class AbstractScenarioManager(ABC):

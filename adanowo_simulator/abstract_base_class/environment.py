@@ -3,12 +3,12 @@ from typing import Tuple
 import numpy as np
 from omegaconf import DictConfig
 
-from src.abstract_base_class.output_manager import AbstractOutputManager
-from src.abstract_base_class.reward_manager import AbstractRewardManager
-from src.abstract_base_class.control_manager import AbstractControlManager
-from src.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
-from src.abstract_base_class.experiment_tracker import AbstractExperimentTracker
-from src.abstract_base_class.scenario_manager import AbstractScenarioManager
+from adanowo_simulator.abstract_base_class.output_manager import AbstractOutputManager
+from adanowo_simulator.abstract_base_class.reward_manager import AbstractRewardManager
+from adanowo_simulator.abstract_base_class.control_manager import AbstractControlManager
+from adanowo_simulator.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
+from adanowo_simulator.abstract_base_class.experiment_tracker import AbstractExperimentTracker
+from adanowo_simulator.abstract_base_class.scenario_manager import AbstractScenarioManager
 
 
 class AbstractEnvironment(ABC):

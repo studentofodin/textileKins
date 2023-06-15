@@ -7,8 +7,8 @@ import numpy as np
 import torch
 import pandas as pd
 
-from src.abstract_base_class.output_manager import AbstractOutputManager
-from src import model_interface
+from adanowo_simulator.abstract_base_class.output_manager import AbstractOutputManager
+from adanowo_simulator import model_interface
 
 
 class OutputManager(AbstractOutputManager):

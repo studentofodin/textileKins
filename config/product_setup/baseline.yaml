@@ -1,4 +1,4 @@
-path_to_reward_functions: C:/Users/luisk/Desktop/adanowo-simulator/adanowo_simulator/reward_functions
+path_to_reward_functions: ../reward_functions
 reward_function: baseline_reward
 penalty : 100.0
 reward_parameters:

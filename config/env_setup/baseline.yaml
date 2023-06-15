@@ -35,7 +35,7 @@ used_outputs:
   - TensileStrengthMD # N
   - CardWebUnevenness # -
   - lineSpeed # m per min
-path_to_models: C:/Users/luisk/Desktop/adanowo-simulator/adanowo_simulator/models
+path_to_models: ../models
 output_models:
   areaWeightLane1: areaWeightLane1Model
   areaWeightLane2: areaWeightLane2Model

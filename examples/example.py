@@ -5,18 +5,18 @@ from omegaconf import DictConfig, OmegaConf
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3 import A2C
 
-from src.reward_manager import RewardManager
-from src.control_manager import ControlManager
-from src.disturbance_manager import DisturbanceManager
-from src.output_manager import OutputManager
-from src.scenario_manager import ScenarioManager
-from src.experiment_tracker import ExperimentTracker
-from src.environment import Environment
-from src.gym_wrapper import GymWrapper
+from adanowo_simulator.reward_manager import RewardManager
+from adanowo_simulator.control_manager import ControlManager
+from adanowo_simulator.disturbance_manager import DisturbanceManager
+from adanowo_simulator.output_manager import OutputManager
+from adanowo_simulator.scenario_manager import ScenarioManager
+from adanowo_simulator.experiment_tracker import ExperimentTracker
+from adanowo_simulator.environment import Environment
+from adanowo_simulator.gym_wrapper import GymWrapper
 
 os.environ['WANDB_SILENT'] = 'true'
 
-@hydra.main(version_base=None, config_path="C:/Users/luisk/Desktop/adanowo-simulator/adanowo_simulator/config",
+@hydra.main(version_base=None, config_path="../config",
             config_name="main")
 def main(configuration: DictConfig):
 
@@ -41,7 +41,7 @@ def main(configuration: DictConfig):
     # agent = A2C("MlpPolicy", gym_wrapper, verbose=1)
     # agent.learn(1000)
 
-    for _ in range(1):
+    for _ in range(20):
         observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(low=0.0, high=0.5, size=gym_wrapper.environment.control_manager.n_controls))
     observation, _ = gym_wrapper.reset()
 

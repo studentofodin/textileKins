@@ -14,13 +14,7 @@ from sklearn.preprocessing import RobustScaler
 from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
 
-<<<<<<<< HEAD:adanowo_simulator/model_interface.py
-from adanowo_simulator.abstract_base_class.model_interface import AbstractModelInterface
-========
-from src.abstract_base_class.model_adapter import AbstractModelInterface
-from src.abstract_base_class.python_script_model import AbstractPyScriptModule
->>>>>>>> review-ruben:adanowo_simulator/model_adapters.py
-
+from adanowo_simulator.abstract_base_class.model_adapter import AbstractModelAdapter
 
 class IdentityTransformer(BaseEstimator, TransformerMixin):
     """
@@ -38,7 +32,7 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
         return input_array * 1
 
 
-class AdapterGpytorch(AbstractModelInterface):
+class AdapterGpytorch(AbstractModelAdapter):
 
     def __init__(self, model_module: ExactGP, data: pd.DataFrame, model_state: OrderedDict, model_properties: dict,
                  rescale_y: bool = True) -> None:
@@ -141,7 +135,7 @@ class AdapterGpytorch(AbstractModelInterface):
         return y_pred, var
 
 
-class AdapterPyScript(AbstractModelInterface):
+class AdapterPyScript(AbstractModelAdapter):
 
     def __init__(self, model_module: ModuleType) -> None:
         self._model = model_module.model

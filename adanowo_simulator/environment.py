@@ -1,5 +1,7 @@
 import numpy as np
 from omegaconf import DictConfig
+import logging
+import sys
 
 from adanowo_simulator.abstract_base_class.environment import AbstractEnvironment
 from adanowo_simulator.abstract_base_class.output_manager import AbstractOutputManager
@@ -8,6 +10,9 @@ from adanowo_simulator.abstract_base_class.control_manager import AbstractContro
 from adanowo_simulator.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
 from adanowo_simulator.abstract_base_class.experiment_tracker import AbstractExperimentTracker
 from adanowo_simulator.abstract_base_class.scenario_manager import AbstractScenarioManager
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class Environment(AbstractEnvironment):
@@ -23,10 +28,9 @@ class Environment(AbstractEnvironment):
         self._scenario_manager = scenario_manager
 
         self._initial_config = config.copy()
-        self._config = None
-        self._step_index = None
-        self._status = None
-        self.reset()
+        self._config = config.copy()
+        self._step_index = 0
+        self._status = "READY"
 
     @property
     def config(self) -> DictConfig:
@@ -71,6 +75,7 @@ class Environment(AbstractEnvironment):
     def step(self, actions: np.array) -> tuple[np.array, float, bool, bool, dict]:
         if self._status != "RUNNING":
             self._init_experiment()
+            logger.info("Experiment tracking has been initialized.")
 
         self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager, self._reward_manager)
 
@@ -113,8 +118,10 @@ class Environment(AbstractEnvironment):
         outputs = self._output_manager.step(initial_controls, initial_disturbances)
 
         observations = np.array(tuple(outputs.values()), dtype=np.float32)
+
         info = dict()
         self._status = "READY"
+        logger.info("Environment has been reset.")
 
         return observations, info
 

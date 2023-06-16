@@ -11,8 +11,8 @@ class ScenarioManager(AbstractScenarioManager):
 
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
-        self._config = None
-        self.reset()
+        self._config = config.copy()
+
 
     @property
     def config(self) -> DictConfig:
@@ -27,10 +27,10 @@ class ScenarioManager(AbstractScenarioManager):
 
         self._update_disturbances(step_index, disturbance_manager.config.disturbances)
         self._update_output_bounds(step_index, reward_manager.config.output_bounds)
-        _, changed_outputs = self._update_output_models(step_index, output_manager.config.output_models)
-        output_manager.update(changed_outputs)
+        _, changed_outputs = self._update_model_allocation(step_index, output_manager.config.output_models)
+        output_manager.update_model_allocation(changed_outputs)
 
-    def _update_output_models(self, step_index: int, output_models_config: DictConfig) -> tuple[DictConfig, list[str]]:
+    def _update_model_allocation(self, step_index: int, output_models_config: DictConfig) -> tuple[DictConfig, list[str]]:
         changed = []
 
         for output_name, scenario in self._config.output_models.items():

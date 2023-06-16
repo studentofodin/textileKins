@@ -18,10 +18,6 @@ class DisturbanceManager(AbstractDisturbanceManager):
     def config(self, c):
         self._config = c
 
-    @property
-    def n_disturbances(self) -> int:
-        return self._n_disturbances
-
     def step(self) -> dict[str, float]:
         disturbances = OmegaConf.to_container(self._config.disturbances)
         return disturbances

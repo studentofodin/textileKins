@@ -9,9 +9,8 @@ from adanowo_simulator.abstract_base_class.reward_manager import AbstractRewardM
 class RewardManager(AbstractRewardManager):
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
-        self._config = None
+        self._config = config.copy()
         self._reward_range = (config.reward_range.lower, config.reward_range.upper)
-        self.reset()
 
         # reward function.
         spec = importlib.util.spec_from_file_location("module.name",

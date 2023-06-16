@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
-
 import numpy as np
 
-
-class AbstractModelInterface(ABC):
+class AbstractModelAdapter(ABC):
 
     @abstractmethod
     def predict_f(self, X: dict[str, float]) -> tuple[np.array, np.array]:

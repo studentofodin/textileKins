@@ -3,6 +3,7 @@ name = "adanowo-simulator"
 version = "0.1.0"
 description = "Simulation environment for the project AdaNowo"
 authors = ["Ruben Kins <ruben.kins@rwth-aachen.de>", "luis.kutschat@ita.rwth-achen.de"]
+packages = [{include = "adanowo_simulator"}]
 
 [tool.poetry.dependencies]
 python = ">=3.10.8,<3.11"

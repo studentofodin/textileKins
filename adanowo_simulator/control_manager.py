@@ -9,10 +9,10 @@ class ControlManager(AbstractControlManager):
 
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
-        self._n_controls = len(config.initial_controls)
-        self._config = None
-        self._controls = None
-        self.reset()
+        self._config = config.copy()
+        self._controls = dict(self._config.initial_controls)
+        if not self._control_constraints_met(self._controls):
+            raise AssertionError("The initial controls do not meet control constraints. Aborting Experiment.")
 
     @property
     def config(self) -> DictConfig:
@@ -21,10 +21,6 @@ class ControlManager(AbstractControlManager):
     @config.setter
     def config(self, c):
         self._config = c
-
-    @property
-    def n_controls(self) -> int:
-        return self._n_controls
 
     def step(self, actions: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
 

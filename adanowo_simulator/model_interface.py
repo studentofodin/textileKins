@@ -6,17 +6,27 @@ import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from gpytorch.models import ExactGP
-import torch
+from torch.cuda import is_available as cuda_is_available
+from torch.cuda import FloatTensor as CudaFloatTensor
+from torch import FloatTensor
+from torch import squeeze as torch_squeeze
 from sklearn.preprocessing import RobustScaler
 from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
 
+<<<<<<<< HEAD:adanowo_simulator/model_interface.py
 from adanowo_simulator.abstract_base_class.model_interface import AbstractModelInterface
-
-CUDA_GPU_AVAILABLE = torch.cuda.is_available()
+========
+from src.abstract_base_class.model_adapter import AbstractModelInterface
+from src.abstract_base_class.python_script_model import AbstractPyScriptModule
+>>>>>>>> review-ruben:adanowo_simulator/model_adapters.py
 
 
 class IdentityTransformer(BaseEstimator, TransformerMixin):
+    """
+    This transformer is a dummy that does nothing to its input.
+    It is used to make the pipeline work without a final estimator.
+    """
     def __init__(self):
         pass
 
@@ -60,18 +70,18 @@ class AdapterGpytorch(AbstractModelInterface):
             y_numpy = self._scaler_y.transform(y_numpy)
 
         # construct the model and load state from dict
-        if CUDA_GPU_AVAILABLE:
-            self._Tensor = torch.cuda.FloatTensor
+        if cuda_is_available():
+            self._Tensor = CudaFloatTensor
             x_tensor = self._numpy_to_model_input(x_numpy)
-            y_tensor = torch.squeeze(self._Tensor(
+            y_tensor = torch_squeeze(self._Tensor(
                 y_numpy
             ))
             self._likelihood = model_module.likelihood.cuda()
             self._model = model_module.ExactGPModel(x_tensor, y_tensor, self._likelihood).cuda()
         else:
-            self._Tensor = torch.FloatTensor
+            self._Tensor = FloatTensor
             x_tensor = self._numpy_to_model_input(x_numpy)
-            y_tensor = torch.squeeze(self._Tensor(
+            y_tensor = torch_squeeze(self._Tensor(
                 y_numpy
             ))
             self._likelihood = model_module.likelihood
@@ -84,7 +94,7 @@ class AdapterGpytorch(AbstractModelInterface):
         noise_var_scaled = self._likelihood.noise.cpu().detach().numpy().reshape(-1, 1)
         _, self._noise_variance = self._rescaler_y(noise_var_scaled, noise_var_scaled)
 
-    def _numpy_to_model_input(self, x_temp: np.array) -> torch.FloatTensor:
+    def _numpy_to_model_input(self, x_temp: np.array) -> FloatTensor:
         tensor_out = self._Tensor(
             self._pipe.transform(
                 x_temp

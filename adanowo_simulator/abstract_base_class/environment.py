@@ -25,6 +25,11 @@ class AbstractEnvironment(ABC):
 
     @property
     @abstractmethod
+    def machine(self) -> AbstractModelManager:
+        pass
+
+    @property
+    @abstractmethod
     def reward_manager(self) -> AbstractRewardManager:
         pass
 

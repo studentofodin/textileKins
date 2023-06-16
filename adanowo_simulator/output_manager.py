@@ -4,10 +4,13 @@ import sys
 import yaml
 from omegaconf import DictConfig
 import numpy as np
-import torch
 import pandas as pd
 import logging
 from types import ModuleType
+from torch import load as torch_load
+from torch import device as torch_device
+from torch.cuda import is_available as torch_is_available
+
 
 from adanowo_simulator.abstract_base_class.output_manager import AbstractOutputManager
 from adanowo_simulator import model_adapter
@@ -75,12 +78,12 @@ class OutputManager(AbstractOutputManager):
         if model_class == "Gpytorch":
             data_load = pd.read_hdf(
                 pl.Path(self._config.path_to_models) / (model_name + ".hdf5"))
-            if torch.cuda.is_available():
+            if torch_is_available():
                 map_location = None
             else:
-                map_location = torch.device('cpu')
+                map_location = torch_device('cpu')
                 logger.warning(f"No Cuda GPU found for model {model_name}. Step execution will be much slower.")
-            model_state = torch.load(
+            model_state = torch_load(
                 pl.Path(self._config.path_to_models) / (model_name + ".pth"), map_location=map_location)
             spec = importlib.util.spec_from_file_location("module.name",
                                                           pl.Path(self._config.path_to_models) / (

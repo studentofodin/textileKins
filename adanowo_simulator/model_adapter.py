@@ -67,7 +67,7 @@ class AdapterGpytorch(AbstractModelAdapter):
         if cuda_is_available():
             self._Tensor = CudaFloatTensor
             x_tensor = self._numpy_to_model_input(x_numpy)
-            y_tensor = torch_squeeze(self._Tensor(
+            y_tensor = torch.squeeze(self._Tensor(
                 y_numpy
             ))
             self._likelihood = model_module.likelihood.cuda()

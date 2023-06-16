@@ -8,4 +8,4 @@
 wandb/
 .idea/
 *__pycache__*
-adanowo_simulator/wandb/
+*/wandb/*

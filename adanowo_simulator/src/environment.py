@@ -111,6 +111,10 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
         logger.info("Environment has been reset.")
         return observation_array, info
 
+    def shutdown(self) -> None:
+        self.machine.shutdown()
+        self._experiment_tracker.reset()
+
     def _init_experiment(self) -> None:
         self._experiment_tracker.init_run()
 

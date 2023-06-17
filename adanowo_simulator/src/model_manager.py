@@ -1,28 +1,36 @@
+import importlib
 import pathlib as pl
-from importlib import util as importlib_utils
 import logging
+import sys
+from multiprocessing import Process, Pipe
 
 import yaml
 from omegaconf import DictConfig
 import numpy as np
-from torch import load as torch_load
-from torch import device as torch_device
-from torch.cuda import is_available as torch_is_available
 import pandas as pd
-
+import torch
 
 from src.abstract_base_class.model_manager import AbstractModelManager
+from src.model_adapters import AbstractModelInterface
 from src import model_adapters
 
 
 logger = logging.getLogger(__name__)
+RECEIVE = 0
+SEND = 1
 
 
-def load_model_from_script(path: pl.Path) -> any:
-    spec = importlib_utils.spec_from_file_location("module.name", path)
-    model_module = importlib_utils.module_from_spec(spec)
-    spec.loader.exec_module(model_module)
-    return model_module
+def model_executor(mdl: AbstractModelInterface, input_pipe: Pipe, output_pipe: Pipe, latent=False):
+    while True:
+        if input_pipe.poll():
+            input_recv = input_pipe.recv()
+            if input_recv is None:
+                break
+            if latent:
+                mean_pred, var_pred = mdl.predict_f(input_recv)
+            else:
+                mean_pred, var_pred = mdl.predict_y(input_recv, observation_noise_only=True)
+            output_pipe.send((mean_pred, var_pred))
 
 
 class ModelManager(AbstractModelManager):
@@ -30,7 +38,9 @@ class ModelManager(AbstractModelManager):
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
         self._config = config.copy()
-        self._process_models = dict()
+        self._model_processes = dict()
+        self._input_pipe = dict()
+        self._output_pipe = dict()
         self.init_model_allocation()
 
     @property
@@ -59,21 +69,38 @@ class ModelManager(AbstractModelManager):
         for changed_output in changed_outputs:
             self._allocate_model_to_output(changed_output, self._config.output_models[changed_output])
 
+    def start_processes(self) -> None:
+        for output_name, model_process in self._model_processes.items():
+            model_process.start()
+            logger.info(f"Process for output {output_name} is running and listening for inputs")
+
+    def shutdown(self) -> None:
+        logger.info("Waiting for all processes to finish...")
+        for _, input_pipe in self._input_pipe.items():
+            input_pipe[SEND].send(None)
+        for _, model_process in self._model_processes.items():
+            model_process.join()
+        for _, input_pipe in self._input_pipe.items():
+            input_pipe[SEND].close()
+
     def reset(self) -> None:
         self._config = self._initial_config.copy()
+        self.shutdown()
+        logger.info("All processes finished. Reallocating...")
         self.init_model_allocation()
 
     def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()
         var_pred = dict()
-        if latent:
-            for output_name, model in self._process_models.items():
-                mean_pred[output_name], var_pred[output_name] = \
-                    model.predict_f(inputs)
-        else:
-            for output_name, model in self._process_models.items():
-                mean_pred[output_name], var_pred[output_name] = \
-                    model.predict_y(inputs, observation_noise_only=True)
+
+        for output_name, model_process in self._model_processes.items():
+            if not model_process.is_alive():
+                model_process.start()
+                logger.info(f"Process for output {output_name} is running and listening for inputs")
+            self._input_pipe[output_name][SEND].send(inputs)
+
+        for output_name, model_process in self._model_processes.items():
+            mean_pred[output_name], var_pred[output_name] = self._output_pipe[output_name][RECEIVE].recv()
         return mean_pred, var_pred
 
     def _sample_output_distribution(self, mean_pred: dict[str, np.array], var_pred: dict[str, np.array]) \
@@ -104,26 +131,30 @@ class ModelManager(AbstractModelManager):
             data_load = pd.read_hdf(
                 pl.Path(self._config.path_to_models) / (model_name + ".hdf5")
             )
-            if torch_is_available():
+            if torch.cuda.is_available():
                 map_location = None
             else:
-                map_location = torch_device('cpu')
+                map_location = torch.device('cpu')
                 logger.warning(f"No Cuda GPU found for model {model_name}. Step execution will be much slower.")
-            model_state = torch_load(
+            model_state = torch.load(
                 pl.Path(self._config.path_to_models) / (model_name + ".pth"), map_location=map_location
             )
-            model_module = load_model_from_script(
-                pl.Path(self._config.path_to_models) / (model_name + ".py")
-            )
+            importlib.import_module(model_name)
+            model_module = sys.modules[model_name]
 
             mdl = model_adapters.AdapterGpytorch(model_module, data_load, model_state, properties,
                                                  rescale_y=rescale_y_temp)
         elif model_class == "Python_script":
-            model_module = load_model_from_script(
-                pl.Path(self._config.path_to_models) / (model_name + ".py")
-            )
+            importlib.import_module(model_name)
+            model_module = sys.modules[model_name]
             mdl = model_adapters.AdapterPyScript(model_module, properties)
 
         else:
             raise (TypeError(f"The model class {model_class} is not yet supported"))
-        self._process_models[output_name] = mdl
+
+        new_input_pipe = Pipe()
+        new_output_pipe = Pipe()
+        self._input_pipe[output_name] = new_input_pipe
+        self._output_pipe[output_name] = new_output_pipe
+        self._model_processes[output_name] = \
+            Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND], False))

@@ -82,6 +82,13 @@ class AbstractTrainingEnvironment(ABC):
         pass
 
     @abstractmethod
+    def shutdown(self) -> None:
+        """
+        shuts down the environment.
+        """
+        pass
+
+    @abstractmethod
     def _init_experiment(self) -> None:
         """
         initializes experiment.
@@ -94,3 +101,4 @@ class AbstractTrainingEnvironment(ABC):
         updates the configs of itself, machine, reward, state_manager and experiment_tracker primarily using the
         scenario_manager.
         """
+

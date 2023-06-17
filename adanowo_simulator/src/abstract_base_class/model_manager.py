@@ -38,6 +38,13 @@ class AbstractModelManager(ABC):
         pass
 
     @abstractmethod
+    def shutdown(self) -> None:
+        """
+        shutdown all processes.
+        """
+        pass
+
+    @abstractmethod
     def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
         """
         get and return mean and variance prediction of output from inputs for each model.

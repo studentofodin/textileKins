@@ -11,6 +11,9 @@ from src.scenario_manager import ScenarioManager
 from src.environment import TrainingEnvironment
 from src.reward_functions import baseline_reward
 
+import sys
+sys.path.append(r"C:\Users\rkins\Documents\AdaNowo\adanowo-simulator\adanowo_simulator\models")
+
 
 @hydra.main(version_base=None, config_path="./config", config_name="main")
 def main(configuration: DictConfig):
@@ -27,12 +30,17 @@ def main(configuration: DictConfig):
     env = GymWrapper(training_env, OmegaConf.merge({"action_space": config.env_setup.action_space},
                                                    {"observation_space": config.env_setup.observation_space}))
 
-    for _ in range(100):
-        env.step(np.random.uniform(low=-0.1, high=0.4, size=env.env.state_manager.n_controls))
+    #for _ in range(100):
+    #    env.step(np.random.uniform(low=-0.1, high=0.4, size=env.env.state_manager.n_controls))
+    #env.reset()
 
-    env.reset()
-    pass
+    for _ in range(1000):
+        env.step(np.random.uniform(low=-0.1, high=0.4, size=env.env.state_manager.n_controls))
+    env.shutdown()
 
 
 if __name__ == "__main__":
     main()
+
+
+# To Do: Check Performance, Fix sys.path.append command, fix that there needs to be a call to model outputs after reset

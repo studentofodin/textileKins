@@ -47,6 +47,9 @@ class GymWrapper(Env):
     def render(self) -> RenderFrame | list[RenderFrame] | None:
         pass
 
+    def shutdown(self) -> None:
+        self._env.shutdown()
+
 
 register(
     id='adaNowo-simulator-v0',

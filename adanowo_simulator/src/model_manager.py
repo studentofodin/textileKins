@@ -18,6 +18,7 @@ from src import model_adapters
 logger = logging.getLogger(__name__)
 RECEIVE = 0
 SEND = 1
+DEFAULT_RELATIVE_PATH = "./models"
 
 
 def model_executor(mdl: AbstractModelInterface, input_pipe: Pipe, output_pipe: Pipe, latent=False):
@@ -36,6 +37,19 @@ def model_executor(mdl: AbstractModelInterface, input_pipe: Pipe, output_pipe: P
 class ModelManager(AbstractModelManager):
 
     def __init__(self, config: DictConfig):
+        # use default path
+        main_script_path = pl.Path(sys.argv[0]).resolve()  # sys.argv[0] is the name of the script being run.
+        self._model_path = main_script_path.parent / DEFAULT_RELATIVE_PATH
+
+        if config.path_to_models is not None:
+            temp_path = pl.Path(config.path_to_models)
+            if self._model_path.is_dir():
+                logger.info(f"Using custom model path {self._model_path}.")
+                self._model_path = temp_path
+
+        # Add model path to sys.path so that the models can be imported.
+        sys.path.append(str(self._model_path))
+
         self._initial_config = config.copy()
         self._config = config.copy()
         self._model_processes = dict()
@@ -113,7 +127,7 @@ class ModelManager(AbstractModelManager):
 
     def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
         # load model properties dict from .yaml file
-        with open(pl.Path(self._config.path_to_models) / (model_name + '.yaml'), 'r') as stream:
+        with open(self._model_path / (model_name + '.yaml'), 'r') as stream:
             try:
                 properties = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
@@ -129,7 +143,7 @@ class ModelManager(AbstractModelManager):
 
         if model_class == "Gpytorch":
             data_load = pd.read_hdf(
-                pl.Path(self._config.path_to_models) / (model_name + ".hdf5")
+                self._model_path / (model_name + ".hdf5")
             )
             if torch.cuda.is_available():
                 map_location = None
@@ -137,7 +151,7 @@ class ModelManager(AbstractModelManager):
                 map_location = torch.device('cpu')
                 logger.warning(f"No Cuda GPU found for model {model_name}. Step execution will be much slower.")
             model_state = torch.load(
-                pl.Path(self._config.path_to_models) / (model_name + ".pth"), map_location=map_location
+                self._model_path / (model_name + ".pth"), map_location=map_location
             )
             importlib.import_module(model_name)
             model_module = sys.modules[model_name]

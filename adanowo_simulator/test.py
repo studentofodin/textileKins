@@ -11,13 +11,9 @@ from src.scenario_manager import ScenarioManager
 from src.environment import TrainingEnvironment
 from src.reward_functions import baseline_reward
 
-import sys
-sys.path.append(r"C:\Users\rkins\Documents\AdaNowo\adanowo-simulator\adanowo_simulator\models")
-
 
 @hydra.main(version_base=None, config_path="./config", config_name="main")
 def main(configuration: DictConfig):
-
     config = configuration
     experiment_tracker = ExperimentTracker(config.experiment_tracker, config)
     reward_manager = RewardManager(config.product_setup, baseline_reward)
@@ -41,6 +37,3 @@ def main(configuration: DictConfig):
 
 if __name__ == "__main__":
     main()
-
-
-# To Do: Check Performance, Fix sys.path.append command, fix that there needs to be a call to model outputs after reset

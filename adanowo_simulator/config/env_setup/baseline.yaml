@@ -34,7 +34,7 @@ used_outputs:
   - TensileStrengthCD # N
   - TensileStrengthMD # N
   - CardWebUnevenness # -
-path_to_models: ./models
+path_to_models: # use default if not a valid path
 output_models:
   areaWeightLane1: areaWeightLane1Model
   areaWeightLane2: areaWeightLane2Model

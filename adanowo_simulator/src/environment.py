@@ -70,7 +70,7 @@ class TrainingEnvironment(AbstractTrainingEnvironment):
     def step(self, action: np.array) -> tuple[np.array, float, bool, bool, dict]:
         if self._status != "RUNNING":
             self._init_experiment()
-            logger.info("Experiment tracking has been initialized.")
+            logger.info("Experiment tracking has been initialized. Executing first step")
 
         self._update_configs()
 

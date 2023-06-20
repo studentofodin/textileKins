@@ -3,14 +3,13 @@ from omegaconf import DictConfig
 H_TO_MIN = 60
 
 
-def get_reward(controls: dict[str, float], disturbances: dict[str, float], outputs: dict[str, float],
-               config: DictConfig) -> float:
+def baseline_reward(state: dict[str, float], outputs: dict[str, float], config: DictConfig) -> float:
     # material costs
-    material_costs = controls["CardMassThroughputSetpoint"] * config.fibre_costs
+    material_costs = state["CardMassThroughputSetpoint"] * config.fibre_costs
     # energy costs
     energy_costs = outputs["linePowerConsumption"] * config.energy_costs
     # Production income
-    income = config.selling_price * outputs["lineSpeed"] * H_TO_MIN * disturbances["ProductWidth"]
+    income = config.selling_price * outputs["lineSpeed"] * H_TO_MIN * state["ProductWidth"]
 
     # Component 1: Calculate economic efficiency
     contribution_margin = income - energy_costs - material_costs

@@ -35,7 +35,7 @@ used_outputs:
   - TensileStrengthMD # N
   - CardWebUnevenness # -
   - lineSpeed # m per min
-path_to_models: ../models
+path_to_models: # use default if not a valid path
 output_models:
   areaWeightLane1: areaWeightLane1Model
   areaWeightLane2: areaWeightLane2Model
@@ -47,71 +47,3 @@ output_models:
   lineSpeed: lineSpeedModel
 outputs_are_latent: False
 observation_noise_only: True
-action_space:
-  CardDeliveryWeightPerArea:
-    low: -100.0
-    high: 100.0
-  Cross-lapperLayersCount:
-    low: -100.0
-    high: 100.0
-  Needleloom1DraftRatio:
-    low: -100.0
-    high: 100.0
-  Cross-lapperProfiling:
-    low: -1000.0
-    high: 1000.0
-  DrawFrameDraftRatio:
-    low: -1000.0
-    high: 1000.0
-  CardMassThroughputSetpoint:
-    low: -10000.0
-    high: 10000.0
-  Needleloom1FeedPerStroke:
-    low: -100.0
-    high: 100.0
-  Needleloom2NeedlepunchDepth:
-    low: -100.0
-    high: 100.0
-  v_PreRoll:
-    low: -1000.0
-    high: 1000.0
-  v_MainCylinder:
-    low: -10000.0
-    high: 10000.0
-  v_WorkerMain:
-    low: -1000.0
-    high: 1000.0
-  v_StripperMain:
-    low: -1000.0
-    high: 1000.0
-  v_WorkerPre:
-    low: -10000.0
-    high: 10000.0
-  v_StripperPre:
-    low: -1000.0
-    high: 1000.0
-observation_space:
-  areaWeightLane1:
-    low: -100.0
-    high: 1000.0
-  areaWeightLane2:
-    low: -100.0
-    high: 1000.0
-  areaWeightLane3:
-    low: -100.0
-    high: 1000.0
-  LinePowerConsumption:
-    low: -100.0
-    high: 1000.0
-  TensileStrengthCD:
-    low: -100.0
-    high: 10000.0
-  TensileStrengthMD:
-    low: -100.0
-    high: 10000.0
-  CardWebUnevenness:
-    low: -100.0
-    high: 100.0
-  lineSpeed:
-    low: -1.0
-    high: 20.0

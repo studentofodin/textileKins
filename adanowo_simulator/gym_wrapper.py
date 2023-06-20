@@ -6,6 +6,8 @@ from omegaconf import DictConfig
 
 from adanowo_simulator.abstract_base_classes.environment import AbstractEnvironment
 
+# TODO: Transform actions and observations into a range suitable for RL agents.
+
 
 class GymWrapper(Env):
 
@@ -44,6 +46,9 @@ class GymWrapper(Env):
 
     def render(self) -> RenderFrame | list[RenderFrame] | None:
         pass
+
+    def shutdown(self) -> None:
+        self._environment.shutdown()
 
 
 register(

@@ -1,4 +1,3 @@
-import os
 import numpy as np
 import hydra
 from omegaconf import DictConfig, OmegaConf
@@ -13,43 +12,36 @@ from adanowo_simulator.scenario_manager import ScenarioManager
 from adanowo_simulator.experiment_tracker import ExperimentTracker
 from adanowo_simulator.environment import Environment
 from adanowo_simulator.gym_wrapper import GymWrapper
-
-os.environ['WANDB_SILENT'] = 'true'
+from adanowo_simulator.reward_functions import baseline_reward
 
 
 @hydra.main(version_base=None, config_path="../config",
             config_name="main")
 def main(configuration: DictConfig):
     config = configuration
-    reward_manager = RewardManager(config.product_setup)
-    control_manager = ControlManager(OmegaConf.merge(
-        {"actions_are_relative": config.process_setup.actions_are_relative},
-        {"initial_controls": config.process_setup.initial_controls},
-        {"control_bounds": config.process_setup.control_bounds}))
-    disturbance_manager = DisturbanceManager(OmegaConf.merge({"disturbances": config.process_setup.disturbances}))
-    output_manager = OutputManager(OmegaConf.merge(
-        {"path_to_models": config.env_setup.path_to_models},
-        {"output_models": config.env_setup.output_models},
-        {"outputs_are_latent": config.env_setup.outputs_are_latent},
-        {"observation_noise_only": config.env_setup.observation_noise_only}))
+    reward_manager = RewardManager(baseline_reward, config.product_setup)
+    disturbance_manager = DisturbanceManager(config.process_setup.initial_disturbances)
+    control_manager = ControlManager(config.process_setup, config.process_setup.actions_are_relative)
+    output_manager = OutputManager(config.output_setup)
     scenario_manager = ScenarioManager(config.scenario_setup)
     experiment_tracker = ExperimentTracker(config.experiment_tracker, config)
-    environment = Environment(OmegaConf.create(), output_manager, reward_manager, control_manager,
+    environment = Environment(config.env_setup, output_manager, reward_manager, control_manager,
                               disturbance_manager, experiment_tracker, scenario_manager)
-    gym_wrapper = GymWrapper(environment, OmegaConf.merge(
-        {"action_space": config.env_setup.action_space},
-        {"observation_space": config.env_setup.observation_space}))
+    gym_wrapper = GymWrapper(environment, config.gym_setup)
 
     # check_env(gym_wrapper)
     # agent = A2C("MlpPolicy", gym_wrapper, verbose=1)
     # agent.learn(1000)
 
-    for _ in range(20):
+    for _ in range(100):
         observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
             low=0.0, high=0.5, size=len(config.env_setup.used_controls)))
-    observation, _ = gym_wrapper.reset()
+    gym_wrapper.reset()
 
-    pass
+    for _ in range(100):
+        observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
+            low=0.0, high=0.5, size=len(config.env_setup.used_controls)))
+    gym_wrapper.shutdown()
 
 
 if __name__ == "__main__":

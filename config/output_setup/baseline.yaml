@@ -1,0 +1,12 @@
+path_to_models: # use default if not a valid path
+output_models:
+  areaWeightLane1: areaWeightLane1Model
+  areaWeightLane2: areaWeightLane2Model
+  areaWeightLane3: areaWeightLane3Model
+  linePowerConsumption: linePowerConsumptionModel
+  tensileStrengthCD: tensileStrengthCDModel
+  tensileStrengthMD: tensileStrengthMDModel
+  cardWebUnevenness: cardWebUnevennessModel
+  lineSpeed: lineSpeedModel
+outputs_are_latent: False
+observation_noise_only: True

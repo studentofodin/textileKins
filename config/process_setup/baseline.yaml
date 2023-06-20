@@ -14,7 +14,7 @@ initial_controls:
   v_StripperMain: 160.0
   v_WorkerPre: 18.0
   v_StripperPre: 65.0
-disturbances:
+initial_disturbances:
   FeederDeliverySpeed: 9.6
   ProductB: 0.0
   ProductWidth: 4.8

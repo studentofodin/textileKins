@@ -21,7 +21,7 @@ def unpack_dict(X: dict, training_features: list[str]) -> np.array:
             X_unpacked.append(X["Needleloom2NeedlepunchDepth"])
         elif f == "D_018_SW_Gesamtverzug_Perc":
             X_unpacked.append(X["DrawFrameDraftRatio"])
-        elif f == "Product_UNICO-30":
+        elif f == "Product_B":
             X_unpacked.append(np.ones_like(X["ProductB"]))
         elif f == "M_010_NM2_AuszVerzug_Proz":
             X_unpacked.append(X["Needleloom2DraftRatio"])

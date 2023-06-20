@@ -30,7 +30,11 @@ class ExperimentTracker(AbstractExperimentTracker):
                 self._run.log({f"{category}/{name}": value}, step_index)
 
     def reset(self) -> None:
+        self.shutdown()
+        self._tracker_config = self._initial_config.copy()
+        self.init_experiment()
+
+    def shutdown(self) -> None:
         if self._run:
             self._run.finish()
         self._run = None
-        self._tracker_config = self._initial_config.copy()

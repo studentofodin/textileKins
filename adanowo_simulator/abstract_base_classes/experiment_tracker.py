@@ -35,3 +35,10 @@ class AbstractExperimentTracker(ABC):
         finish wandb run and reset to initial values.
         """
         pass
+
+    @abstractmethod
+    def shutdown(self) -> None:
+        """
+        finish experiment tracking run.
+        """
+        pass

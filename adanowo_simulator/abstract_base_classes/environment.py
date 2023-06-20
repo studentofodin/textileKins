@@ -86,3 +86,25 @@ class AbstractEnvironment(ABC):
         resets the environment to an initial internal state, returning an initial observation and info.
         """
         pass
+
+    @abstractmethod
+    def shutdown(self) -> None:
+        """
+        shuts down the environment.
+        """
+        pass
+
+    @abstractmethod
+    def _init_experiment(self) -> None:
+        """
+        initializes experiment.
+        """
+        pass
+
+    @abstractmethod
+    def _control_array_to_dict(self, array: np.array, keys: list[str]) -> dict[str, float]:
+        """
+        Converts a 1D array of control values to a dict of control values.
+        This is necessary to keep the order of controls intact since dictionaries are unordered, unlike lists.
+        """
+        pass

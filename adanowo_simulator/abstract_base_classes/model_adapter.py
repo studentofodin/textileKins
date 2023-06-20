@@ -17,3 +17,10 @@ class AbstractModelAdapter(ABC):
         predict mean and standard deviation of output from input X with inclusion of noise.
         """
         pass
+
+    @abstractmethod
+    def shutdown(self) -> None:
+        """
+        Safely shutdown the model by releasing all CUDA resources.
+        """
+        pass

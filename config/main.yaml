@@ -3,7 +3,9 @@ defaults:
   - process_setup: baseline
   - product_setup: baseline
   - scenario_setup: baseline
+  - gym_setup: baseline
+  - output_setup: baseline
   - _self_
 experiment_tracker:
   project: adanowo-simulator
-  mode: online
+  mode: offline

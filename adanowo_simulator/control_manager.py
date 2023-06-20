@@ -1,8 +1,12 @@
 import numpy as np
 from omegaconf import DictConfig, OmegaConf
-
+import importlib
+import pathlib as pl
+import logging
 
 from adanowo_simulator.abstract_base_class.control_manager import AbstractControlManager
+
+logger = logging.getLogger(__name__)
 
 
 class ControlManager(AbstractControlManager):
@@ -10,9 +14,8 @@ class ControlManager(AbstractControlManager):
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
         self._config = config.copy()
-        self._controls = dict(self._config.initial_controls)
-        if not self._control_constraints_met(self._controls):
-            raise AssertionError("The initial controls do not meet control constraints. Aborting Experiment.")
+        self._secondary_control_models = dict()
+        self._allocate_secondary_control_models()
 
     @property
     def config(self) -> DictConfig:
@@ -22,29 +25,30 @@ class ControlManager(AbstractControlManager):
     def config(self, c):
         self._config = c
 
-    def step(self, actions: np.array) -> tuple[dict[str, float], bool, dict[str, float]]:
-
+    def step(self, actions: np.array, X: dict[str, float] = {}) -> tuple[dict[str, float], bool, dict[str, float]]:
         actions_dict = dict(zip(self._controls.keys(), actions.tolist()))
 
-        # relative actions.
-        if self._config.actions_are_relative:
-            potential_controls = dict()
-            for control_name in self._controls.keys():
-                potential_controls[control_name] = self._controls[control_name] + actions_dict[control_name]
-        # absolute actions.
-        else:
-            potential_controls = actions_dict
+        potential_primary_controls = self._calculate_potential_primary_controls(actions_dict)
+        X = potential_primary_controls | X
+        potential_secondary_controls = self._calculate_potential_secondary_controls(X)
+        potential_controls = potential_primary_controls | potential_secondary_controls
 
         control_constraints_met = self._control_constraints_met(potential_controls)
         if control_constraints_met:
             self._controls = potential_controls
-
         return self._controls, control_constraints_met, actions_dict
 
-    def reset(self) -> dict[str, float]:
+    def reset(self, X: dict[str, float] = {}) -> dict[str, float]:
         self._config = self._initial_config.copy()
-        self._controls = OmegaConf.to_container(self._config.initial_controls)
-        if not self._control_constraints_met(self._controls):
+
+        potential_primary_controls = OmegaConf.to_container(self._config.initial_primary_controls)
+        X = potential_primary_controls | X
+        potential_secondary_controls = self._calculate_potential_secondary_controls(X)
+        potential_controls = potential_primary_controls | potential_secondary_controls
+
+        if self._control_constraints_met(potential_controls):
+            self._controls = potential_controls
+        else:
             raise AssertionError("The initial controls do not meet control constraints. Aborting Experiment.")
         return self._controls
 
@@ -61,3 +65,35 @@ class ControlManager(AbstractControlManager):
                     control_constraints_met = False
 
         return control_constraints_met
+
+    def _allocate_secondary_control_models(self) -> None:
+        for control_name, model_name in self._config.secondary_control_models.items():
+            model_path = pl.Path(self._config.path_to_secondary_control_models) / f"{model_name}.py"
+            try:
+                spec = importlib.util.spec_from_file_location("module.name", model_path)
+                model_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(model_module)
+                self._secondary_control_models[control_name] = model_module.SecondaryControlModel
+                logger.info(f"Allocated model {model_name} to secondary control {control_name}.")
+            except Exception as e:
+                logger.exception(f"Could not allocate model {model_name} to secondary control {control_name}.")
+                raise e
+
+    def _calculate_potential_primary_controls(self, actions: dict[str, float]) -> dict[str, float]:
+        # relative actions.
+        if self._config.actions_are_relative:
+            potential_primary_controls = dict()
+            for control_name in self._config.initial_primary_controls.keys():
+                potential_primary_controls[control_name] = self._controls[control_name] + actions[control_name]
+        # absolute actions.
+        else:
+            potential_primary_controls = actions
+
+        return potential_primary_controls
+
+    def _calculate_potential_secondary_controls(self, X: dict[str, float]) -> dict[str, float]:
+        potential_secondary_controls = dict()
+        for control_name, model in self._secondary_control_models.items():
+            potential_secondary_controls[control_name] = model.calculate_control(X)
+        return potential_secondary_controls
+

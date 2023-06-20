@@ -11,7 +11,7 @@ def get_reward(controls: dict[str, float], disturbances: dict[str, float], outpu
     # energy costs
     energy_costs = outputs["linePowerConsumption"] * config.energy_costs
     # Production income
-    income = config.selling_price * outputs["lineSpeed"] * H_TO_MIN * disturbances["ProductWidth"]
+    income = config.selling_price * controls["lineSpeed"] * H_TO_MIN * disturbances["ProductWidth"]
 
     # Component 1: Calculate economic efficiency
     contribution_margin = income - energy_costs - material_costs

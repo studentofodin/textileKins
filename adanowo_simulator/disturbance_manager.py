@@ -6,9 +6,7 @@ class DisturbanceManager(AbstractDisturbanceManager):
 
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
-        self._n_disturbances = len(config.disturbances)
-        self._config = None
-        self.reset()
+        self._config = config.copy()
 
     @property
     def config(self) -> DictConfig:

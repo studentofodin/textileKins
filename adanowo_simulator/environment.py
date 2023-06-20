@@ -80,7 +80,7 @@ class Environment(AbstractEnvironment):
         self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager, self._reward_manager)
 
         disturbances = self._disturbance_manager.step()
-        controls, control_constraints_met, actions = self._control_manager.step(actions)
+        controls, control_constraints_met, actions = self._control_manager.step(actions, disturbances)
 
 
         outputs = self._output_manager.step(controls, disturbances)
@@ -107,8 +107,8 @@ class Environment(AbstractEnvironment):
     def reset(self) -> tuple[np.array, dict]:
         self._experiment_tracker.reset()
         self._reward_manager.reset()
-        initial_controls = self._control_manager.reset()
         initial_disturbances = self._disturbance_manager.reset()
+        initial_controls = self._control_manager.reset(initial_disturbances)
         self._output_manager.reset()
         self._scenario_manager.reset()
 

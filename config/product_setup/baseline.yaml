@@ -23,8 +23,5 @@ output_bounds:
     lower: 650.0
   tensileStrengthMD:
     lower: 400.0
-  lineSpeed:
-    lower: 0.0
-    upper: 11.0
 
 

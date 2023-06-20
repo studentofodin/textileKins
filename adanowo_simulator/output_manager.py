@@ -62,7 +62,7 @@ class OutputManager(AbstractOutputManager):
 
     def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
         # load model properties dict from .yaml file.
-        with open(pl.Path(self._config.path_to_models) / (model_name + '.yaml'), 'r') as stream:
+        with open(pl.Path(self._config.path_to_output_models) / (model_name + '.yaml'), 'r') as stream:
             try:
                 properties = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
@@ -77,16 +77,16 @@ class OutputManager(AbstractOutputManager):
 
         if model_class == "Gpytorch":
             data_load = pd.read_hdf(
-                pl.Path(self._config.path_to_models) / (model_name + ".hdf5"))
+                pl.Path(self._config.path_to_output_models) / (model_name + ".hdf5"))
             if torch_is_available():
                 map_location = None
             else:
                 map_location = torch_device('cpu')
                 logger.warning(f"No Cuda GPU found for model {model_name}. Step execution will be much slower.")
             model_state = torch_load(
-                pl.Path(self._config.path_to_models) / (model_name + ".pth"), map_location=map_location)
+                pl.Path(self._config.path_to_output_models) / (model_name + ".pth"), map_location=map_location)
             spec = importlib.util.spec_from_file_location("module.name",
-                                                          pl.Path(self._config.path_to_models) / (
+                                                          pl.Path(self._config.path_to_output_models) / (
                                                                   model_name + ".py"))
             model_lib = importlib.util.module_from_spec(spec)
             sys.modules["module.name"] = model_lib
@@ -97,7 +97,7 @@ class OutputManager(AbstractOutputManager):
 
         elif model_class == "Python_script":
             model_module = self._load_model_from_script(
-                pl.Path(self._config.path_to_models) / (model_name + ".py"))
+                pl.Path(self._config.path_to_output_models) / (model_name + ".py"))
             mdl = model_adapter.AdapterPyScript(model_module)
 
         else:

@@ -1,4 +1,4 @@
-path_to_models: ../models
+path_to_output_models: ../output_models
 output_models:
   areaWeightLane1: areaWeightLane1Model # g per sqm
   areaWeightLane2: areaWeightLane2Model # g per sqm
@@ -7,7 +7,6 @@ output_models:
   tensileStrengthCD: tensileStrengthCDModel # N
   tensileStrengthMD: tensileStrengthMDModel # N
   cardWebUnevenness: cardWebUnevennessModel # -
-  lineSpeed: lineSpeedModel # m per min
 outputs_are_latent: False
 observation_noise_only: True
 action_space:

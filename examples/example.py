@@ -19,16 +19,17 @@ os.environ['WANDB_SILENT'] = 'true'
 @hydra.main(version_base=None, config_path="../config",
             config_name="main")
 def main(configuration: DictConfig):
-
     config = configuration
     reward_manager = RewardManager(config.product_setup)
     control_manager = ControlManager(OmegaConf.merge(
         {"actions_are_relative": config.process_setup.actions_are_relative},
-        {"initial_controls": config.process_setup.initial_controls},
+        {"initial_primary_controls": config.process_setup.initial_primary_controls},
+        {"path_to_secondary_control_models": config.process_setup.path_to_secondary_control_models},
+        {"secondary_control_models": config.process_setup.secondary_control_models},
         {"control_bounds": config.process_setup.control_bounds}))
     disturbance_manager = DisturbanceManager(OmegaConf.merge({"disturbances": config.process_setup.disturbances}))
     output_manager = OutputManager(OmegaConf.merge(
-        {"path_to_models": config.env_setup.path_to_models},
+        {"path_to_output_models": config.env_setup.path_to_output_models},
         {"output_models": config.env_setup.output_models},
         {"outputs_are_latent": config.env_setup.outputs_are_latent},
         {"observation_noise_only": config.env_setup.observation_noise_only}))
@@ -44,9 +45,10 @@ def main(configuration: DictConfig):
     # agent = A2C("MlpPolicy", gym_wrapper, verbose=1)
     # agent.learn(1000)
 
+    observation, _ = gym_wrapper.reset()
     for _ in range(20):
         observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
-            low=0.0, high=0.5,size=len(config.env_setup.used_controls)))
+            low=0.0, high=0.5,size=len(config.process_setup.initial_primary_controls)))
     observation, _ = gym_wrapper.reset()
 
     pass

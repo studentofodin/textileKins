@@ -1,0 +1,10 @@
+inputs:
+  - CardDeliveryWeightPerArea
+  - Cross-lapperLayersCount
+  - Needleloom2DraftRatio
+  - Needleloom1DraftRatioIntake
+  - Needleloom1DraftRatio
+  - DrawFrameDraftRatio
+  - CardMassThroughputSetpoint
+  - ProductWidth
+output: lineSpeed

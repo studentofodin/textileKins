@@ -1,5 +1,5 @@
 actions_are_relative: True
-initial_controls:
+initial_primary_controls:
   CardDeliveryWeightPerArea: 63.7 # g per sqm
   Cross-lapperLayersCount: 6.0 # -
   Needleloom1DraftRatio: 43.0 # percent
@@ -14,14 +14,9 @@ initial_controls:
   v_StripperMain: 160.0 # m per min
   v_WorkerPre: 18.0 # m per min
   v_StripperPre: 65.0 # m per min
-disturbances:
-  FeederDeliverySpeed: 9.6 # m per min
-  ProductB: 0.0 # bool
-  ProductWidth: 4.8 # m
-  SmileEffectStrength: 5.0 # g per sqm
-  Needleloom2DraftRatio: 23.0 # percent
-  Needleloom1DraftRatioIntake: 10.0 # percent
-  Needleloom2FeedPerStroke: 11.25 # mm per stroke
+path_to_secondary_control_models: ../secondary_control_models
+secondary_control_models:
+  lineSpeed: lineSpeedModel # m per min
 control_bounds:
   CardDeliveryWeightPerArea:
     lower: 45
@@ -65,3 +60,14 @@ control_bounds:
   v_StripperPre:
     lower: 40
     upper: 85
+  lineSpeed:
+    lower: 0
+    upper: 11
+disturbances:
+  FeederDeliverySpeed: 9.6 # m per min
+  ProductB: 0.0 # bool
+  ProductWidth: 4.8 # m
+  SmileEffectStrength: 5.0 # g per sqm
+  Needleloom2DraftRatio: 23.0 # percent
+  Needleloom1DraftRatioIntake: 10.0 # percent
+  Needleloom2FeedPerStroke: 11.25 # mm per stroke

@@ -1,0 +1,67 @@
+actions_are_relative: True
+initial_controls:
+  CardDeliveryWeightPerArea: 63.7
+  Cross-lapperLayersCount: 6.0
+  Needleloom1DraftRatio: 43.0
+  Cross-lapperProfiling: 0.0
+  DrawFrameDraftRatio: 44.7
+  CardMassThroughputSetpoint: 715.6
+  Needleloom1FeedPerStroke: 10.5
+  Needleloom2NeedlepunchDepth: 10.8
+  v_PreRoll: 215.0
+  v_MainCylinder: 805.0
+  v_WorkerMain: 40.3
+  v_StripperMain: 160.0
+  v_WorkerPre: 18.0
+  v_StripperPre: 65.0
+disturbances:
+  FeederDeliverySpeed: 9.6
+  ProductB: 0.0
+  ProductWidth: 4.8
+  SmileEffectStrength: 5.0
+  Needleloom2DraftRatio: 23.0
+  Needleloom1DraftRatioIntake: 10.0
+  Needleloom2FeedPerStroke: 11.25
+control_bounds:
+  CardDeliveryWeightPerArea:
+    lower: 45
+    upper: 85
+  Cross-lapperLayersCount:
+    lower: 2.0
+    upper: 13.0
+  Needleloom1DraftRatio:
+    lower: 25
+    upper: 65
+  Cross-lapperProfiling:
+    lower: 0
+    upper: 40
+  DrawFrameDraftRatio:
+    lower: 20
+    upper: 90
+  CardMassThroughputSetpoint:
+    lower: 350
+    upper: 1100
+  Needleloom1FeedPerStroke:
+    lower: 9
+    upper: 15
+  Needleloom2NeedlepunchDepth:
+    lower: 9
+    upper: 14
+  v_PreRoll:
+    lower: 180
+    upper: 400
+  v_MainCylinder:
+    lower: 400
+    upper: 1400
+  v_WorkerMain:
+    lower: 20
+    upper: 130
+  v_StripperMain:
+    lower: 45
+    upper: 250
+  v_WorkerPre:
+    lower: 15
+    upper: 27
+  v_StripperPre:
+    lower: 40
+    upper: 85

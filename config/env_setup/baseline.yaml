@@ -1,50 +1,13 @@
-used_controls:
-  # weight per area
-  - CardDeliveryWeightPerArea # g per sqm
-  - Cross-lapperLayersCount
-  - Needleloom1DraftRatio # percent
-  - Cross-lapperProfiling # percent
-  - DrawFrameDraftRatio # percent
-  # power consumption (additional)
-  - CardMassThroughputSetpoint # kg per h
-  - Needleloom1FeedPerStroke # mm per stroke
-  # tensile strength CD (additional)
-  # tensile strength MD (additional)
-  - Needleloom2NeedlepunchDepth # mm
-  # evenness card floor (additional)
-  - v_PreRoll # m per min
-  - v_MainCylinder # m per min
-  - v_WorkerMain # m per min
-  - v_StripperMain # m per min
-  - v_WorkerPre # m per min
-  - v_StripperPre # m per min
-used_disturbances:
-  - FeederDeliverySpeed # m per min
-  - ProductB # bool
-  - ProductWidth # m
-  - SmileEffectStrength # g per sqm
-  - Needleloom2DraftRatio # percent
-  - Needleloom1DraftRatioIntake # percent
-  - Needleloom2FeedPerStroke # mm per stroke
-used_outputs:
-  - areaWeightLane1 # g per sqm
-  - areaWeightLane2 # g per sqm
-  - areaWeightLane3 # g per sqm
-  - LinePowerConsumption # W
-  - TensileStrengthCD # N
-  - TensileStrengthMD # N
-  - CardWebUnevenness # -
-  - lineSpeed # m per min
 path_to_models: ../models
 output_models:
-  areaWeightLane1: areaWeightLane1Model
-  areaWeightLane2: areaWeightLane2Model
-  areaWeightLane3: areaWeightLane3Model
-  linePowerConsumption: linePowerConsumptionModel
-  tensileStrengthCD: tensileStrengthCDModel
-  tensileStrengthMD: tensileStrengthMDModel
-  cardWebUnevenness: cardWebUnevennessModel
-  lineSpeed: lineSpeedModel
+  areaWeightLane1: areaWeightLane1Model # g per sqm
+  areaWeightLane2: areaWeightLane2Model # g per sqm
+  areaWeightLane3: areaWeightLane3Model # g per sqm
+  linePowerConsumption: linePowerConsumptionModel # W
+  tensileStrengthCD: tensileStrengthCDModel # N
+  tensileStrengthMD: tensileStrengthMDModel # N
+  cardWebUnevenness: cardWebUnevennessModel # -
+  lineSpeed: lineSpeedModel # m per min
 outputs_are_latent: False
 observation_noise_only: True
 action_space:

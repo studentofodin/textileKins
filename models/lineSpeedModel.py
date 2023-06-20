@@ -1,9 +1,11 @@
 import numpy as np
 
-KG_H_TO_G_MIN = 100/6
+KG_H_TO_G_MIN = 100 / 6
+
 
 def prcnt_to_mult(prcnt: float) -> float:
     return (prcnt / 100) + 1
+
 
 def model(X: dict) -> [np.array, np.array]:
     for key in X.keys():

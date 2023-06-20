@@ -11,11 +11,11 @@ from torch import load as torch_load
 from torch import device as torch_device
 from torch.cuda import is_available as torch_is_available
 
-
-from adanowo_simulator.abstract_base_class.output_manager import AbstractOutputManager
+from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
 from adanowo_simulator import model_adapter
 
 logger = logging.getLogger(__name__)
+
 
 class OutputManager(AbstractOutputManager):
 
@@ -59,7 +59,6 @@ class OutputManager(AbstractOutputManager):
         self._config = self._initial_config.copy()
         self._init_model_allocation()
 
-
     def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
         # load model properties dict from .yaml file.
         with open(pl.Path(self._config.path_to_models) / (model_name + '.yaml'), 'r') as stream:
@@ -93,7 +92,7 @@ class OutputManager(AbstractOutputManager):
             spec.loader.exec_module(model_lib)
 
             mdl = model_adapter.AdapterGpytorch(model_lib, data_load, model_state, properties,
-                                                  rescale_y=rescale_y_temp)
+                                                rescale_y=rescale_y_temp)
 
         elif model_class == "Python_script":
             model_module = self._load_model_from_script(
@@ -119,5 +118,3 @@ class OutputManager(AbstractOutputManager):
             except Exception as e:
                 logger.exception(f"Could not allocate model {model_name} to output {output_name}.")
                 raise e
-
-

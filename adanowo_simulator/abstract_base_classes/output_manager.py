@@ -27,3 +27,10 @@ class AbstractOutputManager(ABC):
         reset to initial values.
         """
         pass
+
+    @abstractmethod
+    def update_model_allocation(self, changed_outputs: list[str]) -> None:
+        """
+        update model allocation based on scenario manager.
+        """
+        pass

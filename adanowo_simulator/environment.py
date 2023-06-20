@@ -3,13 +3,13 @@ from omegaconf import DictConfig
 import logging
 import sys
 
-from adanowo_simulator.abstract_base_class.environment import AbstractEnvironment
-from adanowo_simulator.abstract_base_class.output_manager import AbstractOutputManager
-from adanowo_simulator.abstract_base_class.reward_manager import AbstractRewardManager
-from adanowo_simulator.abstract_base_class.control_manager import AbstractControlManager
-from adanowo_simulator.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
-from adanowo_simulator.abstract_base_class.experiment_tracker import AbstractExperimentTracker
-from adanowo_simulator.abstract_base_class.scenario_manager import AbstractScenarioManager
+from adanowo_simulator.abstract_base_classes.environment import AbstractEnvironment
+from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
+from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewardManager
+from adanowo_simulator.abstract_base_classes.control_manager import AbstractControlManager
+from adanowo_simulator.abstract_base_classes.disturbance_manager import AbstractDisturbanceManager
+from adanowo_simulator.abstract_base_classes.experiment_tracker import AbstractExperimentTracker
+from adanowo_simulator.abstract_base_classes.scenario_manager import AbstractScenarioManager
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -19,7 +19,6 @@ class Environment(AbstractEnvironment):
     def __init__(self, config: DictConfig, output_manager: AbstractOutputManager, reward_manager: AbstractRewardManager,
                  control_manager: AbstractControlManager, disturbance_manager: AbstractDisturbanceManager,
                  experiment_tracker: AbstractExperimentTracker, scenario_manager: AbstractScenarioManager):
-
         self._output_manager = output_manager
         self._reward_manager = reward_manager
         self._experiment_tracker = experiment_tracker
@@ -77,11 +76,11 @@ class Environment(AbstractEnvironment):
             self._init_experiment()
             logger.info("Experiment tracking has been initialized.")
 
-        self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager, self._reward_manager)
+        self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
+                                    self._reward_manager)
 
         disturbances = self._disturbance_manager.step()
         controls, control_constraints_met, actions = self._control_manager.step(actions)
-
 
         outputs = self._output_manager.step(controls, disturbances)
         reward, output_constraints_met = self._reward_manager.step(controls, disturbances, outputs,
@@ -89,7 +88,7 @@ class Environment(AbstractEnvironment):
 
         log_variables = \
             {"Performance-Metrics": {"Reward": reward, "Control-Constraints-Met": int(control_constraints_met),
-                                    "Output-Constraints-Met": int(output_constraints_met)},
+                                     "Output-Constraints-Met": int(output_constraints_met)},
              "Actions": actions,
              "Controls": controls,
              "Disturbances": disturbances,

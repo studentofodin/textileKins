@@ -2,7 +2,7 @@ import numpy as np
 from omegaconf import DictConfig, OmegaConf
 
 
-from adanowo_simulator.abstract_base_class.control_manager import AbstractControlManager
+from adanowo_simulator.abstract_base_classes.control_manager import AbstractControlManager
 
 
 class ControlManager(AbstractControlManager):

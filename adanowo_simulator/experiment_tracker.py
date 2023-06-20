@@ -1,7 +1,7 @@
 import wandb as wb
 from omegaconf import DictConfig, OmegaConf
 
-from adanowo_simulator.abstract_base_class.experiment_tracker import AbstractExperimentTracker
+from adanowo_simulator.abstract_base_classes.experiment_tracker import AbstractExperimentTracker
 
 
 class ExperimentTracker(AbstractExperimentTracker):
@@ -14,7 +14,7 @@ class ExperimentTracker(AbstractExperimentTracker):
 
     @property
     def config(self) -> DictConfig:
-        return self._tracker_configs
+        return self._tracker_config
 
     @config.setter
     def config(self, c):

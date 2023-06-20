@@ -2,8 +2,8 @@ import os
 import numpy as np
 import hydra
 from omegaconf import DictConfig, OmegaConf
-from stable_baselines3.common.env_checker import check_env
-from stable_baselines3 import A2C
+# from stable_baselines3.common.env_checker import check_env
+# from stable_baselines3 import A2C
 
 from adanowo_simulator.reward_manager import RewardManager
 from adanowo_simulator.control_manager import ControlManager
@@ -16,10 +16,10 @@ from adanowo_simulator.gym_wrapper import GymWrapper
 
 os.environ['WANDB_SILENT'] = 'true'
 
+
 @hydra.main(version_base=None, config_path="../config",
             config_name="main")
 def main(configuration: DictConfig):
-
     config = configuration
     reward_manager = RewardManager(config.product_setup)
     control_manager = ControlManager(OmegaConf.merge(
@@ -46,7 +46,7 @@ def main(configuration: DictConfig):
 
     for _ in range(20):
         observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
-            low=0.0, high=0.5,size=len(config.env_setup.used_controls)))
+            low=0.0, high=0.5, size=len(config.env_setup.used_controls)))
     observation, _ = gym_wrapper.reset()
 
     pass

@@ -4,8 +4,7 @@ H_TO_MIN = 60
 
 
 def get_reward(controls: dict[str, float], disturbances: dict[str, float], outputs: dict[str, float],
-                    config: DictConfig) -> float:
-
+               config: DictConfig) -> float:
     # material costs
     material_costs = controls["CardMassThroughputSetpoint"] * config.fibre_costs
     # energy costs

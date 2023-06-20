@@ -1,10 +1,10 @@
 from omegaconf import DictConfig
 import numpy as np
 
-from adanowo_simulator.abstract_base_class.scenario_manager import AbstractScenarioManager
-from adanowo_simulator.abstract_base_class.output_manager import AbstractOutputManager
-from adanowo_simulator.abstract_base_class.reward_manager import AbstractRewardManager
-from adanowo_simulator.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
+from adanowo_simulator.abstract_base_classes.scenario_manager import AbstractScenarioManager
+from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
+from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewardManager
+from adanowo_simulator.abstract_base_classes.disturbance_manager import AbstractDisturbanceManager
 
 
 class ScenarioManager(AbstractScenarioManager):
@@ -12,7 +12,6 @@ class ScenarioManager(AbstractScenarioManager):
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
         self._config = config.copy()
-
 
     @property
     def config(self) -> DictConfig:
@@ -30,7 +29,8 @@ class ScenarioManager(AbstractScenarioManager):
         _, changed_outputs = self._update_model_allocation(step_index, output_manager.config.output_models)
         output_manager.update_model_allocation(changed_outputs)
 
-    def _update_model_allocation(self, step_index: int, output_models_config: DictConfig) -> tuple[DictConfig, list[str]]:
+    def _update_model_allocation(self, step_index: int, output_models_config: DictConfig) -> \
+            tuple[DictConfig, list[str]]:
         changed = []
 
         for output_name, scenario in self._config.output_models.items():

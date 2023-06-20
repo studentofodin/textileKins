@@ -1,6 +1,7 @@
 from omegaconf import DictConfig, OmegaConf
 
-from adanowo_simulator.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
+from adanowo_simulator.abstract_base_classes.disturbance_manager import AbstractDisturbanceManager
+
 
 class DisturbanceManager(AbstractDisturbanceManager):
 

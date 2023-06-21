@@ -9,11 +9,11 @@ SCALE_AREA_WEIGHT = 0.158
 SCALE_THROUGHPUT = 0.030
 
 
-def unpack_dict(X: dict, training_features: list[str]) -> np.array:
+def unpack_dict(X: dict, training_inputs: list[str]) -> np.array:
     for key in X.keys():
         X[key] = np.array(X[key]).reshape(-1, 1)
     X_unpacked = []
-    for f in training_features:
+    for f in training_inputs:
         if f == "FG_soll":
             X_unpacked.append(X["CardDeliveryWeightPerArea"] * SCALE_AREA_WEIGHT)
         elif f == "mean_mass_cylinders":

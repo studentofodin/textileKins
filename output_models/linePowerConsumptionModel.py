@@ -12,11 +12,11 @@ def prcnt_to_mult(prcnt: float) -> float:
     return (prcnt / 100) + 1
 
 
-def unpack_dict(X: dict, training_features: list[str]) -> np.array:
+def unpack_dict(X: dict, training_inputs: list[str]) -> np.array:
     for key in X.keys():
         X[key] = np.array(X[key]).reshape(-1, 1)
     X_unpacked = []
-    for f in training_features:
+    for f in training_inputs:
         if f == "D_009_NM2_AuszGeschwS_m_min":
             X_unpacked.append(X["lineSpeed"])
         elif f == "D_036_K_Durchsatz_Ist_kg_h":

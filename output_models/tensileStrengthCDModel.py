@@ -4,11 +4,11 @@ from gpytorch.constraints import GreaterThan, Interval
 from gpytorch.kernels import AdditiveKernel, PolynomialKernel, ProductKernel, RBFKernel, ScaleKernel
 
 
-def unpack_dict(X: dict, training_features: list[str]) -> np.array:
+def unpack_dict(X: dict, training_inputs: list[str]) -> np.array:
     for key in X.keys():
         X[key] = np.array(X[key]).reshape(-1, 1)
     X_unpacked = []
-    for f in training_features:
+    for f in training_inputs:
         if f == "CL01_LayersCalculatorLayers":
             X_unpacked.append(X["Cross-lapperLayersCount"].round())
         elif f == "M_031_K_AbliefGew_g_m2":

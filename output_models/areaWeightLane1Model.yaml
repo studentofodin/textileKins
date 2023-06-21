@@ -2,10 +2,10 @@ name: areaWeightLane1Model
 model_class: Python_script
 data_source: None
 inputs:
-  - WeightPerAreaCardDelivery
-  - LayersCount
-  - DraftRatioNeedleloom1Intake
-  - DraftRatioNeedleloom
-  - Profiling
+  - CardDeliveryWeightPerArea
+  - Cross-lapperLayersCount
+  - Needleloom2DraftRatio
+  - Needleloom1DraftRatioIntake
+  - Needleloom1DraftRatio
   - DrawFrameDraftRatio
 output: areaWeightLane1

@@ -18,18 +18,7 @@ def unpack_dict(X: dict, training_features: list[str]) -> np.array:
     X_unpacked = []
     for f in training_features:
         if f == "D_009_NM2_AuszGeschwS_m_min":
-            weight_per_area_theoretical = \
-                X["CardDeliveryWeightPerArea"] * \
-                X["Cross-lapperLayersCount"].round()*2 / \
-                prcnt_to_mult(X["Needleloom1DraftRatioIntake"]) / \
-                prcnt_to_mult(X["Needleloom1DraftRatio"]) / \
-                prcnt_to_mult(X["DrawFrameDraftRatio"])
-            line_speed = \
-                X["CardMassThroughputSetpoint"] / \
-                weight_per_area_theoretical / \
-                X["ProductWidth"] * \
-                KG_H_TO_G_MIN  # conversion factor
-            X_unpacked.append(line_speed)
+            X_unpacked.append(X["lineSpeed"])
         elif f == "D_036_K_Durchsatz_Ist_kg_h":
             X_unpacked.append(X["CardMassThroughputSetpoint"])
         elif f == "M_010_FS_Zufuehr_m_min":

@@ -16,13 +16,6 @@ class AbstractExperimentTracker(ABC):
         pass
 
     @abstractmethod
-    def init_experiment(self):
-        """
-        initialize wandb.
-        """
-        pass
-
-    @abstractmethod
     def step(self, log_variables: dict[str, Any], step_index: int) -> None:
         """
         log the given log_variables in wandb.

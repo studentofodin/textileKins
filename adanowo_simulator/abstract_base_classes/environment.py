@@ -95,13 +95,6 @@ class AbstractEnvironment(ABC):
         pass
 
     @abstractmethod
-    def _init_experiment(self) -> None:
-        """
-        initializes experiment.
-        """
-        pass
-
-    @abstractmethod
     def _control_array_to_dict(self, array: np.array, keys: list[str]) -> dict[str, float]:
         """
         Converts a 1D array of control values to a dict of control values.

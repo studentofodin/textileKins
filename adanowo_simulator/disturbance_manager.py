@@ -7,8 +7,8 @@ class DisturbanceManager(AbstractDisturbanceManager):
 
     def __init__(self, initial_disturbances: DictConfig):
         self._initial_disturbances = initial_disturbances.copy()
-        self._n_disturbances = len(initial_disturbances)
-        self._disturbances = self._initial_disturbances.copy()
+        self._disturbances = None
+        self._ready = False
 
     @property
     def disturbances(self) -> DictConfig:
@@ -19,10 +19,15 @@ class DisturbanceManager(AbstractDisturbanceManager):
         self._disturbances = c
 
     def step(self) -> dict[str, float]:
-        disturbances = OmegaConf.to_container(self._disturbances)
-        return disturbances
+        if self._ready:
+            disturbances = OmegaConf.to_container(self._disturbances)
+            return disturbances
+        else:
+            raise Exception("Cannot call step() before calling reset().")
+
 
     def reset(self) -> dict[str, float]:
         self._disturbances = self._initial_disturbances.copy()
         disturbances = OmegaConf.to_container(self._disturbances)
+        self._ready = True
         return disturbances

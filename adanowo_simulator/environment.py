@@ -27,9 +27,10 @@ class Environment(AbstractEnvironment):
         self._scenario_manager = scenario_manager
 
         self._initial_config = config.copy()
-        self._config = config.copy()
-        self._step_index = 0
-        self._status = "READY"
+        self._config = None
+        self._step_index = None
+        self._ready = False
+        logger.info("Environment has been created.")
 
     @property
     def config(self) -> DictConfig:
@@ -82,70 +83,88 @@ class Environment(AbstractEnvironment):
         return control_dict
 
     def step(self, actions_array: np.array) -> tuple[np.array, float, bool, bool, dict]:
-        if self._status != "RUNNING":
-            self._init_experiment()
-            logger.info("Experiment tracking has been initialized.")
+        if self._ready:
+            try:
+                if self._step_index == 0:
+                    logger.info("Experiment is running.")
+                actions = self._control_array_to_dict(actions_array, self._config.used_controls)
+                self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
+                                            self._reward_manager)
+                disturbances = self._disturbance_manager.step()
+                controls, control_constraints_met = self._control_manager.step(actions)
+                outputs = self._output_manager.step(controls | disturbances)
+                reward, output_constraints_met = self._reward_manager.step(
+                    controls | disturbances, outputs, control_constraints_met)
+                log_variables = {
+                    "Performance-Metrics": {
+                        "Reward": reward,
+                        "Control-Constraints-Met": int(control_constraints_met),
+                        "Output-Constraints-Met": int(output_constraints_met)},
+                    "Actions": actions,
+                    "Controls": controls,
+                    "Disturbances": disturbances,
+                    "Outputs": outputs
+                }
+                self._experiment_tracker.step(log_variables, self._step_index)
 
-        actions = self._control_array_to_dict(actions_array, self._config.used_controls)
+                info = dict()
+                self._step_index += 1
 
-        self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
-                                    self._reward_manager)
+                # TODO: use the lists used_outputs and used_controls to create the observations array,
+                #  because unlike dicts, they are ordered
+                observations = np.array(tuple(outputs.values()), dtype=np.float32)
 
-        disturbances = self._disturbance_manager.step()
-        controls, control_constraints_met = self._control_manager.step(actions)
+            except Exception as e:
+                self.shutdown()
+                raise e
 
-        outputs = self._output_manager.step(controls | disturbances)
-        reward, output_constraints_met = self._reward_manager.step(controls | disturbances, outputs,
-                                                                   control_constraints_met)
-
-        log_variables = {
-            "Performance-Metrics": {
-                "Reward": reward,
-                "Control-Constraints-Met": int(control_constraints_met),
-                "Output-Constraints-Met": int(output_constraints_met)},
-            "Actions": actions,
-            "Controls": controls,
-            "Disturbances": disturbances,
-            "Outputs": outputs
-        }
-        self._experiment_tracker.step(log_variables, self._step_index)
-
-        info = dict()
-        self._step_index += 1
-        self._status = "RUNNING"
-
-        # TODO: use the lists used_outputs and used_controls to create the observations array,
-        #  because unlike dicts, they are ordered
-        observations = np.array(tuple(outputs.values()), dtype=np.float32)
+        else:
+            raise Exception("Cannot call step() before calling reset().")
 
         return observations, reward, False, False, info
 
     def reset(self) -> tuple[np.array, dict]:
-        self._experiment_tracker.reset()
-        self._reward_manager.reset()
-        initial_controls = self._control_manager.reset()
-        initial_disturbances = self._disturbance_manager.reset()
-        self._output_manager.reset()
-        self._scenario_manager.reset()
-
+        logger.info("Resetting environment...")
         self._step_index = 0
         self._config = self._initial_config.copy()
+        try:
+            self._disturbance_manager.reset()
+            self._scenario_manager.reset()
+            # scenario manager is capable of changing initial disturbances.
+            disturbances = self._disturbance_manager.step()
+            controls = self._control_manager.reset()
+            outputs = self._output_manager.reset(controls | disturbances)
+            reward, output_constraints_met = self._reward_manager.reset(
+                controls | disturbances, outputs, True)
+            log_variables = {
+                "Performance-Metrics": {
+                    "Reward": reward,
+                    "Control-Constraints-Met": 1,
+                    "Output-Constraints-Met": int(output_constraints_met)},
+                "Actions": {},
+                "Controls": controls,
+                "Disturbances": disturbances,
+                "Outputs": outputs
+            }
 
-        outputs = self._output_manager.step(initial_controls | initial_disturbances)
+            self._experiment_tracker.reset(log_variables, self._step_index)
 
-        # TODO: use the lists used_outputs and used_controls to create the observations array,
-        #  because unlike dicts, they are ordered
-        observations = np.array(tuple(outputs.values()), dtype=np.float32)
+            # TODO: use the lists used_outputs and used_controls to create the observations array,
+            #  because unlike dicts, they are ordered
+            observations = np.array(tuple(outputs.values()), dtype=np.float32)
+
+        except Exception as e:
+            self.shutdown()
+            raise e
 
         info = dict()
-        self._status = "READY"
-        logger.info("Environment has been reset.")
+        self._ready = True
+        logger.info("...environment has been reset.")
 
         return observations, info
 
     def shutdown(self) -> None:
+        logger.info("Shutting down environment...")
         self._output_manager.shutdown()
         self._experiment_tracker.shutdown()
-
-    def _init_experiment(self) -> None:
-        self._experiment_tracker.init_experiment()
+        logger.info("...environment has been shut down.")

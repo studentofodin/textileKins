@@ -11,7 +11,8 @@ class ScenarioManager(AbstractScenarioManager):
 
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
-        self._config = config.copy()
+        self._config = None
+        self._ready = False
 
     @property
     def config(self) -> DictConfig:
@@ -23,12 +24,19 @@ class ScenarioManager(AbstractScenarioManager):
 
     def step(self, step_index: int, disturbance_manager: AbstractDisturbanceManager,
              output_manager: AbstractOutputManager, reward_manager: AbstractRewardManager):
-        # TODO: This method has no effect since disturbance_manager is not updated
-        self._update_disturbances(step_index, disturbance_manager.disturbances)
-        # TODO: This method has no effect since reward_manager is not updated
-        self._update_output_bounds(step_index, reward_manager.config.output_bounds)
-        _, changed_outputs = self._update_model_allocation(step_index, output_manager.config.output_models)
-        output_manager.update_model_allocation(changed_outputs)
+        if self._ready:
+            # TODO: This method has no effect since disturbance_manager is not updated
+            self._update_disturbances(step_index, disturbance_manager.disturbances)
+            # TODO: This method has no effect since reward_manager is not updated
+            self._update_output_bounds(step_index, reward_manager.config.output_bounds)
+            _, changed_outputs = self._update_model_allocation(step_index, output_manager.config.output_models)
+            output_manager.update_model_allocation(changed_outputs)
+        else:
+            raise Exception("Cannot call step() before calling reset().")
+
+    def reset(self) -> None:
+        self._config = self._initial_config.copy()
+        self._ready = True
 
     def _update_model_allocation(self, step_index: int, output_models_config: DictConfig) -> \
             tuple[DictConfig, list[str]]:
@@ -63,6 +71,3 @@ class ScenarioManager(AbstractScenarioManager):
                 disturbance_config[disturbance_name] = np.random.normal(scenario.mean, scenario.std)
 
         return disturbance_config
-
-    def reset(self) -> None:
-        self._config = self._initial_config.copy()

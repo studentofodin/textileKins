@@ -51,11 +51,11 @@ class OutputManager(AbstractOutputManager):
         sys.path.append(str(self._model_path))
 
         self._initial_config = config.copy()
-        self._config = config.copy()
+        self._config = None
+        self._ready = False
         self._model_processes = dict()
         self._input_pipe = dict()
         self._output_pipe = dict()
-        self.init_model_allocation()
 
     @property
     def config(self) -> DictConfig:
@@ -66,54 +66,65 @@ class OutputManager(AbstractOutputManager):
         self._config = c
 
     def step(self, inputs: dict[str, float]) -> dict[str, float]:
-        mean_pred, var_pred = self._call_models(inputs)
-        outputs = self._sample_output_distribution(mean_pred, var_pred)
+        if self._ready:
+            try:
+                mean_pred, var_pred = self._call_models(inputs)
+                outputs = self._sample_output_distribution(mean_pred, var_pred)
+            except Exception as e:
+                self.shutdown()
+                raise e
         return outputs
 
-    def init_model_allocation(self) -> None:
+    def reset(self, inputs: dict[str, float]) -> dict[str, float]:
+        self.shutdown()
+        self._config = self._initial_config.copy()
         for output_name, model_name in self._config.output_models.items():
             try:
                 self._allocate_model_to_output(output_name, model_name)
                 logger.info(f"Allocated model {model_name} to output {output_name}.")
             except Exception as e:
-                logger.exception(f"Could not allocate model {model_name} to output {output_name}.")
+                logger.error(f"Could not allocate model {model_name} to output {output_name}.")
+                self.shutdown()
                 raise e
+        self._ready = True
+        outputs = self.step(inputs)
+        return outputs
+
+    def shutdown(self) -> None:
+        if self._model_processes:
+            for output_name in self._model_processes.keys():
+                if self._model_processes[output_name].is_alive():
+                    self._input_pipe[output_name][SEND].send(None)
+                    self._model_processes[output_name].join()
+                    self._input_pipe[output_name][SEND].close()
+            self._model_processes = dict()
+            self._input_pipe = dict()
+            self._output_pipe = dict()
+            self._ready = False
+
 
     def update_model_allocation(self, changed_outputs: list[str]) -> None:
         for changed_output in changed_outputs:
-            self._allocate_model_to_output(changed_output, self._config.output_models[changed_output])
+            try:
+                self._input_pipe[changed_output][SEND].send(None)
+                self._model_processes[changed_output].join()
+                self._input_pipe[changed_output][SEND].close()
+                model_name = self._config.output_models[changed_output]
+                self._allocate_model_to_output(changed_output, model_name)
+                logger.info(f"Allocated model {model_name} to output {changed_output}.")
 
-    def start_processes(self) -> None:
-        for output_name, model_process in self._model_processes.items():
-            model_process.start()
-            logger.info(f"Process for output {output_name} is running and listening for inputs")
+            except Exception as e:
+                logger.error(f"Could not allocate model {model_name} to output {changed_output}.")
+                self.shutdown()
+                raise e
 
-    def shutdown(self) -> None:
-        logger.info("Waiting for all processes to finish...")
-        for _, input_pipe in self._input_pipe.items():
-            input_pipe[SEND].send(None)
-        for _, model_process in self._model_processes.items():
-            model_process.join()
-        for _, input_pipe in self._input_pipe.items():
-            input_pipe[SEND].close()
-
-    def reset(self) -> None:
-        self._config = self._initial_config.copy()
-        self.shutdown()
-        logger.info("All processes finished. Reallocating...")
-        self.init_model_allocation()
 
     def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()
         var_pred = dict()
 
         for output_name, model_process in self._model_processes.items():
-            if not model_process.is_alive():
-                model_process.start()
-                logger.info(f"Process for output {output_name} is running and listening for inputs")
             self._input_pipe[output_name][SEND].send(inputs)
-
-        for output_name, model_process in self._model_processes.items():
             mean_pred[output_name], var_pred[output_name] = self._output_pipe[output_name][RECEIVE].recv()
         return mean_pred, var_pred
 
@@ -127,20 +138,15 @@ class OutputManager(AbstractOutputManager):
     def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
         # load model properties dict from .yaml file
         with open(self._model_path / (model_name + '.yaml'), 'r') as stream:
-            try:
-                properties = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                logger.exception(f"Could not load model properties for model {model_name}.")
-                raise exc
+            properties = yaml.safe_load(stream)
 
-        # load process model
         model_class = properties["model_class"]
-        if "keep_y_scaled" in properties:
-            rescale_y_temp = not bool(properties["keep_y_scaled"])
-        else:
-            rescale_y_temp = True
 
         if model_class == "Gpytorch":
+            if "keep_y_scaled" in properties:
+                rescale_y_temp = not bool(properties["keep_y_scaled"])
+            else:
+                rescale_y_temp = True
             data_load = pd.read_hdf(
                 self._model_path / (model_name + ".hdf5")
             )
@@ -171,3 +177,4 @@ class OutputManager(AbstractOutputManager):
         self._output_pipe[output_name] = new_output_pipe
         self._model_processes[output_name] = \
             Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND], False))
+        self._model_processes[output_name].start()

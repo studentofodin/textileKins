@@ -9,9 +9,10 @@ from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewar
 class RewardManager(AbstractRewardManager):
     def __init__(self, reward_function, config: DictConfig):
         self._initial_config = config.copy()
-        self._config = config.copy()
+        self._config = None
         self._reward_range = (config.reward_range.lower, config.reward_range.upper)
         self._reward_function = reward_function
+        self._ready = False
 
     @property
     def config(self) -> DictConfig:
@@ -27,20 +28,28 @@ class RewardManager(AbstractRewardManager):
 
     def step(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: bool) \
             -> tuple[float, bool]:
-        output_constraints_met = self._output_constraints_met(outputs)
+        if self._ready:
+            output_constraints_met = self._output_constraints_met(outputs)
 
-        # penalty.
-        if not (output_constraints_met and control_constraints_met):
-            reward = -self._config.penalty
+            # penalty.
+            if not (output_constraints_met and control_constraints_met):
+                reward = -self._config.penalty
+            # no penalty.
+            else:
+                reward = self._get_reward(state, outputs)
 
-        # no penalty.
         else:
-            reward = self._get_reward(state, outputs)
+            raise Exception("Cannot call step() before calling reset().")
 
         return reward, output_constraints_met
 
-    def reset(self) -> None:
+
+    def reset(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: bool) -> \
+            tuple[float, bool]:
         self._config = self._initial_config.copy()
+        self._ready = True
+        reward, output_constraints_met = self.step(state, outputs, control_constraints_met)
+        return reward, output_constraints_met
 
     def _get_reward(self, state: dict[str, float], outputs: dict[str, float]) -> float:
         reward = self._reward_function(state, outputs, self._config.reward_parameters)

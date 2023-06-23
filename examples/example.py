@@ -44,9 +44,9 @@ def main(configuration: DictConfig):
         # for _ in range(100):
         #     observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
         #         low=0.0, high=0.5, size=len(config.env_setup.used_controls)))
-        gym_wrapper.shutdown()
+        gym_wrapper.close()
     except Exception as e:
-        gym_wrapper.shutdown()
+        gym_wrapper.close()
 
 if __name__ == "__main__":
     main()

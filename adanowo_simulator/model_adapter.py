@@ -5,16 +5,13 @@ from types import ModuleType
 import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
-from gpytorch.models import ExactGP
-from torch.cuda import is_available as cuda_is_available
-from torch.cuda import FloatTensor as CudaFloatTensor
-from torch import FloatTensor
-from torch import squeeze as torch_squeeze
+import torch
 from sklearn.preprocessing import RobustScaler
 from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from adanowo_simulator.abstract_base_class.model_adapter import AbstractModelAdapter
+from adanowo_simulator.abstract_base_classes.model_adapter import AbstractModelAdapter
+
 
 class IdentityTransformer(BaseEstimator, TransformerMixin):
     """
@@ -64,18 +61,18 @@ class AdapterGpytorch(AbstractModelAdapter):
             y_numpy = self._scaler_y.transform(y_numpy)
 
         # construct the model and load state from dict
-        if cuda_is_available():
-            self._Tensor = CudaFloatTensor
+        if torch.cuda.is_available():
+            self._Tensor = torch.cuda.FloatTensor
             x_tensor = self._numpy_to_model_input(x_numpy)
-            y_tensor = torch_squeeze(self._Tensor(
+            y_tensor = torch.squeeze(self._Tensor(
                 y_numpy
             ))
             self._likelihood = model_module.likelihood.cuda()
             self._model = model_module.ExactGPModel(x_tensor, y_tensor, self._likelihood).cuda()
         else:
-            self._Tensor = FloatTensor
+            self._Tensor = torch.FloatTensor
             x_tensor = self._numpy_to_model_input(x_numpy)
-            y_tensor = torch_squeeze(self._Tensor(
+            y_tensor = torch.squeeze(self._Tensor(
                 y_numpy
             ))
             self._likelihood = model_module.likelihood
@@ -88,7 +85,7 @@ class AdapterGpytorch(AbstractModelAdapter):
         noise_var_scaled = self._likelihood.noise.cpu().detach().numpy().reshape(-1, 1)
         _, self._noise_variance = self._rescaler_y(noise_var_scaled, noise_var_scaled)
 
-    def _numpy_to_model_input(self, x_temp: np.array) -> FloatTensor:
+    def _numpy_to_model_input(self, x_temp: np.array) -> torch.FloatTensor:
         tensor_out = self._Tensor(
             self._pipe.transform(
                 x_temp
@@ -130,9 +127,14 @@ class AdapterGpytorch(AbstractModelAdapter):
             if kwargs["observation_noise_only"]:
                 var_scalar = copy(self._noise_variance)
                 var = np.ones_like(y_pred) * var_scalar
-        else:
-            ValueError("Nope")
         return y_pred, var
+
+    def shutdown(self):
+        self._Tensor = None
+        self._model = None
+        self._likelihood = None
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
 
 class AdapterPyScript(AbstractModelAdapter):
@@ -148,3 +150,6 @@ class AdapterPyScript(AbstractModelAdapter):
     def predict_y(self, X: dict, **kwargs) -> np.array:
         f_pred, var = self._model(X)
         return f_pred, var
+
+    def shutdown(self):
+        pass

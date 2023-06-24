@@ -1,79 +1,37 @@
-path_to_output_models: ../output_models
-output_models:
-  areaWeightLane1: areaWeightLane1Model # g per sqm
-  areaWeightLane2: areaWeightLane2Model # g per sqm
-  areaWeightLane3: areaWeightLane3Model # g per sqm
-  linePowerConsumption: linePowerConsumptionModel # W
-  tensileStrengthCD: tensileStrengthCDModel # N
-  tensileStrengthMD: tensileStrengthMDModel # N
-  cardWebUnevenness: cardWebUnevennessModel # -
-outputs_are_latent: False
-observation_noise_only: True
-action_space:
-  CardDeliveryWeightPerArea:
-    low: -100.0
-    high: 100.0
-  Cross-lapperLayersCount:
-    low: -100.0
-    high: 100.0
-  Needleloom1DraftRatio:
-    low: -100.0
-    high: 100.0
-  Cross-lapperProfiling:
-    low: -1000.0
-    high: 1000.0
-  DrawFrameDraftRatio:
-    low: -1000.0
-    high: 1000.0
-  CardMassThroughputSetpoint:
-    low: -10000.0
-    high: 10000.0
-  Needleloom1FeedPerStroke:
-    low: -100.0
-    high: 100.0
-  Needleloom2NeedlepunchDepth:
-    low: -100.0
-    high: 100.0
-  v_PreRoll:
-    low: -1000.0
-    high: 1000.0
-  v_MainCylinder:
-    low: -10000.0
-    high: 10000.0
-  v_WorkerMain:
-    low: -1000.0
-    high: 1000.0
-  v_StripperMain:
-    low: -1000.0
-    high: 1000.0
-  v_WorkerPre:
-    low: -10000.0
-    high: 10000.0
-  v_StripperPre:
-    low: -1000.0
-    high: 1000.0
-observation_space:
-  areaWeightLane1:
-    low: -100.0
-    high: 1000.0
-  areaWeightLane2:
-    low: -100.0
-    high: 1000.0
-  areaWeightLane3:
-    low: -100.0
-    high: 1000.0
-  LinePowerConsumption:
-    low: -100.0
-    high: 1000.0
-  TensileStrengthCD:
-    low: -100.0
-    high: 10000.0
-  TensileStrengthMD:
-    low: -100.0
-    high: 10000.0
-  CardWebUnevenness:
-    low: -100.0
-    high: 100.0
-  lineSpeed:
-    low: -1.0
-    high: 20.0
+used_controls:
+  # weight per area
+  - CardDeliveryWeightPerArea # g per sqm
+  - Cross-lapperLayersCount
+  - Needleloom1DraftRatio # percent
+  - Cross-lapperProfiling # percent
+  - DrawFrameDraftRatio # percent
+  # power consumption (additional)
+  - CardMassThroughputSetpoint # kg per h
+  - Needleloom1FeedPerStroke # mm per stroke
+  # tensile strength CD (additional)
+  # tensile strength MD (additional)
+  - Needleloom2NeedlepunchDepth # mm
+  # evenness card floor (additional)
+  - v_PreRoll # m per min
+  - v_MainCylinder # m per min
+  - v_WorkerMain # m per min
+  - v_StripperMain # m per min
+  - v_WorkerPre # m per min
+  - v_StripperPre # m per min
+  - lineSpeed # m per min
+used_disturbances:
+  - FeederDeliverySpeed # m per min
+  - ProductB # bool
+  - ProductWidth # m
+  - SmileEffectStrength # g per sqm
+  - Needleloom2DraftRatio # percent
+  - Needleloom1DraftRatioIntake # percent
+  - Needleloom2FeedPerStroke # mm per stroke
+used_outputs:
+  - areaWeightLane1 # g per sqm
+  - areaWeightLane2 # g per sqm
+  - areaWeightLane3 # g per sqm
+  - LinePowerConsumption # W
+  - TensileStrengthCD # N
+  - TensileStrengthMD # N
+  - CardWebUnevenness # -

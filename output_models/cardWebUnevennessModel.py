@@ -1,6 +1,6 @@
 import gpytorch
 import numpy as np
-from gpytorch.constraints import GreaterThan, Interval
+from gpytorch.constraints import GreaterThan
 from gpytorch.kernels import (AdditiveKernel, PolynomialKernel, ProductKernel,
                               RBFKernel, ScaleKernel)
 

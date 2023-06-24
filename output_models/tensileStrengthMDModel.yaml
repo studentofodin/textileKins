@@ -18,7 +18,7 @@ training_inputs:
   - M_007_NM1_AuszVerzug_Proznt
   - M_017_NM2_Einsttiefe_mm
   - D_018_SW_Gesamtverzug_Perc
-  - Product_UNICO-30
+  - Product_B
   - M_010_NM2_AuszVerzug_Proz
 training_target: Fmax_MD
 y_is_scaled: True

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
 
+
 class AbstractModelAdapter(ABC):
 
     @abstractmethod
@@ -14,5 +15,12 @@ class AbstractModelAdapter(ABC):
     def predict_y(self, X: dict[str, float], **kwargs) -> tuple[np.array, np.array]:
         """
         predict mean and standard deviation of output from input X with inclusion of noise.
+        """
+        pass
+
+    @abstractmethod
+    def shutdown(self) -> None:
+        """
+        Safely shutdown the model by releasing all CUDA resources.
         """
         pass

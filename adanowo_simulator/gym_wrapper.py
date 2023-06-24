@@ -4,7 +4,9 @@ from gymnasium.core import RenderFrame
 from gymnasium.envs.registration import register
 from omegaconf import DictConfig
 
-from adanowo_simulator.abstract_base_class.environment import AbstractEnvironment
+from adanowo_simulator.abstract_base_classes.environment import AbstractEnvironment
+
+# TODO: Transform actions and observations into a range suitable for RL agents.
 
 
 class GymWrapper(Env):
@@ -44,6 +46,9 @@ class GymWrapper(Env):
 
     def render(self) -> RenderFrame | list[RenderFrame] | None:
         pass
+
+    def close(self) -> None:
+        self._environment.shutdown()
 
 
 register(

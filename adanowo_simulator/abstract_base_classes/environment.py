@@ -3,12 +3,12 @@ from typing import Tuple
 import numpy as np
 from omegaconf import DictConfig
 
-from adanowo_simulator.abstract_base_class.output_manager import AbstractOutputManager
-from adanowo_simulator.abstract_base_class.reward_manager import AbstractRewardManager
-from adanowo_simulator.abstract_base_class.control_manager import AbstractControlManager
-from adanowo_simulator.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
-from adanowo_simulator.abstract_base_class.experiment_tracker import AbstractExperimentTracker
-from adanowo_simulator.abstract_base_class.scenario_manager import AbstractScenarioManager
+from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
+from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewardManager
+from adanowo_simulator.abstract_base_classes.control_manager import AbstractControlManager
+from adanowo_simulator.abstract_base_classes.disturbance_manager import AbstractDisturbanceManager
+from adanowo_simulator.abstract_base_classes.experiment_tracker import AbstractExperimentTracker
+from adanowo_simulator.abstract_base_classes.scenario_manager import AbstractScenarioManager
 
 
 class AbstractEnvironment(ABC):
@@ -84,5 +84,20 @@ class AbstractEnvironment(ABC):
     def reset(self) -> Tuple[np.array, dict]:
         """
         resets the environment to an initial internal state, returning an initial observation and info.
+        """
+        pass
+
+    @abstractmethod
+    def shutdown(self) -> None:
+        """
+        shuts down the environment.
+        """
+        pass
+
+    @abstractmethod
+    def _control_array_to_dict(self, array: np.array, keys: list[str]) -> dict[str, float]:
+        """
+        Converts a 1D array of control values to a dict of control values.
+        This is necessary to keep the order of controls intact since dictionaries are unordered, unlike lists.
         """
         pass

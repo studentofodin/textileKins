@@ -1,18 +1,18 @@
 from omegaconf import DictConfig
 import numpy as np
 
-from adanowo_simulator.abstract_base_class.scenario_manager import AbstractScenarioManager
-from adanowo_simulator.abstract_base_class.output_manager import AbstractOutputManager
-from adanowo_simulator.abstract_base_class.reward_manager import AbstractRewardManager
-from adanowo_simulator.abstract_base_class.disturbance_manager import AbstractDisturbanceManager
+from adanowo_simulator.abstract_base_classes.scenario_manager import AbstractScenarioManager
+from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
+from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewardManager
+from adanowo_simulator.abstract_base_classes.disturbance_manager import AbstractDisturbanceManager
 
 
 class ScenarioManager(AbstractScenarioManager):
 
     def __init__(self, config: DictConfig):
         self._initial_config = config.copy()
-        self._config = config.copy()
-
+        self._config = None
+        self._ready = False
 
     @property
     def config(self) -> DictConfig:
@@ -24,13 +24,22 @@ class ScenarioManager(AbstractScenarioManager):
 
     def step(self, step_index: int, disturbance_manager: AbstractDisturbanceManager,
              output_manager: AbstractOutputManager, reward_manager: AbstractRewardManager):
+        if self._ready:
+            # TODO: This method has no effect since disturbance_manager is not updated
+            self._update_disturbances(step_index, disturbance_manager.disturbances)
+            # TODO: This method has no effect since reward_manager is not updated
+            self._update_output_bounds(step_index, reward_manager.config.output_bounds)
+            _, changed_outputs = self._update_model_allocation(step_index, output_manager.config.output_models)
+            output_manager.update_model_allocation(changed_outputs)
+        else:
+            raise Exception("Cannot call step() before calling reset().")
 
-        self._update_disturbances(step_index, disturbance_manager.config.disturbances)
-        self._update_output_bounds(step_index, reward_manager.config.output_bounds)
-        _, changed_outputs = self._update_model_allocation(step_index, output_manager.config.output_models)
-        output_manager.update_model_allocation(changed_outputs)
+    def reset(self) -> None:
+        self._config = self._initial_config.copy()
+        self._ready = True
 
-    def _update_model_allocation(self, step_index: int, output_models_config: DictConfig) -> tuple[DictConfig, list[str]]:
+    def _update_model_allocation(self, step_index: int, output_models_config: DictConfig) -> \
+            tuple[DictConfig, list[str]]:
         changed = []
 
         for output_name, scenario in self._config.output_models.items():
@@ -54,7 +63,6 @@ class ScenarioManager(AbstractScenarioManager):
                 if scenario and scenario[0][0] == step_index:
                     output_bounds_config[output_name]["upper"] = scenario[0][1]
                     self._config.output_bounds[output_name]["upper"].pop(0)
-
         return output_bounds_config
 
     def _update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> DictConfig:
@@ -63,6 +71,3 @@ class ScenarioManager(AbstractScenarioManager):
                 disturbance_config[disturbance_name] = np.random.normal(scenario.mean, scenario.std)
 
         return disturbance_config
-
-    def reset(self) -> None:
-        self._config = self._initial_config.copy()

@@ -17,6 +17,14 @@ initial_primary_controls:
 path_to_secondary_control_models: ../secondary_control_models
 secondary_control_models:
   lineSpeed: lineSpeedModel # m per min
+initial_disturbances:
+  FeederDeliverySpeed: 9.6
+  ProductB: 0.0
+  ProductWidth: 4.8
+  SmileEffectStrength: 5.0
+  Needleloom2DraftRatio: 23.0
+  Needleloom1DraftRatioIntake: 10.0
+  Needleloom2FeedPerStroke: 11.25
 control_bounds:
   CardDeliveryWeightPerArea:
     lower: 45
@@ -63,11 +71,3 @@ control_bounds:
   lineSpeed:
     lower: 0
     upper: 11
-disturbances:
-  FeederDeliverySpeed: 9.6 # m per min
-  ProductB: 0.0 # bool
-  ProductWidth: 4.8 # m
-  SmileEffectStrength: 5.0 # g per sqm
-  Needleloom2DraftRatio: 23.0 # percent
-  Needleloom1DraftRatioIntake: 10.0 # percent
-  Needleloom2FeedPerStroke: 11.25 # mm per stroke

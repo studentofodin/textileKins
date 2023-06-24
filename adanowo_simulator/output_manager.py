@@ -1,29 +1,61 @@
-import pathlib as pl
 import importlib
+import pathlib as pl
+import logging
 import sys
+from multiprocessing import Process, Pipe
+
 import yaml
 from omegaconf import DictConfig
 import numpy as np
 import pandas as pd
-import logging
-from types import ModuleType
-from torch import load as torch_load
-from torch import device as torch_device
-from torch.cuda import is_available as torch_is_available
+import torch
 
-
-from adanowo_simulator.abstract_base_class.output_manager import AbstractOutputManager
+from adanowo_simulator.abstract_base_classes.model_adapter import AbstractModelAdapter
+from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
 from adanowo_simulator import model_adapter
 
 logger = logging.getLogger(__name__)
+RECEIVE = 0
+SEND = 1
+DEFAULT_RELATIVE_PATH = "./output_models"
+
+
+def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pipe, latent=False):
+    while True:
+        if input_pipe.poll():
+            input_recv = input_pipe.recv()
+            if input_recv is None:
+                mdl.shutdown()
+                break
+            if latent:
+                mean_pred, var_pred = mdl.predict_f(input_recv)
+            else:
+                mean_pred, var_pred = mdl.predict_y(input_recv, observation_noise_only=True)
+            output_pipe.send((mean_pred, var_pred))
+
 
 class OutputManager(AbstractOutputManager):
 
     def __init__(self, config: DictConfig):
+        # use default path
+        main_script_path = pl.Path(__file__).resolve().parent
+        self._path_to_models = main_script_path.parent / DEFAULT_RELATIVE_PATH
+
+        if config.path_to_models is not None:
+            temp_path = pl.Path(config.path_to_models)
+            if self._path_to_models.is_dir():
+                logger.info(f"Using custom model path {self._path_to_models}.")
+                self._path_to_models = temp_path
+
+        # Add model path to sys.path so that the models can be imported.
+        sys.path.append(str(self._path_to_models))
+
         self._initial_config = config.copy()
-        self._config = config.copy()
-        self._process_models = dict()
-        self._init_model_allocation()
+        self._config = None
+        self._ready = False
+        self._model_processes = dict()
+        self._input_pipe = dict()
+        self._output_pipe = dict()
 
     @property
     def config(self) -> DictConfig:
@@ -33,91 +65,115 @@ class OutputManager(AbstractOutputManager):
     def config(self, c):
         self._config = c
 
-    def step(self, controls: dict[str, float], disturbances: dict[str, float]) -> dict[str, float]:
-        mean_pred = dict()
-        var_pred = dict()
-        outputs = dict()
-        if self._config.outputs_are_latent:
-            for output_name, model in self._process_models.items():
-                X = controls | disturbances | outputs
-                mean_pred[output_name], var_pred[output_name] = model.predict_f(X)
-                outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name])).item()
-        else:
-            for output_name, model in self._process_models.items():
-                X = controls | disturbances | outputs
-                mean_pred[output_name], var_pred[output_name] = \
-                    model.predict_y(X, observation_noise_only=self._config.observation_noise_only)
-                outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name])).item()
-
+    def step(self, inputs: dict[str, float]) -> dict[str, float]:
+        if self._ready:
+            try:
+                mean_pred, var_pred = self._call_models(inputs)
+                outputs = self._sample_output_distribution(mean_pred, var_pred)
+            except Exception as e:
+                self.shutdown()
+                raise e
         return outputs
 
-    def update_model_allocation(self, changed_outputs: list[str]) -> None:
-        for output_name in changed_outputs:
-            self._allocate_model_to_output(output_name, self._config.output_models[output_name])
-
-    def reset(self) -> None:
+    def reset(self, inputs: dict[str, float]) -> dict[str, float]:
+        self.shutdown()
         self._config = self._initial_config.copy()
-        self._init_model_allocation()
-
-
-    def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
-        # load model properties dict from .yaml file.
-        with open(pl.Path(self._config.path_to_output_models) / (model_name + '.yaml'), 'r') as stream:
-            try:
-                properties = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                print(exc)
-
-        # load machine model.
-        model_class = properties["model_class"]
-        if "keep_y_scaled" in properties:
-            rescale_y_temp = not bool(properties["keep_y_scaled"])
-        else:
-            rescale_y_temp = True
-
-        if model_class == "Gpytorch":
-            data_load = pd.read_hdf(
-                pl.Path(self._config.path_to_output_models) / (model_name + ".hdf5"))
-            if torch_is_available():
-                map_location = None
-            else:
-                map_location = torch_device('cpu')
-                logger.warning(f"No Cuda GPU found for model {model_name}. Step execution will be much slower.")
-            model_state = torch_load(
-                pl.Path(self._config.path_to_output_models) / (model_name + ".pth"), map_location=map_location)
-            spec = importlib.util.spec_from_file_location("module.name",
-                                                          pl.Path(self._config.path_to_output_models) / (
-                                                                  model_name + ".py"))
-            model_lib = importlib.util.module_from_spec(spec)
-            sys.modules["module.name"] = model_lib
-            spec.loader.exec_module(model_lib)
-
-            mdl = model_adapter.AdapterGpytorch(model_lib, data_load, model_state, properties,
-                                                  rescale_y=rescale_y_temp)
-
-        elif model_class == "Python_script":
-            model_module = self._load_model_from_script(
-                pl.Path(self._config.path_to_output_models) / (model_name + ".py"))
-            mdl = model_adapter.AdapterPyScript(model_module)
-
-        else:
-            raise (TypeError(f"The model class {model_class} is not yet supported"))
-
-        self._process_models[output_name] = mdl
-
-    def _load_model_from_script(self, path: pl.Path) -> ModuleType:
-        spec = importlib.util.spec_from_file_location("module.name", path)
-        model_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(model_module)
-        return model_module
-
-    def _init_model_allocation(self) -> None:
         for output_name, model_name in self._config.output_models.items():
             try:
                 self._allocate_model_to_output(output_name, model_name)
                 logger.info(f"Allocated model {model_name} to output {output_name}.")
             except Exception as e:
-                logger.exception(f"Could not allocate model {model_name} to output {output_name}.")
+                logger.error(f"Could not allocate model {model_name} to output {output_name}.")
+                self.shutdown()
+                raise e
+        self._ready = True
+        outputs = self.step(inputs)
+        return outputs
+
+    def shutdown(self) -> None:
+        if self._model_processes:
+            for output_name in self._model_processes.keys():
+                if self._model_processes[output_name].is_alive():
+                    self._input_pipe[output_name][SEND].send(None)
+                    self._model_processes[output_name].join()
+                    self._input_pipe[output_name][SEND].close()
+            self._model_processes = dict()
+            self._input_pipe = dict()
+            self._output_pipe = dict()
+            self._ready = False
+
+    def update_model_allocation(self, changed_outputs: list[str]) -> None:
+        for changed_output in changed_outputs:
+            try:
+                self._input_pipe[changed_output][SEND].send(None)
+                self._model_processes[changed_output].join()
+                self._input_pipe[changed_output][SEND].close()
+                model_name = self._config.output_models[changed_output]
+                self._allocate_model_to_output(changed_output, model_name)
+                logger.info(f"Allocated model {model_name} to output {changed_output}.")
+
+            except Exception as e:
+                logger.error(f"Could not allocate model {model_name} to output {changed_output}.")
+                self.shutdown()
                 raise e
 
 
+    def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
+        mean_pred = dict()
+        var_pred = dict()
+
+        for output_name, model_process in self._model_processes.items():
+            self._input_pipe[output_name][SEND].send(inputs)
+            mean_pred[output_name], var_pred[output_name] = self._output_pipe[output_name][RECEIVE].recv()
+        return mean_pred, var_pred
+
+    def _sample_output_distribution(self, mean_pred: dict[str, np.array], var_pred: dict[str, np.array]) \
+            -> dict[str, float]:
+        outputs = dict()
+        for output_name in self._config.output_models.keys():
+            outputs[output_name] = np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name])).item()
+        return outputs
+
+    def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
+        # load model properties dict from .yaml file
+        with open(self._path_to_models / (model_name + '.yaml'), 'r') as stream:
+            properties = yaml.safe_load(stream)
+
+        model_class = properties["model_class"]
+
+        if model_class == "Gpytorch":
+            if "keep_y_scaled" in properties:
+                rescale_y_temp = not bool(properties["keep_y_scaled"])
+            else:
+                rescale_y_temp = True
+            data_load = pd.read_hdf(
+                self._path_to_models / (model_name + ".hdf5")
+            )
+            if torch.cuda.is_available():
+                map_location = None
+            else:
+                map_location = torch.device('cpu')
+                logger.warning(f"No Cuda GPU found for model {model_name}. Step execution will be much slower.")
+            model_state = torch.load(
+                self._path_to_models / (model_name + ".pth"), map_location=map_location
+            )
+            importlib.import_module(model_name)
+            model_module = sys.modules[model_name]
+
+            mdl = model_adapter.AdapterGpytorch(model_module, data_load, model_state, properties,
+                                                rescale_y=rescale_y_temp)
+        elif model_class == "Python_script":
+            importlib.import_module(model_name)
+            model_module = sys.modules[model_name]
+            mdl = model_adapter.AdapterPyScript(model_module)
+
+        else:
+            raise (TypeError(f"The model class {model_class} is not yet supported"))
+
+        new_input_pipe = Pipe()
+        new_output_pipe = Pipe()
+        self._input_pipe[output_name] = new_input_pipe
+        self._output_pipe[output_name] = new_output_pipe
+        self._model_processes[output_name] = \
+            Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND], False))
+        self._model_processes[output_name].start()

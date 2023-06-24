@@ -1,6 +1,6 @@
 import numpy as np
 
-from adanowo_simulator.abstract_base_class.secondary_control_model import  AbstractSecondaryControlModel
+from adanowo_simulator.abstract_base_classes.secondary_control_model import AbstractSecondaryControlModel
 
 KG_H_TO_G_MIN = 100/6
 

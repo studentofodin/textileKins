@@ -54,8 +54,8 @@ class OutputManager(AbstractOutputManager):
         self._config = None
         self._ready = False
         self._model_processes = dict()
-        self._input_pipe = dict()
-        self._output_pipe = dict()
+        self._input_pipes = dict()
+        self._output_pipes = dict()
 
     @property
     def config(self) -> DictConfig:
@@ -94,20 +94,20 @@ class OutputManager(AbstractOutputManager):
         if self._model_processes:
             for output_name in self._model_processes.keys():
                 if self._model_processes[output_name].is_alive():
-                    self._input_pipe[output_name][SEND].send(None)
+                    self._input_pipes[output_name][SEND].send(None)
                     self._model_processes[output_name].join()
-                    self._input_pipe[output_name][SEND].close()
+                    self._input_pipes[output_name][SEND].close()
             self._model_processes = dict()
-            self._input_pipe = dict()
-            self._output_pipe = dict()
+            self._input_pipes = dict()
+            self._output_pipes = dict()
             self._ready = False
 
     def update_model_allocation(self, changed_outputs: list[str]) -> None:
         for changed_output in changed_outputs:
             try:
-                self._input_pipe[changed_output][SEND].send(None)
+                self._input_pipes[changed_output][SEND].send(None)
                 self._model_processes[changed_output].join()
-                self._input_pipe[changed_output][SEND].close()
+                self._input_pipes[changed_output][SEND].close()
                 model_name = self._config.output_models[changed_output]
                 self._allocate_model_to_output(changed_output, model_name)
                 logger.info(f"Allocated model {model_name} to output {changed_output}.")
@@ -123,8 +123,8 @@ class OutputManager(AbstractOutputManager):
         var_pred = dict()
 
         for output_name, model_process in self._model_processes.items():
-            self._input_pipe[output_name][SEND].send(inputs)
-            mean_pred[output_name], var_pred[output_name] = self._output_pipe[output_name][RECEIVE].recv()
+            self._input_pipes[output_name][SEND].send(inputs)
+            mean_pred[output_name], var_pred[output_name] = self._output_pipes[output_name][RECEIVE].recv()
         return mean_pred, var_pred
 
     def _sample_output_distribution(self, mean_pred: dict[str, np.array], var_pred: dict[str, np.array]) \
@@ -172,8 +172,8 @@ class OutputManager(AbstractOutputManager):
 
         new_input_pipe = Pipe()
         new_output_pipe = Pipe()
-        self._input_pipe[output_name] = new_input_pipe
-        self._output_pipe[output_name] = new_output_pipe
+        self._input_pipes[output_name] = new_input_pipe
+        self._output_pipes[output_name] = new_output_pipe
         self._model_processes[output_name] = \
             Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND], False))
         self._model_processes[output_name].start()

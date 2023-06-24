@@ -14,9 +14,9 @@ initial_primary_controls:
   v_StripperMain: 160.0 # m per min
   v_WorkerPre: 18.0 # m per min
   v_StripperPre: 65.0 # m per min
-path_to_secondary_control_models: ../secondary_control_models
-secondary_control_models:
-  lineSpeed: lineSpeedModel # m per min
+path_to_secondary_control_calculations: # use default if not a valid path
+secondary_control_calculations:
+  lineSpeed: lineSpeedCalculation # m per min
 initial_disturbances:
   FeederDeliverySpeed: 9.6
   ProductB: 0.0

@@ -39,16 +39,19 @@ class OutputManager(AbstractOutputManager):
     def __init__(self, config: DictConfig):
         # use default path
         main_script_path = pl.Path(__file__).resolve().parent
-        self._path_to_models = main_script_path.parent / DEFAULT_RELATIVE_PATH
+        self._path_to_output_models = main_script_path.parent / DEFAULT_RELATIVE_PATH
 
-        if config.path_to_models is not None:
+        if config.path_to_output_models is not None:
             temp_path = pl.Path(config.path_to_models)
-            if self._path_to_models.is_dir():
-                logger.info(f"Using custom model path {self._path_to_models}.")
-                self._path_to_models = temp_path
+            if self._path_to_output_models.is_dir():
+                logger.info(f"Using custom output model path {self._path_to_output_models}.")
+                self._path_to_output_models = temp_path
+            else:
+                raise Exception(
+                    f"Custom output model path {self._path_to_output_models} is not valid.")
 
         # Add model path to sys.path so that the models can be imported.
-        sys.path.append(str(self._path_to_models))
+        sys.path.append(str(self._path_to_output_models))
 
         self._initial_config = config.copy()
         self._config = None
@@ -136,7 +139,7 @@ class OutputManager(AbstractOutputManager):
 
     def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
         # load model properties dict from .yaml file
-        with open(self._path_to_models / (model_name + '.yaml'), 'r') as stream:
+        with open(self._path_to_output_models / (model_name + '.yaml'), 'r') as stream:
             properties = yaml.safe_load(stream)
 
         model_class = properties["model_class"]
@@ -147,7 +150,7 @@ class OutputManager(AbstractOutputManager):
             else:
                 rescale_y_temp = True
             data_load = pd.read_hdf(
-                self._path_to_models / (model_name + ".hdf5")
+                self._path_to_output_models / (model_name + ".hdf5")
             )
             if torch.cuda.is_available():
                 map_location = None
@@ -155,7 +158,7 @@ class OutputManager(AbstractOutputManager):
                 map_location = torch.device('cpu')
                 logger.warning(f"No Cuda GPU found for model {model_name}. Step execution will be much slower.")
             model_state = torch.load(
-                self._path_to_models / (model_name + ".pth"), map_location=map_location
+                self._path_to_output_models / (model_name + ".pth"), map_location=map_location
             )
             importlib.import_module(model_name)
             model_module = sys.modules[model_name]

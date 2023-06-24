@@ -1,4 +1,4 @@
-path_to_models: # use default if not a valid path
+path_to_output_models: # use default if not a valid path
 output_models:
   areaWeightLane1: areaWeightLane1Model
   areaWeightLane2: areaWeightLane2Model

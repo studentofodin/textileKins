@@ -2,20 +2,42 @@ from omegaconf import DictConfig, OmegaConf
 import importlib
 import pathlib as pl
 import logging
+import sys
 
 from adanowo_simulator.abstract_base_classes.control_manager import AbstractControlManager
+from adanowo_simulator.calculation_adapter import CalculationAdapter
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_RELATIVE_PATH = "./secondary_control_calculations"
 
 
 class ControlManager(AbstractControlManager):
 
     def __init__(self, config: DictConfig, actions_are_relative: bool = True):
+        # use default path
+        main_script_path = pl.Path(__file__).resolve().parent
+        self._path_to_secondary_control_calculations = main_script_path.parent / DEFAULT_RELATIVE_PATH
+
+        if config.path_to_secondary_control_calculations is not None:
+            temp_path = pl.Path(config.path_to_secondary_control_calculations)
+            if self._path_to_secondary_control_calculations.is_dir():
+                logger.info(f"Using custom secondary control calculation path "
+                            f"{self._path_to_secondary_control_calculations}.")
+                self._path_to_secondary_control_calculations = temp_path
+            else:
+                raise Exception(
+                    f"Custom secondary control calculation path {self._path_to_secondary_control_calculations}"
+                    f" is not valid.")
+
+        # Add calculation path to sys.path so that the calculations can be imported.
+        sys.path.append(str(self._path_to_secondary_control_calculations))
+
         self._initial_config = config.copy()
         self._config = None
         self._actions_are_relative = actions_are_relative
         self._controls = None
-        self._secondary_control_models = dict()
+        self._secondary_control_calculations = dict()
         self._ready = False
 
     @property
@@ -45,8 +67,8 @@ class ControlManager(AbstractControlManager):
         self._config = self._initial_config.copy()
 
         potential_primary_controls = OmegaConf.to_container(self._config.initial_primary_controls)
-        if not self._secondary_control_models:
-            self._allocate_secondary_control_models()
+        if not self._secondary_control_calculations:
+            self._allocate_secondary_control_calculations()
         X = potential_primary_controls | disturbances
         potential_secondary_controls = self._calculate_potential_secondary_controls(X)
         potential_controls = potential_primary_controls | potential_secondary_controls
@@ -72,18 +94,12 @@ class ControlManager(AbstractControlManager):
 
         return control_constraints_met
 
-    def _allocate_secondary_control_models(self) -> None:
-        for control_name, model_name in self._config.secondary_control_models.items():
-            model_path = pl.Path(self._config.path_to_secondary_control_models) / f"{model_name}.py"
-            try:
-                spec = importlib.util.spec_from_file_location("module.name", model_path)
-                model_module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(model_module)
-                self._secondary_control_models[control_name] = model_module.SecondaryControlModel
-                logger.info(f"Allocated model {model_name} to secondary control {control_name}.")
-            except Exception as e:
-                logger.error(f"Could not allocate model {model_name} to secondary control {control_name}.")
-                raise e
+    def _allocate_secondary_control_calculations(self) -> None:
+        for control_name, calculation_name in self._config.secondary_control_calculations.items():
+            importlib.import_module(calculation_name)
+            calculation_module = sys.modules[calculation_name]
+            self._secondary_control_calculations[control_name] = CalculationAdapter(calculation_module)
+            logger.info(f"Allocated calculation {calculation_name} to secondary control {control_name}.")
 
     def _calculate_potential_primary_controls(self, actions: dict[str, float]) -> dict[str, float]:
         # relative actions.
@@ -99,7 +115,7 @@ class ControlManager(AbstractControlManager):
 
     def _calculate_potential_secondary_controls(self, X: dict[str, float]) -> dict[str, float]:
         potential_secondary_controls = dict()
-        for control_name, model in self._secondary_control_models.items():
-            potential_secondary_controls[control_name] = model.calculate_control(X)
+        for control_name, calculation in self._secondary_control_calculations.items():
+            potential_secondary_controls[control_name] = calculation.calculate(X)
         return potential_secondary_controls
 

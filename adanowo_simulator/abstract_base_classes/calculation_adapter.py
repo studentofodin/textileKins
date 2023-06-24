@@ -1,8 +1,8 @@
 import numpy as np
 from abc import ABC, abstractmethod
 
-class AbstractSecondaryControlModel(ABC):
+class AbstractCalculationAdapter(ABC):
 
     @abstractmethod
-    def calculate_control(self, X: dict[str, float]) -> np.array:
+    def calculate(self, X: dict[str, float]) -> np.array:
         pass

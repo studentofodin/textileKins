@@ -25,9 +25,7 @@ class ScenarioManager(AbstractScenarioManager):
     def step(self, step_index: int, disturbance_manager: AbstractDisturbanceManager,
              output_manager: AbstractOutputManager, reward_manager: AbstractRewardManager):
         if self._ready:
-            # TODO: This method has no effect since disturbance_manager is not updated
-            self._update_disturbances(step_index, disturbance_manager.disturbances)
-            # TODO: This method has no effect since reward_manager is not updated
+            self._update_disturbances(step_index, disturbance_manager.config.disturbances)
             self._update_output_bounds(step_index, reward_manager.config.output_bounds)
             _, changed_outputs = self._update_model_allocation(step_index, output_manager.config.output_models)
             output_manager.update_model_allocation(changed_outputs)

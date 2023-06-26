@@ -5,27 +5,27 @@ from adanowo_simulator.abstract_base_classes.disturbance_manager import Abstract
 
 class DisturbanceManager(AbstractDisturbanceManager):
     def __init__(self, config: DictConfig):
-        self._initial_disturbances = config.initial_disturbances.copy()
-        self._disturbances = None
+        self._initial_config = config.copy()
+        self._config = None
         self._ready = False
 
     @property
-    def disturbances(self) -> DictConfig:
-        return self._disturbances
+    def config(self) -> DictConfig:
+        return self._config
 
-    @disturbances.setter
-    def disturbances(self, c):
-        self._disturbances = c
+    @config.setter
+    def config(self, c):
+        self._config = c
 
     def step(self) -> dict[str, float]:
         if self._ready:
-            disturbances = OmegaConf.to_container(self._disturbances)
+            disturbances = OmegaConf.to_container(self._config.disturbances)
             return disturbances
         else:
             raise Exception("Cannot call step() before calling reset().")
 
     def reset(self) -> dict[str, float]:
-        self._disturbances = self._initial_disturbances.copy()
-        disturbances = OmegaConf.to_container(self._disturbances)
+        self._config = self._initial_config.copy()
         self._ready = True
+        disturbances = self.step()
         return disturbances

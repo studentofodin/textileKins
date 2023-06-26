@@ -1,4 +1,4 @@
-initial_disturbances:
+disturbances:
   FeederDeliverySpeed: 9.6
   ProductB: 0.0
   ProductWidth: 4.8

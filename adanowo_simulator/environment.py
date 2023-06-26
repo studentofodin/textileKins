@@ -139,10 +139,8 @@ class Environment(AbstractEnvironment):
             # step 0.
             self._step_index = 0
             self._config = self._initial_config.copy()
-            self._disturbance_manager.reset()
             self._scenario_manager.reset()
-            # scenario manager is capable of changing disturbances.
-            disturbances = self._disturbance_manager.step()
+            disturbances = self._disturbance_manager.reset()
             controls = self._control_manager.reset(disturbances)
             outputs = self._output_manager.reset(controls | disturbances)
             reward, output_constraints_met = self._reward_manager.reset(

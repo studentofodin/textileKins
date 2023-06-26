@@ -65,7 +65,7 @@ class ScenarioManager(AbstractScenarioManager):
 
     def _update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> DictConfig:
         for disturbance_name, scenario in self._config.disturbances.items():
-            if step_index % scenario.trigger_interval == 0:
+            if (step_index-1) % scenario.trigger_interval == 0:
                 disturbance_config[disturbance_name] = np.random.normal(scenario.mean, scenario.std)
 
         return disturbance_config

@@ -46,7 +46,7 @@ class AbstractOutputManager(ABC):
         pass
 
     @abstractmethod
-    def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
+    def _call_models(self, inputs: dict[str, float]) -> (dict[str, np.array], dict[str, np.array]):
         """
         get and return mean and variance prediction of output from inputs for each model.
         latent=True includes noise, latent=False not.

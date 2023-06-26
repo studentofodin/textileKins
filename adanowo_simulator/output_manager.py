@@ -20,7 +20,8 @@ SEND = 1
 DEFAULT_RELATIVE_PATH = "./output_models"
 
 
-def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pipe, latent=False):
+def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pipe, observation_noise_only: bool,
+                   latent: bool = False):
     while True:
         if input_pipe.poll():
             input_recv = input_pipe.recv()
@@ -30,7 +31,7 @@ def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pip
             if latent:
                 mean_pred, var_pred = mdl.predict_f(input_recv)
             else:
-                mean_pred, var_pred = mdl.predict_y(input_recv, observation_noise_only=True)
+                mean_pred, var_pred = mdl.predict_y(input_recv, observation_noise_only)
             output_pipe.send((mean_pred, var_pred))
 
 
@@ -120,7 +121,7 @@ class OutputManager(AbstractOutputManager):
                 raise e
 
 
-    def _call_models(self, X: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
+    def _call_models(self, X: dict[str, float]) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()
         var_pred = dict()
 
@@ -177,5 +178,6 @@ class OutputManager(AbstractOutputManager):
         self._input_pipes[output_name] = new_input_pipe
         self._output_pipes[output_name] = new_output_pipe
         self._model_processes[output_name] = \
-            Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND], False))
+            Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND],
+                                                 self._config.observation_noise_only))
         self._model_processes[output_name].start()

@@ -48,7 +48,7 @@ class GymWrapper(Env):
         pass
 
     def close(self) -> None:
-        self._environment.shutdown()
+        self._environment.close()
 
 
 register(

@@ -91,11 +91,9 @@ class Environment(AbstractEnvironment):
     def step(self, actions_array: np.array) -> tuple[np.array, float, bool, bool, dict]:
         if self._ready:
             try:
-                if self._step_index == 0:
+                if self._step_index == 1:
                     logger.info("Experiment is running.")
                 actions = self._array_to_dict(actions_array, OmegaConf.to_container(self._config.used_primary_controls))
-                self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
-                                            self._reward_manager)
                 disturbances = self._disturbance_manager.step()
                 controls, control_constraints_met = self._control_manager.step(actions, disturbances)
                 outputs = self._output_manager.step(controls | disturbances)
@@ -112,6 +110,11 @@ class Environment(AbstractEnvironment):
                     "Outputs": outputs
                 }
                 self._experiment_tracker.step(log_variables, self._step_index)
+
+                # prepare next step.
+                self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
+                                            self._reward_manager)
+                disturbances = self._disturbance_manager.step()
 
                 observations = self._dict_to_array(
                     disturbances | controls | outputs,
@@ -133,6 +136,7 @@ class Environment(AbstractEnvironment):
     def reset(self) -> tuple[np.array, dict]:
         logger.info("Resetting environment...")
         try:
+            # step 0.
             self._step_index = 0
             self._config = self._initial_config.copy()
             self._disturbance_manager.reset()
@@ -154,6 +158,12 @@ class Environment(AbstractEnvironment):
                 "Outputs": outputs
             }
             self._experiment_tracker.reset(log_variables, self._step_index)
+
+            # prepare step 1.
+            self._step_index = 1
+            self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
+                                        self._reward_manager)
+            disturbances = self._disturbance_manager.step()
 
             observations = self._dict_to_array(
                 disturbances | controls | outputs,

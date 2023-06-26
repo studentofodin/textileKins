@@ -95,9 +95,8 @@ class AbstractEnvironment(ABC):
         pass
 
     @abstractmethod
-    def _control_array_to_dict(self, array: np.array, keys: list[str]) -> dict[str, float]:
+    def _array_to_dict(self, array: np.array, keys: list[str]) -> dict[str, float]:
         """
-        Converts a 1D array of control values to a dict of control values.
-        This is necessary to keep the order of controls intact since dictionaries are unordered, unlike lists.
+        Converts a 1D array to a dict with given keys.
         """
         pass

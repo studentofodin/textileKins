@@ -1,5 +1,5 @@
 import numpy as np
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 import logging
 import sys
 
@@ -72,22 +72,18 @@ class Environment(AbstractEnvironment):
     def step_index(self):
         return self._step_index
 
-    def _control_array_to_dict(self, array: np.array, keys: list[str]) -> dict[str, float]:
-        """
-        Converts a 1D array of control values to a dict of control values.
-        This is necessary to keep the order of controls intact since dictionaries are unordered, unlike lists.
-        """
-        control_dict = dict()
-        for i, control in enumerate(keys):
-            control_dict[control] = array[i]
-        return control_dict
+    def _array_to_dict(self, array: np.array, keys: list[str]) -> dict[str, float]:
+        dictionary = dict()
+        for index, key in enumerate(keys):
+            dictionary[key] = array[index]
+        return dictionary
 
     def step(self, actions_array: np.array) -> tuple[np.array, float, bool, bool, dict]:
         if self._ready:
             try:
                 if self._step_index == 0:
                     logger.info("Experiment is running.")
-                actions = self._control_array_to_dict(actions_array, self._config.used_controls)
+                actions = self._array_to_dict(actions_array, OmegaConf.to_container(self._config.used_primary_controls))
                 self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
                                             self._reward_manager)
                 disturbances = self._disturbance_manager.step()

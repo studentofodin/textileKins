@@ -116,6 +116,6 @@ class ControlManager(AbstractControlManager):
     def _calculate_potential_secondary_controls(self, X: dict[str, float]) -> dict[str, float]:
         potential_secondary_controls = dict()
         for control_name, calculation in self._secondary_control_calculations.items():
-            potential_secondary_controls[control_name] = calculation.calculate(X)
+            potential_secondary_controls[control_name] = calculation.calculate(X).item()
         return potential_secondary_controls
 

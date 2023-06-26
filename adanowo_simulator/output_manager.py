@@ -68,17 +68,17 @@ class OutputManager(AbstractOutputManager):
     def config(self, c):
         self._config = c
 
-    def step(self, inputs: dict[str, float]) -> dict[str, float]:
+    def step(self, state: dict[str, float]) -> dict[str, float]:
         if self._ready:
             try:
-                mean_pred, var_pred = self._call_models(inputs)
+                mean_pred, var_pred = self._call_models(state)
                 outputs = self._sample_output_distribution(mean_pred, var_pred)
             except Exception as e:
                 self.shutdown()
                 raise e
         return outputs
 
-    def reset(self, inputs: dict[str, float]) -> dict[str, float]:
+    def reset(self, state: dict[str, float]) -> dict[str, float]:
         self.shutdown()
         self._config = self._initial_config.copy()
         for output_name, model_name in self._config.output_models.items():
@@ -90,7 +90,7 @@ class OutputManager(AbstractOutputManager):
                 self.shutdown()
                 raise e
         self._ready = True
-        outputs = self.step(inputs)
+        outputs = self.step(state)
         return outputs
 
     def shutdown(self) -> None:
@@ -121,12 +121,12 @@ class OutputManager(AbstractOutputManager):
                 raise e
 
 
-    def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
+    def _call_models(self, X: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()
         var_pred = dict()
 
         for output_name, model_process in self._model_processes.items():
-            self._input_pipes[output_name][SEND].send(inputs)
+            self._input_pipes[output_name][SEND].send(X)
             mean_pred[output_name], var_pred[output_name] = self._output_pipes[output_name][RECEIVE].recv()
         return mean_pred, var_pred
 

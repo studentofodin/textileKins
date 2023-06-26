@@ -38,11 +38,13 @@ class GymWrapper(Env):
         return self._observation_space
    
     def step(self, action: np.array) -> tuple[np.array, float, bool, bool, dict]:
-        return self._environment.step(action)
+        observation, reward = self._environment.step(action)
+        return observation, reward, False, False, dict()
 
     def reset(self, seed=None, options=None) -> tuple[np.array, dict]:
         super().reset(seed=seed)
-        return self._environment.reset()
+        observation, _ = self._environment.reset()
+        return observation, dict()
 
     def render(self) -> RenderFrame | list[RenderFrame] | None:
         pass

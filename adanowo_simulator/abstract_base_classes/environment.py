@@ -64,26 +64,20 @@ class AbstractEnvironment(ABC):
         pass
 
     @abstractmethod
-    def step(self, actions: np.array) -> Tuple[np.array, float, bool, bool, dict]:
+    def step(self, actions: np.array) -> Tuple[np.array, float]:
         """
         run one timestep of the environment’s dynamics using the agent actions.
         return:
             observations (ObsType): observations due to the agent actions.
             reward (float): the reward as a result of taking the action.
-            terminated (bool): whether the agent reaches the terminal state (as defined under the MDP of the task)
-                which can be positive or negative.
-                not needed here as there is no terminal state, thus always returned as False.
-            truncated (bool) : whether the truncation condition outside the scope of the MDP is satisfied.
-                typically, this is a timelimit, but could also indicate an agent physically going out of bounds.
-                not needed here as there is no truncation condition, thus always returned as False.
-            info (dict): contains auxiliary diagnostic information (helpful for debugging, learning, and logging).
         """
         pass
 
     @abstractmethod
-    def reset(self) -> Tuple[np.array, dict]:
+    def reset(self) -> Tuple[np.array, float]:
         """
-        resets the environment to an initial internal state, returning an initial observation and info.
+        resets the environment to an initial internal state, returning an initial observation
+        and reward resulting from internal state.
         """
         pass
 

@@ -112,6 +112,7 @@ class Environment(AbstractEnvironment):
                 self._experiment_tracker.step(log_variables, self._step_index)
 
                 # prepare next step.
+                self._step_index += 1
                 self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
                                             self._reward_manager)
                 disturbances = self._disturbance_manager.step()
@@ -121,9 +122,6 @@ class Environment(AbstractEnvironment):
                     self._config.used_disturbances + self._config.used_primary_controls +
                     self._config.used_secondary_controls + self._config.used_outputs)
 
-                info = dict()
-                self._step_index += 1
-
             except Exception as e:
                 self.close()
                 raise e
@@ -131,7 +129,7 @@ class Environment(AbstractEnvironment):
         else:
             raise Exception("Cannot call step() before calling reset().")
 
-        return observations, reward, False, False, info
+        return observations, reward
 
     def reset(self) -> tuple[np.array, dict]:
         logger.info("Resetting environment...")
@@ -172,11 +170,10 @@ class Environment(AbstractEnvironment):
             self.close()
             raise e
 
-        info = dict()
         self._ready = True
         logger.info("...environment has been reset.")
 
-        return observations, info
+        return observations, reward
 
     def close(self) -> None:
         logger.info("Closing environment...")

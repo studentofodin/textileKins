@@ -5,7 +5,6 @@ from gpytorch.kernels import AdditiveKernel, RBFKernel, ScaleKernel
 
 CARD_DELIVERY_WIDTH = 3  # m
 KG_H_TO_G_MIN = 100/6
-MEDIAN_NEEDLELOOM_2_FEED_PER_STROKE = 11.25
 
 
 def prcnt_to_mult(prcnt: float) -> float:
@@ -34,7 +33,7 @@ def unpack_dict(X: dict, training_inputs: list[str]) -> np.array:
             X_unpacked.append(X["Needleloom1FeedPerStroke"])
         elif f == "M_005_NM2_Vorschub_mm_H":
             # simulator does not use this parameter, so set it to median value
-            X_unpacked.append(np.ones_like(X["Needleloom1FeedPerStroke"])*MEDIAN_NEEDLELOOM_2_FEED_PER_STROKE)
+            X_unpacked.append(np.ones_like(X["Needleloom1FeedPerStroke"])*X["Needleloom2FeedPerStroke"])
     return np.concatenate(X_unpacked, axis=1)
 
 

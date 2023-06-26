@@ -5,6 +5,9 @@ inputs:
   - LineSpeed
   - CardMassThroughputSetpoint
   - FeederDeliverySpeed
+  - CardDeliveryWeightPerArea
+  - Needleloom1FeedPerStroke
+  - Needleloom2FeedPerStroke
 output: LinePowerConsumption
 training_inputs:
   # line setting

@@ -86,7 +86,6 @@ class OutputManager(AbstractOutputManager):
                 self._allocate_model_to_output(output_name, model_name)
                 logger.info(f"Allocated model {model_name} to output {output_name}.")
             except Exception as e:
-                logger.error(f"Could not allocate model {model_name} to output {output_name}.")
                 self.shutdown()
                 raise e
         self._ready = True

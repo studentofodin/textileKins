@@ -17,14 +17,6 @@ initial_primary_controls:
 path_to_secondary_control_calculations: # use default if not a valid path
 secondary_control_calculations:
   lineSpeed: lineSpeedCalculation # m per min
-initial_disturbances:
-  FeederDeliverySpeed: 9.6
-  ProductB: 0.0
-  ProductWidth: 4.8
-  SmileEffectStrength: 5.0
-  Needleloom2DraftRatio: 23.0
-  Needleloom1DraftRatioIntake: 10.0
-  Needleloom2FeedPerStroke: 11.25
 control_bounds:
   CardDeliveryWeightPerArea:
     lower: 45

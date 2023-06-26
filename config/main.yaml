@@ -1,6 +1,7 @@
 defaults:
   - env_setup: baseline
-  - process_setup: baseline
+  - control_setup: baseline
+  - disturbance_setup: baseline
   - product_setup: baseline
   - scenario_setup: baseline
   - gym_setup: baseline

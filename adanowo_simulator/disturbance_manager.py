@@ -4,8 +4,8 @@ from adanowo_simulator.abstract_base_classes.disturbance_manager import Abstract
 
 
 class DisturbanceManager(AbstractDisturbanceManager):
-    def __init__(self, initial_disturbances: DictConfig):
-        self._initial_disturbances = initial_disturbances.copy()
+    def __init__(self, config: DictConfig):
+        self._initial_disturbances = config.initial_disturbances.copy()
         self._disturbances = None
         self._ready = False
 

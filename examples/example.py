@@ -21,8 +21,8 @@ os.environ["WANDB_SILENT"] = "true"
             config_name="main")
 def main(config: DictConfig):
     reward_manager = RewardManager(baseline_reward, config.product_setup)
-    disturbance_manager = DisturbanceManager(config.process_setup.initial_disturbances)
-    control_manager = ControlManager(config.process_setup, config.process_setup.actions_are_relative)
+    disturbance_manager = DisturbanceManager(config.disturbance_setup)
+    control_manager = ControlManager(config.control_setup, config.control_setup.actions_are_relative)
     output_manager = OutputManager(config.output_setup)
     scenario_manager = ScenarioManager(config.scenario_setup)
     experiment_tracker = ExperimentTracker(config.experiment_tracker, config)

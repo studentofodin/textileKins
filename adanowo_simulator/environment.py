@@ -73,10 +73,20 @@ class Environment(AbstractEnvironment):
         return self._step_index
 
     def _array_to_dict(self, array: np.array, keys: list[str]) -> dict[str, float]:
+        if array.size != len(keys):
+            raise Exception("Length of array and keys are not the same.")
         dictionary = dict()
         for index, key in enumerate(keys):
             dictionary[key] = array[index]
         return dictionary
+
+    def _dict_to_array(self, dictionary: dict[str, float], keys: list[str]) -> np.array:
+        if len(dictionary) != len(keys):
+            raise Exception("Length of dictionary and keys are not the same.")
+        array = np.zeros(len(dictionary))
+        for index, key in enumerate(keys):
+            array[index] = dictionary[key]
+        return array
 
     def step(self, actions_array: np.array) -> tuple[np.array, float, bool, bool, dict]:
         if self._ready:
@@ -103,9 +113,11 @@ class Environment(AbstractEnvironment):
                 }
                 self._experiment_tracker.step(log_variables, self._step_index)
 
-                # TODO: use the lists used_outputs and used_controls to create the observations array,
-                #  because unlike dicts, they are ordered
-                observations = np.array(tuple(outputs.values()), dtype=np.float32)
+                observations = self._dict_to_array(
+                    disturbances | controls | outputs,
+                    self._config.used_disturbances + self._config.used_primary_controls +
+                    self._config.used_secondary_controls + self._config.used_outputs)
+
                 info = dict()
                 self._step_index += 1
 
@@ -143,9 +155,10 @@ class Environment(AbstractEnvironment):
             }
             self._experiment_tracker.reset(log_variables, self._step_index)
 
-            # TODO: use the lists used_outputs and used_controls to create the observations array,
-            #  because unlike dicts, they are ordered
-            observations = np.array(tuple(outputs.values()), dtype=np.float32)
+            observations = self._dict_to_array(
+                disturbances | controls | outputs,
+                self._config.used_disturbances + self._config.used_primary_controls +
+                self._config.used_secondary_controls + self._config.used_outputs)
 
         except Exception as e:
             self.close()

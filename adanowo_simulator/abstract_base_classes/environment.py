@@ -55,11 +55,6 @@ class AbstractEnvironment(ABC):
 
     @property
     @abstractmethod
-    def reward_range(self) -> tuple[float, float]:
-        pass
-
-    @property
-    @abstractmethod
     def step_index(self):
         pass
 

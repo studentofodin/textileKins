@@ -31,11 +31,3 @@ class AbstractRewardManager(ABC):
         reset to initial values.
         """
         pass
-
-    @property
-    @abstractmethod
-    def reward_range(self) -> tuple[float, float]:
-        """
-        Return interval of possible reward values.
-        """
-        pass

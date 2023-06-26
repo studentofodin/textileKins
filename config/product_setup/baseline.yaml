@@ -4,9 +4,6 @@ reward_parameters:
   energy_costs: 0.28 # € per kWh
   selling_price: 2.50 # € per sqm
   floor_quality_weight: 10.0
-reward_range:
-  lower: -2000
-  upper: 10000
 output_bounds:
   AreaWeightLane1:
     lower: 200.0

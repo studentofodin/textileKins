@@ -38,11 +38,11 @@ def main(config: DictConfig):
         gym_wrapper.reset()
         for _ in range(100):
             observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
-                low=0.0, high=0.5, size=len(config.env_setup.used_controls)))
+                low=0.0, high=0.5, size=len(config.env_setup.used_primary_controls)))
         gym_wrapper.reset()
         for _ in range(100):
             observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
-                low=0.0, high=0.5, size=len(config.env_setup.used_controls)))
+                low=0.0, high=0.5, size=len(config.env_setup.used_primary_controls)))
         gym_wrapper.close()
     except Exception as e:
         gym_wrapper.close()

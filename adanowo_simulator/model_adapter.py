@@ -129,7 +129,7 @@ class AdapterGpytorch(AbstractModelAdapter):
                 var = np.ones_like(y_pred) * var_scalar
         return y_pred, var
 
-    def shutdown(self):
+    def close(self):
         self._Tensor = None
         self._model = None
         self._likelihood = None
@@ -151,5 +151,5 @@ class AdapterPyScript(AbstractModelAdapter):
         f_pred, var = self._model(X)
         return f_pred, var
 
-    def shutdown(self):
+    def close(self):
         pass

@@ -19,8 +19,8 @@ class AbstractModelAdapter(ABC):
         pass
 
     @abstractmethod
-    def shutdown(self) -> None:
+    def close(self) -> None:
         """
-        Safely shutdown the model by releasing all CUDA resources.
+        Safely close the model by releasing all CUDA resources.
         """
         pass

@@ -110,7 +110,7 @@ class Environment(AbstractEnvironment):
                 self._step_index += 1
 
             except Exception as e:
-                self.shutdown()
+                self.close()
                 raise e
 
         else:
@@ -148,7 +148,7 @@ class Environment(AbstractEnvironment):
             observations = np.array(tuple(outputs.values()), dtype=np.float32)
 
         except Exception as e:
-            self.shutdown()
+            self.close()
             raise e
 
         info = dict()
@@ -157,8 +157,8 @@ class Environment(AbstractEnvironment):
 
         return observations, info
 
-    def shutdown(self) -> None:
-        logger.info("Shutting down environment...")
-        self._output_manager.shutdown()
-        self._experiment_tracker.shutdown()
-        logger.info("...environment has been shut down.")
+    def close(self) -> None:
+        logger.info("Closing environment...")
+        self._output_manager.close()
+        self._experiment_tracker.close()
+        logger.info("...environment has been closed.")

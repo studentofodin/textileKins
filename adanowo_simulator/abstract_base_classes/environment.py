@@ -88,9 +88,9 @@ class AbstractEnvironment(ABC):
         pass
 
     @abstractmethod
-    def shutdown(self) -> None:
+    def close(self) -> None:
         """
-        shuts down the environment.
+        closes the environment.
         """
         pass
 

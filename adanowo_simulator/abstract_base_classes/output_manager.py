@@ -39,9 +39,9 @@ class AbstractOutputManager(ABC):
         pass
 
     @abstractmethod
-    def shutdown(self) -> None:
+    def close(self) -> None:
         """
-        shutdown all processes.
+        close all processes.
         """
         pass
 

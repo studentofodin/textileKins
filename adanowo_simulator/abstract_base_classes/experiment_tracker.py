@@ -30,7 +30,7 @@ class AbstractExperimentTracker(ABC):
         pass
 
     @abstractmethod
-    def shutdown(self) -> None:
+    def close(self) -> None:
         """
         finish experiment tracking run.
         """

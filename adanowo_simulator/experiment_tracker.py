@@ -30,13 +30,13 @@ class ExperimentTracker(AbstractExperimentTracker):
                     for name, value in variables.items():
                         self._run.log({f"{category}/{name}": value}, step_index)
             except Exception as e:
-                self.shutdown()
+                self.close()
                 raise e
         else:
             raise Exception("Cannot call step() before calling reset().")
 
     def reset(self, log_variables: dict[str, dict[str, float]], step_index: int) -> None:
-        self.shutdown()
+        self.close()
         try:
             self._tracker_config = self._initial_tracker_config.copy()
             tracked_config_container = OmegaConf.to_container(self._tracked_config)
@@ -44,11 +44,11 @@ class ExperimentTracker(AbstractExperimentTracker):
             self._ready = True
             self.step(log_variables, step_index)
         except Exception as e:
-            self.shutdown()
+            self.close()
             raise e
 
 
-    def shutdown(self) -> None:
+    def close(self) -> None:
         if self._run:
             self._run.finish()
             self._run = None

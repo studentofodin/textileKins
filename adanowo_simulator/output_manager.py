@@ -25,7 +25,7 @@ def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pip
         if input_pipe.poll():
             input_recv = input_pipe.recv()
             if input_recv is None:
-                mdl.shutdown()
+                mdl.close()
                 break
             if latent:
                 mean_pred, var_pred = mdl.predict_f(input_recv)
@@ -74,25 +74,25 @@ class OutputManager(AbstractOutputManager):
                 mean_pred, var_pred = self._call_models(state)
                 outputs = self._sample_output_distribution(mean_pred, var_pred)
             except Exception as e:
-                self.shutdown()
+                self.close()
                 raise e
         return outputs
 
     def reset(self, state: dict[str, float]) -> dict[str, float]:
-        self.shutdown()
+        self.close()
         self._config = self._initial_config.copy()
         for output_name, model_name in self._config.output_models.items():
             try:
                 self._allocate_model_to_output(output_name, model_name)
                 logger.info(f"Allocated model {model_name} to output {output_name}.")
             except Exception as e:
-                self.shutdown()
+                self.close()
                 raise e
         self._ready = True
         outputs = self.step(state)
         return outputs
 
-    def shutdown(self) -> None:
+    def close(self) -> None:
         if self._model_processes:
             for output_name in self._model_processes.keys():
                 if self._model_processes[output_name].is_alive():
@@ -116,7 +116,7 @@ class OutputManager(AbstractOutputManager):
 
             except Exception as e:
                 logger.error(f"Could not allocate model {model_name} to output {changed_output}.")
-                self.shutdown()
+                self.close()
                 raise e
 
 

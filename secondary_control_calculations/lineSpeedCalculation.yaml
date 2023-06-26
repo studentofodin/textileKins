@@ -7,4 +7,4 @@ inputs:
   - DrawFrameDraftRatio
   - CardMassThroughputSetpoint
   - ProductWidth
-output: lineSpeed
+output: LineSpeed

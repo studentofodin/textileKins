@@ -8,4 +8,4 @@ inputs:
   - Needleloom1DraftRatioIntake
   - Needleloom1DraftRatio
   - DrawFrameDraftRatio
-output: areaWeightLane1
+output: AreaWeightLane1

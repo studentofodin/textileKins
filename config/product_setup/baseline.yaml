@@ -8,18 +8,18 @@ reward_range:
   lower: -2000
   upper: 10000
 output_bounds:
-  areaWeightLane1:
+  AreaWeightLane1:
     lower: 200.0
     upper: 500.0
-  areaWeightLane2:
+  AreaWeightLane2:
     lower: 200.0
     upper: 500.0
-  areaWeightLane3:
+  AreaWeightLane3:
     lower: 200.0
     upper: 500.0
-  tensileStrengthCD:
+  TensileStrengthCD:
     lower: 650.0
-  tensileStrengthMD:
+  TensileStrengthMD:
     lower: 400.0
 
 

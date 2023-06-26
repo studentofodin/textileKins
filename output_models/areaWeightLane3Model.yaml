@@ -10,4 +10,4 @@ inputs:
   - Cross-lapperProfiling
   - DrawFrameDraftRatio
   - SmileEffectStrength
-output: areaWeightLane3
+output: AreaWeightLane3

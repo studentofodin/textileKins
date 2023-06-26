@@ -19,7 +19,7 @@ used_primary_controls:
   - v_WorkerPre # m per min
   - v_StripperPre # m per min
 used_secondary_controls:
-  - lineSpeed # m per min
+  - LineSpeed # m per min
 used_disturbances:
   - FeederDeliverySpeed # m per min
   - ProductB # bool
@@ -29,9 +29,9 @@ used_disturbances:
   - Needleloom1DraftRatioIntake # percent
   - Needleloom2FeedPerStroke # mm per stroke
 used_outputs:
-  - areaWeightLane1 # g per sqm
-  - areaWeightLane2 # g per sqm
-  - areaWeightLane3 # g per sqm
+  - AreaWeightLane1 # g per sqm
+  - AreaWeightLane2 # g per sqm
+  - AreaWeightLane3 # g per sqm
   - LinePowerConsumption # W
   - TensileStrengthCD # N
   - TensileStrengthMD # N

@@ -18,7 +18,7 @@ def unpack_dict(X: dict, training_inputs: list[str]) -> np.array:
     X_unpacked = []
     for f in training_inputs:
         if f == "D_009_NM2_AuszGeschwS_m_min":
-            X_unpacked.append(X["lineSpeed"])
+            X_unpacked.append(X["LineSpeed"])
         elif f == "D_036_K_Durchsatz_Ist_kg_h":
             X_unpacked.append(X["CardMassThroughputSetpoint"])
         elif f == "M_010_FS_Zufuehr_m_min":

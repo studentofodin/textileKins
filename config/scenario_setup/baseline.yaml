@@ -1,11 +1,11 @@
 output_models:
   # [[step_index_1, model_name_1], [step_index_2, model_name_2],...]
-  areaWeightLane2: [[10, areaWeightLane2Model]]
+  AreaWeightLane2: [[10, areaWeightLane2Model]]
 output_bounds:
   # [[step_index_1, value_1], [step_index_2, value_2],...]
-  areaWeightLane1:
+  AreaWeightLane1:
     lower: [[10, 190.0]]
-  areaWeightLane2:
+  AreaWeightLane2:
     upper: [[10, 510.0]]
 disturbances:
   Needleloom2DraftRatio:

@@ -16,7 +16,7 @@ initial_primary_controls:
   v_StripperPre: 65.0 # m per min
 path_to_secondary_control_calculations: # use default if not a valid path
 secondary_control_calculations:
-  lineSpeed: lineSpeedCalculation # m per min
+  LineSpeed: lineSpeedCalculation # m per min
 control_bounds:
   CardDeliveryWeightPerArea:
     lower: 45
@@ -60,6 +60,6 @@ control_bounds:
   v_StripperPre:
     lower: 40
     upper: 85
-  lineSpeed:
+  LineSpeed:
     lower: 0
     upper: 11

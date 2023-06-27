@@ -20,26 +20,23 @@ class RewardManager(AbstractRewardManager):
     def config(self, c):
         self._config = c
 
-    def step(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: bool) \
-            -> tuple[float, bool]:
+    def step(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: dict[str, bool]) \
+            -> tuple[float, dict[str, bool]]:
         if self._ready:
             output_constraints_met = self._output_constraints_met(outputs)
-
             # penalty.
-            if not (output_constraints_met and control_constraints_met):
+            if not (all(output_constraints_met.values()) and all(control_constraints_met.values())):
                 reward = -self._config.penalty
             # no penalty.
             else:
                 reward = self._get_reward(state, outputs)
-
         else:
             raise Exception("Cannot call step() before calling reset().")
-
         return reward, output_constraints_met
 
 
-    def reset(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: bool) -> \
-            tuple[float, bool]:
+    def reset(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: dict[str, bool]) -> \
+            tuple[float, dict[str, bool]]:
         self._config = self._initial_config.copy()
         self._ready = True
         reward, output_constraints_met = self.step(state, outputs, control_constraints_met)
@@ -49,16 +46,18 @@ class RewardManager(AbstractRewardManager):
         reward = self._reward_function(state, outputs, self._config.reward_parameters)
         return reward
 
-    def _output_constraints_met(self, outputs: dict[str, float]) -> bool:
-        # assume that output constraints are met.
-        output_constraints_met = True
-
+    def _output_constraints_met(self, outputs: dict[str, float]) -> dict[str, bool]:
+        output_constraints_met = dict()
         for output_name, bounds in self._config.output_bounds.items():
             if "lower" in bounds.keys():
                 if outputs[output_name] < bounds.lower:
-                    output_constraints_met = False
+                    output_constraints_met[f"{output_name}.lower"] = False
+                else:
+                    output_constraints_met[f"{output_name}.lower"] = True
             if "upper" in bounds.keys():
                 if outputs[output_name] > bounds.upper:
-                    output_constraints_met = False
+                    output_constraints_met[f"{output_name}.upper"] = False
+                else:
+                    output_constraints_met[f"{output_name}.upper"] = True
 
         return output_constraints_met

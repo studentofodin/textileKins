@@ -104,13 +104,14 @@ class Environment(AbstractEnvironment):
                 log_variables = {
                     "Performance-Metrics": {
                         "Reward": reward,
-                        "Control-Constraints-Met": int(control_constraints_met),
-                        "Output-Constraints-Met": int(output_constraints_met)},
+                        "Control-Constraints-Met": int(all(control_constraints_met.values())),
+                        "Output-Constraints-Met": int(all(output_constraints_met.values()))},
+                    "Control-Constraints-Met": {key: int(value) for key, value in control_constraints_met.items()},
+                    "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
                     "Actions": actions,
                     "Controls": controls,
                     "Disturbances": disturbances,
-                    "Outputs": outputs
-                }
+                    "Outputs": outputs}
                 self._experiment_tracker.step(log_variables, self._step_index)
 
                 # prepare next step.
@@ -141,20 +142,21 @@ class Environment(AbstractEnvironment):
             self._config = self._initial_config.copy()
             self._scenario_manager.reset()
             disturbances = self._disturbance_manager.reset()
-            controls = self._control_manager.reset(disturbances)
+            controls, control_constraints_met = self._control_manager.reset(disturbances)
             outputs = self._output_manager.reset(controls | disturbances)
             reward, output_constraints_met = self._reward_manager.reset(
-                controls | disturbances, outputs, True)
+                controls | disturbances, outputs, control_constraints_met)
             log_variables = {
                 "Performance-Metrics": {
                     "Reward": reward,
-                    "Control-Constraints-Met": 1,
-                    "Output-Constraints-Met": int(output_constraints_met)},
+                    "Control-Constraints-Met": int(all(control_constraints_met.values())),
+                    "Output-Constraints-Met": int(all(output_constraints_met.values()))},
+                "Control-Constraints-Met": {key: int(value) for key, value in control_constraints_met.items()},
+                "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
                 "Actions": {},
                 "Controls": controls,
                 "Disturbances": disturbances,
-                "Outputs": outputs
-            }
+                "Outputs": outputs}
             self._experiment_tracker.reset(log_variables, self._step_index)
 
             # prepare step 1.

@@ -48,7 +48,8 @@ class ControlManager(AbstractControlManager):
     def config(self, c):
         self._config = c
 
-    def step(self, actions: dict[str, float], disturbances: dict[str, float] = dict()) -> tuple[dict[str, float], bool]:
+    def step(self, actions: dict[str, float], disturbances: dict[str, float] = dict()) -> \
+            tuple[dict[str, float], dict[str, bool]]:
         if self._ready:
             potential_primary_controls = self._calculate_potential_primary_controls(actions)
             X = potential_primary_controls | disturbances
@@ -56,14 +57,14 @@ class ControlManager(AbstractControlManager):
             potential_controls = potential_primary_controls | potential_secondary_controls
 
             control_constraints_met = self._control_constraints_met(potential_controls)
-            if control_constraints_met:
+            if all(control_constraints_met.values()):
                 self._controls = potential_controls
         else:
             raise Exception("Cannot call step() before calling reset().")
 
         return self._controls, control_constraints_met
 
-    def reset(self, disturbances: dict[str, float] = dict()) -> dict[str, float]:
+    def reset(self, disturbances: dict[str, float] = dict()) -> tuple[dict[str, float], dict[str, bool]]:
         self._config = self._initial_config.copy()
 
         potential_primary_controls = OmegaConf.to_container(self._config.initial_primary_controls)
@@ -73,24 +74,26 @@ class ControlManager(AbstractControlManager):
         potential_secondary_controls = self._calculate_potential_secondary_controls(X)
         potential_controls = potential_primary_controls | potential_secondary_controls
 
-        if self._control_constraints_met(potential_controls):
-            self._controls = potential_controls
-        else:
+        control_constraints_met = self._control_constraints_met(potential_controls)
+        if not all(control_constraints_met.values()):
             raise AssertionError("The initial controls do not meet control constraints. Aborting Experiment.")
+        self._controls = potential_controls
         self._ready = True
-        return self._controls
+        return self._controls, control_constraints_met
 
-    def _control_constraints_met(self, controls: dict[str, float]) -> bool:
-        # assume that control constraints are met.
-        control_constraints_met = True
-
+    def _control_constraints_met(self, controls: dict[str, float]) -> dict[str, bool]:
+        control_constraints_met = dict()
         for control_name, bounds in self._config.control_bounds.items():
             if "lower" in bounds.keys():
                 if controls[control_name] < bounds.lower:
-                    control_constraints_met = False
+                    control_constraints_met[f"{control_name}.lower"] = False
+                else:
+                    control_constraints_met[f"{control_name}.lower"] = True
             if "upper" in bounds.keys():
                 if controls[control_name] > bounds.upper:
-                    control_constraints_met = False
+                    control_constraints_met[f"{control_name}.upper"] = False
+                else:
+                    control_constraints_met[f"{control_name}.upper"] = True
 
         return control_constraints_met
 

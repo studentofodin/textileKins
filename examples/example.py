@@ -23,7 +23,7 @@ def main(config: DictConfig):
     disturbance_manager = DisturbanceManager(config.disturbance_setup)
     control_manager = ControlManager(config.control_setup, config.control_setup.actions_are_relative)
     output_manager = OutputManager(config.output_setup)
-    reward_manager = RewardManager(baseline_reward, config.product_setup)
+    reward_manager = RewardManager(baseline_reward, config.reward_setup)
     scenario_manager = ScenarioManager(config.scenario_setup)
     experiment_tracker = ExperimentTracker(config.experiment_tracker, config)
     environment = Environment(config.env_setup, disturbance_manager, control_manager, output_manager,

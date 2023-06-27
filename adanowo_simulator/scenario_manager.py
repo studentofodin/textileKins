@@ -1,4 +1,4 @@
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import ListConfig, DictConfig, OmegaConf
 import numpy as np
 
 from adanowo_simulator.abstract_base_classes.scenario_manager import AbstractScenarioManager
@@ -27,7 +27,7 @@ class ScenarioManager(AbstractScenarioManager):
         if self._ready:
             self._update_disturbances(step_index, disturbance_manager.config.disturbances)
             self._update_output_bounds(step_index, reward_manager.config.output_bounds)
-            _, changed_outputs = self._update_output_model_allocation(step_index, output_manager.config.output_models)
+            changed_outputs = self._update_output_model_allocation(step_index, output_manager.config.output_models)
             output_manager.update_model_allocation(changed_outputs)
         else:
             raise Exception("Cannot call step() before calling reset().")
@@ -36,36 +36,44 @@ class ScenarioManager(AbstractScenarioManager):
         self._config = self._initial_config.copy()
         self._ready = True
 
-    def _update_output_model_allocation(self, step_index: int, output_models_config: DictConfig) -> \
-            tuple[DictConfig, list[str]]:
-        changed = []
-
+    def _update_output_model_allocation(self, step_index: int, output_models_config: DictConfig) -> list[str]:
+        changed_outputs = []
         for output_name, scenario in self._config.output_models.items():
-            if scenario and scenario[0][0] == step_index:
-                output_models_config[output_name] = scenario[0][1]
-                changed.append(output_name)
-                self._config.output_models[output_name].pop(0)
+            did_update = self._update_target(step_index, output_models_config, output_name, scenario)
+            if did_update:
+                changed_outputs.append(output_name)
+        return changed_outputs
 
-        return output_models_config, changed
-
-    def _update_output_bounds(self, step_index: int, output_bounds_config: DictConfig) -> DictConfig:
-
+    def _update_output_bounds(self, step_index: int, output_bounds_config: DictConfig) -> None:
         for output_name, scenarios in self._config.output_bounds.items():
             if "lower" in scenarios.keys():
                 scenario = scenarios.lower
-                if scenario and scenario[0][0] == step_index:
-                    output_bounds_config[output_name]["lower"] = scenario[0][1]
-                    self._config.output_bounds[output_name]["lower"].pop(0)
+                self._update_target(step_index, output_bounds_config[output_name], "lower", scenario)
             if "upper" in scenarios.keys():
                 scenario = scenarios.upper
-                if scenario and scenario[0][0] == step_index:
-                    output_bounds_config[output_name]["upper"] = scenario[0][1]
-                    self._config.output_bounds[output_name]["upper"].pop(0)
-        return output_bounds_config
+                self._update_target(step_index, output_bounds_config[output_name], "upper", scenario)
 
-    def _update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> DictConfig:
+    def _update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> None:
         for disturbance_name, scenario in self._config.disturbances.items():
-            if (step_index-1) % scenario.trigger_interval == 0:
-                disturbance_config[disturbance_name] = np.random.normal(scenario.mean, scenario.std)
+            self._update_target(step_index, disturbance_config, disturbance_name, scenario)
 
-        return disturbance_config
+    def _update_target(self, step_index: int, target_config: DictConfig, target_field: str,
+                       scenario: ListConfig | DictConfig) -> bool:
+        did_update = False
+        # deterministic scenario
+        if isinstance(scenario, ListConfig):
+            if scenario and scenario[0][0] == step_index:
+                target_config[target_field] = scenario[0][1]
+                scenario.pop(0)
+                did_update = True
+        # random scenario
+        else:
+            if (step_index-1) % scenario.trigger_interval == 0:
+                target_config[target_field] = np.random.normal(scenario.mean, scenario.std)
+                did_update = True
+        return did_update
+
+
+
+
+

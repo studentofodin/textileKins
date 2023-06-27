@@ -5,9 +5,9 @@ from adanowo_simulator.abstract_base_classes.disturbance_manager import Abstract
 
 class DisturbanceManager(AbstractDisturbanceManager):
     def __init__(self, config: DictConfig):
-        self._initial_config = config.copy()
-        self._config = None
-        self._ready = False
+        self._initial_config: DictConfig = config.copy()
+        self._config: DictConfig = OmegaConf.create()
+        self._ready: bool = False
 
     @property
     def config(self) -> DictConfig:

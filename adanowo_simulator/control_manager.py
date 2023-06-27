@@ -33,12 +33,12 @@ class ControlManager(AbstractControlManager):
         # Add calculation path to sys.path so that the calculations can be imported.
         sys.path.append(str(self._path_to_secondary_control_calculations))
 
-        self._initial_config = config.copy()
-        self._config = None
-        self._actions_are_relative = actions_are_relative
-        self._controls = None
-        self._secondary_control_calculations = dict()
-        self._ready = False
+        self._initial_config: DictConfig = config.copy()
+        self._config: DictConfig = OmegaConf.create()
+        self._actions_are_relative: bool = actions_are_relative
+        self._controls: dict[str, float] = dict()
+        self._secondary_control_calculations: dict[str, CalculationAdapter] = dict()
+        self._ready: bool = False
 
     @property
     def config(self) -> DictConfig:

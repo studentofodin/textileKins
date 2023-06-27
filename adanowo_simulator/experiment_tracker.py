@@ -9,11 +9,11 @@ from adanowo_simulator.abstract_base_classes.experiment_tracker import AbstractE
 class ExperimentTracker(AbstractExperimentTracker):
 
     def __init__(self, tracker_config: DictConfig, tracked_config: DictConfig):
-        self._initial_tracker_config = tracker_config.copy()
-        self._tracked_config = tracked_config.copy()
-        self._tracker_config = None
-        self._run = None
-        self._ready = False
+        self._initial_tracker_config: DictConfig = tracker_config.copy()
+        self._tracked_config: DictConfig = tracked_config.copy()
+        self._tracker_config: DictConfig = OmegaConf.create()
+        self._run: wb.Run = None
+        self._ready: bool = False
 
     @property
     def config(self) -> DictConfig:
@@ -51,6 +51,7 @@ class ExperimentTracker(AbstractExperimentTracker):
     def close(self) -> None:
         if self._run:
             self._run.finish()
+            self._tracker_config = OmegaConf.create()
             self._run = None
             self._ready = False
 

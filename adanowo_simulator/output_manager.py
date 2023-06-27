@@ -5,7 +5,7 @@ import sys
 from multiprocessing import Process, Pipe
 
 import yaml
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 import numpy as np
 import pandas as pd
 import torch
@@ -31,7 +31,7 @@ def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pip
             if latent:
                 mean_pred, var_pred = mdl.predict_f(input_recv)
             else:
-                mean_pred, var_pred = mdl.predict_y(input_recv, observation_noise_only)
+                mean_pred, var_pred = mdl.predict_y(input_recv, observation_noise_only=observation_noise_only)
             output_pipe.send((mean_pred, var_pred))
 
 
@@ -54,12 +54,12 @@ class OutputManager(AbstractOutputManager):
         # Add model path to sys.path so that the models can be imported.
         sys.path.append(str(self._path_to_output_models))
 
-        self._initial_config = config.copy()
-        self._config = None
+        self._initial_config: DictConfig = config.copy()
+        self._config: DictConfig = OmegaConf.create()
+        self._model_processes: dict[str, Process] = dict()
+        self._input_pipes: dict[str, Pipe] = dict()
+        self._output_pipes: dict[str, Pipe] = dict()
         self._ready = False
-        self._model_processes = dict()
-        self._input_pipes = dict()
-        self._output_pipes = dict()
 
     @property
     def config(self) -> DictConfig:
@@ -179,5 +179,5 @@ class OutputManager(AbstractOutputManager):
         self._output_pipes[output_name] = new_output_pipe
         self._model_processes[output_name] = \
             Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND],
-                                                 self._config.observation_noise_only))
+                                                 self._config.observation_noise_only, False))
         self._model_processes[output_name].start()

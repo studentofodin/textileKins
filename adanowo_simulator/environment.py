@@ -16,20 +16,22 @@ logger = logging.getLogger(__name__)
 
 
 class Environment(AbstractEnvironment):
-    def __init__(self, config: DictConfig, output_manager: AbstractOutputManager, reward_manager: AbstractRewardManager,
-                 control_manager: AbstractControlManager, disturbance_manager: AbstractDisturbanceManager,
-                 experiment_tracker: AbstractExperimentTracker, scenario_manager: AbstractScenarioManager):
-        self._output_manager = output_manager
-        self._reward_manager = reward_manager
-        self._experiment_tracker = experiment_tracker
-        self._control_manager = control_manager
-        self._disturbance_manager = disturbance_manager
-        self._scenario_manager = scenario_manager
+    def __init__(
+            self, config: DictConfig, disturbance_manager: AbstractDisturbanceManager,
+            control_manager: AbstractControlManager, output_manager: AbstractOutputManager,
+            reward_manager: AbstractRewardManager, scenario_manager: AbstractScenarioManager,
+            experiment_tracker: AbstractExperimentTracker):
+        self._disturbance_manager: AbstractDisturbanceManager = disturbance_manager
+        self._control_manager: AbstractControlManager = control_manager
+        self._output_manager: AbstractOutputManager = output_manager
+        self._reward_manager: AbstractRewardManager = reward_manager
+        self._scenario_manager: AbstractScenarioManager = scenario_manager
+        self._experiment_tracker: AbstractExperimentTracker = experiment_tracker
 
-        self._initial_config = config.copy()
-        self._config = None
-        self._step_index = None
-        self._ready = False
+        self._initial_config: DictConfig = config.copy()
+        self._config: DictConfig = OmegaConf.create()
+        self._step_index: int = -1
+        self._ready: bool = False
         logger.info("Environment has been created.")
 
     @property
@@ -179,4 +181,7 @@ class Environment(AbstractEnvironment):
         logger.info("Closing environment...")
         self._output_manager.close()
         self._experiment_tracker.close()
+        self._config = OmegaConf.create()
+        self._step_index = -1
+        self._ready = False
         logger.info("...environment has been closed.")

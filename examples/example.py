@@ -20,14 +20,14 @@ os.environ["WANDB_SILENT"] = "true"
 @hydra.main(version_base=None, config_path="../config",
             config_name="main")
 def main(config: DictConfig):
-    reward_manager = RewardManager(baseline_reward, config.product_setup)
     disturbance_manager = DisturbanceManager(config.disturbance_setup)
     control_manager = ControlManager(config.control_setup, config.control_setup.actions_are_relative)
     output_manager = OutputManager(config.output_setup)
+    reward_manager = RewardManager(baseline_reward, config.product_setup)
     scenario_manager = ScenarioManager(config.scenario_setup)
     experiment_tracker = ExperimentTracker(config.experiment_tracker, config)
-    environment = Environment(config.env_setup, output_manager, reward_manager, control_manager,
-                              disturbance_manager, experiment_tracker, scenario_manager)
+    environment = Environment(config.env_setup, disturbance_manager, control_manager, output_manager,
+                              reward_manager, scenario_manager, experiment_tracker)
     gym_wrapper = GymWrapper(environment, config.gym_setup)
 
     # check_env(gym_wrapper)

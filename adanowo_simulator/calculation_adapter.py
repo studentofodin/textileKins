@@ -1,13 +1,13 @@
 import numpy as np
 from abc import ABC, abstractmethod
-from types import ModuleType
+from types import ModuleType, MethodType
 
 from adanowo_simulator.abstract_base_classes.calculation_adapter import AbstractCalculationAdapter
 
 class CalculationAdapter(AbstractCalculationAdapter):
 
     def __init__(self, calculation_module: ModuleType) -> None:
-        self._calculate = calculation_module.calculate
+        self._calculate: MethodType = calculation_module.calculate
 
     def calculate(self, X: dict[str, float]) -> np.array:
         c = self._calculate(X)

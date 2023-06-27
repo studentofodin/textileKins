@@ -6,21 +6,18 @@ from omegaconf import DictConfig
 
 from adanowo_simulator.abstract_base_classes.environment import AbstractEnvironment
 
-# TODO: Transform actions and observations into a range suitable for RL agents.
-
-
 class GymWrapper(Env):
 
     def __init__(self, environment: AbstractEnvironment, config: DictConfig):
-        self._environment = environment
-        self._config = config.copy()
+        self._environment: AbstractEnvironment = environment
+        self._config: DictConfig = config.copy()
 
-        self._action_space = spaces.Box(
+        self._action_space: spaces.Box = spaces.Box(
             low=np.array([action_name.low for action_name in self._config.action_space.values()], dtype=np.float32),
             high=np.array([action_name.high for action_name in self._config.action_space.values()], dtype=np.float32)
         )
 
-        self._observation_space = spaces.Box(
+        self._observation_space: spaces.Box = spaces.Box(
             low=np.array([obs_name.low for obs_name in self._config.observation_space.values()], dtype=np.float32),
             high=np.array([obs_name.high for obs_name in self._config.observation_space.values()], dtype=np.float32)
         )

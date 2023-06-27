@@ -1,16 +1,14 @@
 import importlib
 import pathlib as pl
 
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewardManager
-
 
 class RewardManager(AbstractRewardManager):
     def __init__(self, reward_function, config: DictConfig):
         self._initial_config = config.copy()
         self._config = None
-        self._reward_range = (config.reward_range.lower, config.reward_range.upper)
         self._reward_function = reward_function
         self._ready = False
 
@@ -21,10 +19,6 @@ class RewardManager(AbstractRewardManager):
     @config.setter
     def config(self, c):
         self._config = c
-
-    @property
-    def reward_range(self) -> tuple[float, float]:
-        return self._reward_range
 
     def step(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: bool) \
             -> tuple[float, bool]:

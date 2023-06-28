@@ -36,3 +36,7 @@ used_outputs:
   - TensileStrengthCD # N
   - TensileStrengthMD # N
   - CardWebUnevenness # -
+observations:
+  - disturbances
+  - controls
+  - outputs

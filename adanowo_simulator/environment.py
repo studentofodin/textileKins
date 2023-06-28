@@ -120,10 +120,23 @@ class Environment(AbstractEnvironment):
                                             self._reward_manager)
                 disturbances = self._disturbance_manager.step()
 
-                observations = self._dict_to_array(
-                    disturbances | controls | outputs,
-                    self._config.used_disturbances + self._config.used_primary_controls +
-                    self._config.used_secondary_controls + self._config.used_outputs)
+                # fill observations
+                observations = list()
+                for component_name in self._config.observations:
+                    if component_name == "disturbances":
+                        for disturbance_name in self._config.used_disturbances:
+                            observations.append(disturbances[disturbance_name])
+                    elif component_name == "controls":
+                        for control_name in self._config.used_primary_controls:
+                            observations.append(controls[control_name])
+                        for control_name in self._config.used_secondary_controls:
+                            observations.append(controls[control_name])
+                    elif component_name == "outputs":
+                        for output_name in self._config.used_outputs:
+                            observations.append(outputs[output_name])
+                    else:
+                        raise Exception(f"{component_name} in observation config is not known!")
+                observations = np.array(observations)
 
             except Exception as e:
                 self.close()
@@ -165,10 +178,23 @@ class Environment(AbstractEnvironment):
                                         self._reward_manager)
             disturbances = self._disturbance_manager.step()
 
-            observations = self._dict_to_array(
-                disturbances | controls | outputs,
-                self._config.used_disturbances + self._config.used_primary_controls +
-                self._config.used_secondary_controls + self._config.used_outputs)
+            # fill observations
+            observations = list()
+            for component_name in self._config.observations:
+                if component_name == "disturbances":
+                    for disturbance_name in self._config.used_disturbances:
+                        observations.append(disturbances[disturbance_name])
+                elif component_name == "controls":
+                    for control_name in self._config.used_primary_controls:
+                        observations.append(controls[control_name])
+                    for control_name in self._config.used_secondary_controls:
+                        observations.append(controls[control_name])
+                elif component_name == "outputs":
+                    for output_name in self._config.used_outputs:
+                        observations.append(outputs[output_name])
+                else:
+                    raise Exception(f"{component_name} in observation config is not known!")
+            observations = np.array(observations)
 
         except Exception as e:
             self.close()

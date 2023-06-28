@@ -9,7 +9,7 @@ from adanowo_simulator.control_manager import ControlManager
 from adanowo_simulator.disturbance_manager import DisturbanceManager
 from adanowo_simulator.output_manager import OutputManager
 from adanowo_simulator.scenario_manager import ScenarioManager
-from adanowo_simulator.experiment_tracker import ExperimentTracker
+from adanowo_simulator.experiment_tracker import WandBTracker
 from adanowo_simulator.environment import Environment
 from adanowo_simulator.gym_wrapper import GymWrapper
 from adanowo_simulator.reward_functions import baseline_reward
@@ -24,7 +24,7 @@ def main(configuration: DictConfig):
     control_manager = ControlManager(config.process_setup, config.process_setup.actions_are_relative)
     output_manager = OutputManager(config.output_setup)
     scenario_manager = ScenarioManager(config.scenario_setup)
-    experiment_tracker = ExperimentTracker(config.experiment_tracker, config)
+    experiment_tracker = WandBTracker(config.experiment_tracker, config)
     environment = Environment(config.env_setup, output_manager, reward_manager, control_manager,
                               disturbance_manager, experiment_tracker, scenario_manager)
     gym_wrapper = GymWrapper(environment, config.gym_setup)

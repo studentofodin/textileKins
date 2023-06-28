@@ -4,7 +4,7 @@ from omegaconf import DictConfig, OmegaConf
 from adanowo_simulator.abstract_base_classes.experiment_tracker import AbstractExperimentTracker
 
 
-class ExperimentTracker(AbstractExperimentTracker):
+class WandBTracker(AbstractExperimentTracker):
 
     def __init__(self, tracker_config: DictConfig, tracked_config: DictConfig):
         self._initial_config = tracker_config.copy()

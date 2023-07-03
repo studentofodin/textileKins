@@ -127,8 +127,6 @@ class AdapterGpytorch(AbstractModelAdapter):
             if kwargs["observation_noise_only"]:
                 var_scalar = copy(self._noise_variance)
                 var = np.ones_like(y_pred) * var_scalar
-        else:
-            ValueError("Nope")
         return y_pred, var
 
     def shutdown(self):

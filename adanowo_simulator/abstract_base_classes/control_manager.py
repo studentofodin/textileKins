@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
+
 from omegaconf import DictConfig
-import numpy as np
 
 
 class AbstractControlManager(ABC):
@@ -15,7 +15,7 @@ class AbstractControlManager(ABC):
         pass
 
     @abstractmethod
-    def step(self, actions: dict[str, float]) -> tuple[dict[str, float], bool]:
+    def step(self, actions: dict[str, float], disturbances: dict[str, float] | None) -> tuple[dict[str, float], dict[str, bool]]:
         """
         calculate controls from actions.
         return controls, if the control constraints are met with the given actions and actions as a dictionary.
@@ -24,7 +24,7 @@ class AbstractControlManager(ABC):
         pass
 
     @abstractmethod
-    def reset(self) -> dict[str, float]:
+    def reset(self, disturbances: dict[str, float] | None) -> tuple[dict[str, float], dict[str, bool]]:
         """
         reset to initial values.
         """

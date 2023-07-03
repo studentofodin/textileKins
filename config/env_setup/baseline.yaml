@@ -1,4 +1,4 @@
-used_controls:
+used_primary_controls:
   # weight per area
   - CardDeliveryWeightPerArea # g per sqm
   - Cross-lapperLayersCount
@@ -18,6 +18,8 @@ used_controls:
   - v_StripperMain # m per min
   - v_WorkerPre # m per min
   - v_StripperPre # m per min
+used_secondary_controls:
+  - LineSpeed # m per min
 used_disturbances:
   - FeederDeliverySpeed # m per min
   - ProductB # bool
@@ -27,23 +29,14 @@ used_disturbances:
   - Needleloom1DraftRatioIntake # percent
   - Needleloom2FeedPerStroke # mm per stroke
 used_outputs:
-  - areaWeightLane1 # g per sqm
-  - areaWeightLane2 # g per sqm
-  - areaWeightLane3 # g per sqm
+  - AreaWeightLane1 # g per sqm
+  - AreaWeightLane2 # g per sqm
+  - AreaWeightLane3 # g per sqm
   - LinePowerConsumption # W
   - TensileStrengthCD # N
   - TensileStrengthMD # N
   - CardWebUnevenness # -
-  - lineSpeed # m per min
-path_to_models: # use default if not a valid path
-output_models:
-  areaWeightLane1: areaWeightLane1Model
-  areaWeightLane2: areaWeightLane2Model
-  areaWeightLane3: areaWeightLane3Model
-  linePowerConsumption: linePowerConsumptionModel
-  tensileStrengthCD: tensileStrengthCDModel
-  tensileStrengthMD: tensileStrengthMDModel
-  cardWebUnevenness: cardWebUnevennessModel
-  lineSpeed: lineSpeedModel
-outputs_are_latent: False
-observation_noise_only: True
+observations:
+  - disturbances
+  - controls
+  - outputs

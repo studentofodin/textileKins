@@ -5,32 +5,19 @@ from gpytorch.kernels import AdditiveKernel, RBFKernel, ScaleKernel
 
 CARD_DELIVERY_WIDTH = 3  # m
 KG_H_TO_G_MIN = 100/6
-MEDIAN_NEEDLELOOM_2_FEED_PER_STROKE = 11.25
 
 
 def prcnt_to_mult(prcnt: float) -> float:
     return (prcnt / 100) + 1
 
 
-def unpack_dict(X: dict, training_features: list[str]) -> np.array:
+def unpack_dict(X: dict, training_inputs: list[str]) -> np.array:
     for key in X.keys():
         X[key] = np.array(X[key]).reshape(-1, 1)
     X_unpacked = []
-    for f in training_features:
+    for f in training_inputs:
         if f == "D_009_NM2_AuszGeschwS_m_min":
-            weight_per_area_theoretical = \
-                X["CardDeliveryWeightPerArea"] * \
-                X["Cross-lapperLayersCount"].round()*2 / \
-                prcnt_to_mult(X["Needleloom2DraftRatio"]) / \
-                prcnt_to_mult(X["Needleloom1DraftRatioIntake"]) / \
-                prcnt_to_mult(X["Needleloom1DraftRatio"]) / \
-                prcnt_to_mult(X["DrawFrameDraftRatio"])
-            line_speed = \
-                X["CardMassThroughputSetpoint"] / \
-                weight_per_area_theoretical / \
-                X["ProductWidth"] * \
-                KG_H_TO_G_MIN  # conversion factor
-            X_unpacked.append(line_speed)
+            X_unpacked.append(X["LineSpeed"])
         elif f == "D_036_K_Durchsatz_Ist_kg_h":
             X_unpacked.append(X["CardMassThroughputSetpoint"])
         elif f == "M_010_FS_Zufuehr_m_min":
@@ -46,7 +33,7 @@ def unpack_dict(X: dict, training_features: list[str]) -> np.array:
             X_unpacked.append(X["Needleloom1FeedPerStroke"])
         elif f == "M_005_NM2_Vorschub_mm_H":
             # simulator does not use this parameter, so set it to median value
-            X_unpacked.append(np.ones_like(X["Needleloom1FeedPerStroke"])*MEDIAN_NEEDLELOOM_2_FEED_PER_STROKE)
+            X_unpacked.append(np.ones_like(X["Needleloom1FeedPerStroke"])*X["Needleloom2FeedPerStroke"])
     return np.concatenate(X_unpacked, axis=1)
 
 

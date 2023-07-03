@@ -1,13 +1,18 @@
-output_models: {}
+output_models:
   # [[step_index_1, model_name_1], [step_index_2, model_name_2],...]
+  AreaWeightLane2: [[1, areaWeightLane2Model]]
 output_bounds:
   # [[step_index_1, value_1], [step_index_2, value_2],...]
-  areaWeightLane1:
-    lower: [[10, 190.0]]
-  areaWeightLane2:
-    upper: [[10, 510.0]]
+  AreaWeightLane1:
+    lower: [[1, 190.0]]
+  AreaWeightLane2:
+    upper:
+      trigger_interval: 20
+      mean: 500.0
+      std: 1.0
 disturbances:
   Needleloom2DraftRatio:
     trigger_interval: 10
     mean: 23.0
     std: 0.1
+  FeederDeliverySpeed: [[1, 9.0]]

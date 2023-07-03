@@ -4,25 +4,19 @@ reward_parameters:
   energy_costs: 0.28 # € per kWh
   selling_price: 2.50 # € per sqm
   floor_quality_weight: 10.0
-reward_range:
-  lower: -2000
-  upper: 10000
 output_bounds:
-  areaWeightLane1:
+  AreaWeightLane1:
     lower: 200.0
     upper: 500.0
-  areaWeightLane2:
+  AreaWeightLane2:
     lower: 200.0
     upper: 500.0
-  areaWeightLane3:
+  AreaWeightLane3:
     lower: 200.0
     upper: 500.0
-  tensileStrengthCD:
+  TensileStrengthCD:
     lower: 650.0
-  tensileStrengthMD:
+  TensileStrengthMD:
     lower: 400.0
-  lineSpeed:
-    lower: 0.0
-    upper: 11.0
 
 

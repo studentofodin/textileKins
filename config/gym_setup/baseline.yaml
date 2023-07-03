@@ -42,13 +42,13 @@ action_space:
     low: 0.0
     high: 1000.0
 observation_space:
-  areaWeightLane1:
+  AreaWeightLane1:
     low: -100.0
     high: 1000.0
-  areaWeightLane2:
+  AreaWeightLane2:
     low: -100.0
     high: 1000.0
-  areaWeightLane3:
+  AreaWeightLane3:
     low: -100.0
     high: 1000.0
   LinePowerConsumption:
@@ -63,6 +63,6 @@ observation_space:
   CardWebUnevenness:
     low: -100.0
     high: 100.0
-  lineSpeed:
+  LineSpeed:
     low: 0.0
     high: 100.0

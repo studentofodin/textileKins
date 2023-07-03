@@ -1,5 +1,7 @@
+from typing import Any
+
 import numpy as np
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 import logging
 import sys
 
@@ -16,20 +18,23 @@ logger = logging.getLogger(__name__)
 
 
 class Environment(AbstractEnvironment):
-    def __init__(self, config: DictConfig, output_manager: AbstractOutputManager, reward_manager: AbstractRewardManager,
-                 control_manager: AbstractControlManager, disturbance_manager: AbstractDisturbanceManager,
-                 experiment_tracker: AbstractExperimentTracker, scenario_manager: AbstractScenarioManager):
-        self._output_manager = output_manager
-        self._reward_manager = reward_manager
-        self._experiment_tracker = experiment_tracker
-        self._control_manager = control_manager
-        self._disturbance_manager = disturbance_manager
-        self._scenario_manager = scenario_manager
+    def __init__(
+            self, config: DictConfig, disturbance_manager: AbstractDisturbanceManager,
+            control_manager: AbstractControlManager, output_manager: AbstractOutputManager,
+            reward_manager: AbstractRewardManager, scenario_manager: AbstractScenarioManager,
+            experiment_tracker: AbstractExperimentTracker):
+        self._disturbance_manager: AbstractDisturbanceManager = disturbance_manager
+        self._control_manager: AbstractControlManager = control_manager
+        self._output_manager: AbstractOutputManager = output_manager
+        self._reward_manager: AbstractRewardManager = reward_manager
+        self._scenario_manager: AbstractScenarioManager = scenario_manager
+        self._experiment_tracker: AbstractExperimentTracker = experiment_tracker
 
-        self._initial_config = config.copy()
-        self._config = config.copy()
-        self._step_index = 0
-        self._status = "READY"
+        self._initial_config: DictConfig = config.copy()
+        self._config: DictConfig = OmegaConf.create()
+        self._step_index: int = -1
+        self._ready: bool = False
+        logger.info("Environment has been created.")
 
     @property
     def config(self) -> DictConfig:
@@ -64,88 +69,135 @@ class Environment(AbstractEnvironment):
         return self._scenario_manager
 
     @property
-    def reward_range(self) -> tuple[float, float]:
-        return self._reward_manager.reward_range
-
-    @property
     def step_index(self):
         return self._step_index
 
-    def _control_array_to_dict(self, array: np.array, keys: list[str]) -> dict[str, float]:
-        """
-        Converts a 1D array of control values to a dict of control values.
-        This is necessary to keep the order of controls intact since dictionaries are unordered, unlike lists.
-        """
-        control_dict = dict()
-        for i, control in enumerate(keys):
-            control_dict[control] = array[i]
-        return control_dict
+    def _array_to_dict(self, array: np.array, keys: list[str]) -> dict[str, float]:
+        if array.size != len(keys):
+            raise Exception("Length of array and keys are not the same.")
+        dictionary = dict()
+        for index, key in enumerate(keys):
+            dictionary[key] = array[index]
+        return dictionary
 
-    def step(self, actions_array: np.array) -> tuple[np.array, float, bool, bool, dict]:
-        if self._status != "RUNNING":
-            self._init_experiment()
-            logger.info("Experiment tracking has been initialized.")
+    @staticmethod
+    def _dict_to_array(dictionary: dict[str, float], keys: list[str]) -> np.array:
+        if len(dictionary) != len(keys):
+            raise Exception("Length of dictionary and keys are not the same.")
+        array = np.zeros(len(dictionary))
+        for index, key in enumerate(keys):
+            array[index] = dictionary[key]
+        return array
 
-        actions = self._control_array_to_dict(actions_array, self._config.used_controls)
+    def _collect_observations(self, disturbances: dict[str, float], controls: dict[str, float],
+                              outputs: dict[str, float]) -> np.array:
+        # fill observations
+        observations = list()
+        for component_name in self._config.observations:
+            if component_name == "disturbances":
+                for disturbance_name in self._config.used_disturbances:
+                    observations.append(disturbances[disturbance_name])
+            elif component_name == "controls":
+                for control_name in self._config.used_primary_controls:
+                    observations.append(controls[control_name])
+                for control_name in self._config.used_secondary_controls:
+                    observations.append(controls[control_name])
+            elif component_name == "outputs":
+                for output_name in self._config.used_outputs:
+                    observations.append(outputs[output_name])
+            else:
+                raise Exception(f"{component_name} in observation config is not known!")
+        observations = np.array(observations)
+        return observations
 
-        self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
-                                    self._reward_manager)
+    def step(self, actions_array: np.array) -> tuple[Any, float]:
+        if self._ready:
+            try:
+                if self._step_index == 1:
+                    logger.info("Experiment is running.")
+                actions = self._array_to_dict(actions_array, OmegaConf.to_container(self._config.used_primary_controls))
+                disturbances = self._disturbance_manager.step()
+                controls, control_constraints_met = self._control_manager.step(actions, disturbances)
+                outputs = self._output_manager.step(controls | disturbances)
+                reward, output_constraints_met = self._reward_manager.step(
+                    controls | disturbances, outputs, control_constraints_met)
+                log_variables = {
+                    "Performance-Metrics": {
+                        "Reward": reward,
+                        "Control-Constraints-Met": int(all(control_constraints_met.values())),
+                        "Output-Constraints-Met": int(all(output_constraints_met.values()))},
+                    "Control-Constraints-Met": {key: int(value) for key, value in control_constraints_met.items()},
+                    "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
+                    "Actions": actions,
+                    "Controls": controls,
+                    "Disturbances": disturbances,
+                    "Outputs": outputs}
+                self._experiment_tracker.step(log_variables, self._step_index)
 
-        disturbances = self._disturbance_manager.step()
-        controls, control_constraints_met = self._control_manager.step(actions)
+                # prepare next step.
+                self._step_index += 1
+                self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
+                                            self._reward_manager)
+                disturbances = self._disturbance_manager.step()
 
-        outputs = self._output_manager.step(controls | disturbances)
-        reward, output_constraints_met = self._reward_manager.step(controls | disturbances, outputs,
-                                                                   control_constraints_met)
+                observations = self._collect_observations(disturbances, controls, outputs)
 
-        log_variables = {
-            "Performance-Metrics": {
-                "Reward": reward,
-                "Control-Constraints-Met": int(control_constraints_met),
-                "Output-Constraints-Met": int(output_constraints_met)},
-            "Actions": actions,
-            "Controls": controls,
-            "Disturbances": disturbances,
-            "Outputs": outputs
-        }
-        self._experiment_tracker.step(log_variables, self._step_index)
+            except Exception as e:
+                self.close()
+                raise e
 
-        info = dict()
-        self._step_index += 1
-        self._status = "RUNNING"
+        else:
+            raise Exception("Cannot call step() before calling reset().")
 
-        # TODO: use the lists used_outputs and used_controls to create the observations array,
-        #  because unlike dicts, they are ordered
-        observations = np.array(tuple(outputs.values()), dtype=np.float32)
+        return observations, reward
 
-        return observations, reward, False, False, info
+    def reset(self) -> tuple[Any, float]:
+        logger.info("Resetting environment...")
+        try:
+            # step 0.
+            self._step_index = 0
+            self._config = self._initial_config.copy()
+            self._scenario_manager.reset()
+            disturbances = self._disturbance_manager.reset()
+            controls, control_constraints_met = self._control_manager.reset(disturbances)
+            outputs = self._output_manager.reset(controls | disturbances)
+            reward, output_constraints_met = self._reward_manager.reset(
+                controls | disturbances, outputs, control_constraints_met)
+            log_variables = {
+                "Performance-Metrics": {
+                    "Reward": reward,
+                    "Control-Constraints-Met": int(all(control_constraints_met.values())),
+                    "Output-Constraints-Met": int(all(output_constraints_met.values()))},
+                "Control-Constraints-Met": {key: int(value) for key, value in control_constraints_met.items()},
+                "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
+                "Actions": {},
+                "Controls": controls,
+                "Disturbances": disturbances,
+                "Outputs": outputs}
+            self._experiment_tracker.reset(log_variables, self._step_index)
 
-    def reset(self) -> tuple[np.array, dict]:
-        self._experiment_tracker.reset()
-        self._reward_manager.reset()
-        initial_controls = self._control_manager.reset()
-        initial_disturbances = self._disturbance_manager.reset()
-        self._output_manager.reset()
-        self._scenario_manager.reset()
+            # prepare step 1.
+            self._step_index = 1
+            self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
+                                        self._reward_manager)
+            disturbances = self._disturbance_manager.step()
 
-        self._step_index = 0
-        self._config = self._initial_config.copy()
+            observations = self._collect_observations(disturbances, controls, outputs)
 
-        outputs = self._output_manager.step(initial_controls | initial_disturbances)
+        except Exception as e:
+            self.close()
+            raise e
 
-        # TODO: use the lists used_outputs and used_controls to create the observations array,
-        #  because unlike dicts, they are ordered
-        observations = np.array(tuple(outputs.values()), dtype=np.float32)
+        self._ready = True
+        logger.info("...environment has been reset.")
 
-        info = dict()
-        self._status = "READY"
-        logger.info("Environment has been reset.")
+        return observations, reward
 
-        return observations, info
-
-    def shutdown(self) -> None:
-        self._output_manager.shutdown()
-        self._experiment_tracker.shutdown()
-
-    def _init_experiment(self) -> None:
-        self._experiment_tracker.init_experiment()
+    def close(self) -> None:
+        logger.info("Closing environment...")
+        self._output_manager.close()
+        self._experiment_tracker.close()
+        self._config = OmegaConf.create()
+        self._step_index = -1
+        self._ready = False
+        logger.info("...environment has been closed.")

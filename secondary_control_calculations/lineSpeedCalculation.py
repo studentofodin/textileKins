@@ -7,10 +7,7 @@ def prcnt_to_mult(prcnt: float) -> float:
     return (prcnt / 100) + 1
 
 
-def model(X: dict) -> [np.array, np.array]:
-    for key in X.keys():
-        X[key] = np.array(X[key]).reshape(-1, 1)
-
+def calculate(X: dict[str, float]) -> np.array:
     weight_per_area_theoretical = \
         X["CardDeliveryWeightPerArea"] * \
         X["Cross-lapperLayersCount"] * 2 / \
@@ -25,4 +22,5 @@ def model(X: dict) -> [np.array, np.array]:
         X["ProductWidth"] * \
         KG_H_TO_G_MIN
 
-    return line_speed, np.zeros(1)
+    line_speed = np.array(line_speed)
+    return line_speed

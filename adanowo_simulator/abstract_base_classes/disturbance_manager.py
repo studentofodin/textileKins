@@ -5,12 +5,12 @@ from omegaconf import DictConfig
 class AbstractDisturbanceManager(ABC):
     @property
     @abstractmethod
-    def disturbances(self) -> DictConfig:
+    def config(self) -> DictConfig:
         pass
 
-    @disturbances.setter
+    @config.setter
     @abstractmethod
-    def disturbances(self, c):
+    def config(self, c):
         pass
 
     @abstractmethod

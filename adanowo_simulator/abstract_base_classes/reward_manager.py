@@ -11,12 +11,12 @@ class AbstractRewardManager(ABC):
 
     @config.setter
     @abstractmethod
-    def config(self, c):
+    def config(self, c) -> None:
         pass
 
     @abstractmethod
-    def step(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: bool) \
-            -> tuple[float, bool]:
+    def step(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: dict[str, bool]) -> \
+            tuple[float, dict[str, bool]]:
         """
         determine reward value from state and outputs.
         also determine if output constraints are met.
@@ -26,16 +26,9 @@ class AbstractRewardManager(ABC):
         pass
 
     @abstractmethod
-    def reset(self) -> None:
+    def reset(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: dict[str, bool]) -> \
+            tuple[float, dict[str, bool]]:
         """
         reset to initial values.
-        """
-        pass
-
-    @property
-    @abstractmethod
-    def reward_range(self) -> tuple[float, float]:
-        """
-        Return interval of possible reward values.
         """
         pass

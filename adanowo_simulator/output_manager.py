@@ -5,7 +5,7 @@ import sys
 from multiprocessing import Process, Pipe
 
 import yaml
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 import numpy as np
 import pandas as pd
 import torch
@@ -17,20 +17,21 @@ from adanowo_simulator import model_adapter
 logger = logging.getLogger(__name__)
 RECEIVE = 0
 SEND = 1
-DEFAULT_RELATIVE_PATH = "./models"
+DEFAULT_RELATIVE_PATH = "./output_models"
 
 
-def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pipe, latent=False):
+def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pipe, observation_noise_only: bool,
+                   latent: bool = False):
     while True:
         if input_pipe.poll():
             input_recv = input_pipe.recv()
             if input_recv is None:
-                mdl.shutdown()
+                mdl.close()
                 break
             if latent:
                 mean_pred, var_pred = mdl.predict_f(input_recv)
             else:
-                mean_pred, var_pred = mdl.predict_y(input_recv, observation_noise_only=True)
+                mean_pred, var_pred = mdl.predict_y(input_recv, observation_noise_only=observation_noise_only)
             output_pipe.send((mean_pred, var_pred))
 
 
@@ -39,23 +40,26 @@ class OutputManager(AbstractOutputManager):
     def __init__(self, config: DictConfig):
         # use default path
         main_script_path = pl.Path(__file__).resolve().parent
-        self._model_path = main_script_path.parent / DEFAULT_RELATIVE_PATH
+        self._path_to_output_models = main_script_path.parent / DEFAULT_RELATIVE_PATH
 
-        if config.path_to_models is not None:
+        if config.path_to_output_models is not None:
             temp_path = pl.Path(config.path_to_models)
-            if self._model_path.is_dir():
-                logger.info(f"Using custom model path {self._model_path}.")
-                self._model_path = temp_path
+            if self._path_to_output_models.is_dir():
+                logger.info(f"Using custom output model path {self._path_to_output_models}.")
+                self._path_to_output_models = temp_path
+            else:
+                raise Exception(
+                    f"Custom output model path {self._path_to_output_models} is not valid.")
 
         # Add model path to sys.path so that the models can be imported.
-        sys.path.append(str(self._model_path))
+        sys.path.append(str(self._path_to_output_models))
 
-        self._initial_config = config.copy()
-        self._config = config.copy()
-        self._model_processes = dict()
-        self._input_pipe = dict()
-        self._output_pipe = dict()
-        self.init_model_allocation()
+        self._initial_config: DictConfig = config.copy()
+        self._config: DictConfig = OmegaConf.create()
+        self._model_processes: dict[str, Process] = dict()
+        self._input_pipes: dict[str, Pipe] = dict()
+        self._output_pipes: dict[str, Pipe] = dict()
+        self._ready = False
 
     @property
     def config(self) -> DictConfig:
@@ -65,56 +69,65 @@ class OutputManager(AbstractOutputManager):
     def config(self, c):
         self._config = c
 
-    def step(self, inputs: dict[str, float]) -> dict[str, float]:
-        mean_pred, var_pred = self._call_models(inputs)
-        outputs = self._sample_output_distribution(mean_pred, var_pred)
+    def step(self, state: dict[str, float]) -> dict[str, float]:
+        outputs = None
+        if self._ready:
+            try:
+                mean_pred, var_pred = self._call_models(state)
+                outputs = self._sample_output_distribution(mean_pred, var_pred)
+            except Exception as e:
+                self.close()
+                raise e
         return outputs
 
-    def init_model_allocation(self) -> None:
+    def reset(self, state: dict[str, float]) -> dict[str, float]:
+        self.close()
+        self._config = self._initial_config.copy()
         for output_name, model_name in self._config.output_models.items():
             try:
                 self._allocate_model_to_output(output_name, model_name)
                 logger.info(f"Allocated model {model_name} to output {output_name}.")
             except Exception as e:
-                logger.exception(f"Could not allocate model {model_name} to output {output_name}.")
+                self.close()
                 raise e
+        self._ready = True
+        outputs = self.step(state)
+        return outputs
+
+    def close(self) -> None:
+        if self._model_processes:
+            for output_name in self._model_processes.keys():
+                if self._model_processes[output_name].is_alive():
+                    self._input_pipes[output_name][SEND].send(None)
+                    self._model_processes[output_name].join()
+                    self._input_pipes[output_name][SEND].close()
+            self._model_processes = dict()
+            self._input_pipes = dict()
+            self._output_pipes = dict()
+            self._ready = False
 
     def update_model_allocation(self, changed_outputs: list[str]) -> None:
         for changed_output in changed_outputs:
-            self._allocate_model_to_output(changed_output, self._config.output_models[changed_output])
+            try:
+                self._input_pipes[changed_output][SEND].send(None)
+                self._model_processes[changed_output].join()
+                self._input_pipes[changed_output][SEND].close()
+                model_name = self._config.output_models[changed_output]
+                self._allocate_model_to_output(changed_output, model_name)
+                logger.info(f"Allocated model {model_name} to output {changed_output}.")
 
-    def start_processes(self) -> None:
-        for output_name, model_process in self._model_processes.items():
-            model_process.start()
-            logger.info(f"Process for output {output_name} is running and listening for inputs")
+            except Exception as e:
+                logger.error(f"Could not allocate new model to output {changed_output}.")
+                self.close()
+                raise e
 
-    def shutdown(self) -> None:
-        logger.info("Waiting for all processes to finish...")
-        for _, input_pipe in self._input_pipe.items():
-            input_pipe[SEND].send(None)
-        for _, model_process in self._model_processes.items():
-            model_process.join()
-        for _, input_pipe in self._input_pipe.items():
-            input_pipe[SEND].close()
-
-    def reset(self) -> None:
-        self._config = self._initial_config.copy()
-        self.shutdown()
-        logger.info("All processes finished. Reallocating...")
-        self.init_model_allocation()
-
-    def _call_models(self, inputs: dict[str, float], latent=False) -> (dict[str, np.array], dict[str, np.array]):
+    def _call_models(self, X: dict[str, float]) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()
         var_pred = dict()
 
         for output_name, model_process in self._model_processes.items():
-            if not model_process.is_alive():
-                model_process.start()
-                logger.info(f"Process for output {output_name} is running and listening for inputs")
-            self._input_pipe[output_name][SEND].send(inputs)
-
-        for output_name, model_process in self._model_processes.items():
-            mean_pred[output_name], var_pred[output_name] = self._output_pipe[output_name][RECEIVE].recv()
+            self._input_pipes[output_name][SEND].send(X)
+            mean_pred[output_name], var_pred[output_name] = self._output_pipes[output_name][RECEIVE].recv()
         return mean_pred, var_pred
 
     def _sample_output_distribution(self, mean_pred: dict[str, np.array], var_pred: dict[str, np.array]) \
@@ -126,23 +139,18 @@ class OutputManager(AbstractOutputManager):
 
     def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
         # load model properties dict from .yaml file
-        with open(self._model_path / (model_name + '.yaml'), 'r') as stream:
-            try:
-                properties = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                logger.exception(f"Could not load model properties for model {model_name}.")
-                raise exc
+        with open(self._path_to_output_models / (model_name + '.yaml'), 'r') as stream:
+            properties = yaml.safe_load(stream)
 
-        # load process model
         model_class = properties["model_class"]
-        if "keep_y_scaled" in properties:
-            rescale_y_temp = not bool(properties["keep_y_scaled"])
-        else:
-            rescale_y_temp = True
 
         if model_class == "Gpytorch":
+            if "keep_y_scaled" in properties:
+                rescale_y_temp = not bool(properties["keep_y_scaled"])
+            else:
+                rescale_y_temp = True
             data_load = pd.read_hdf(
-                self._model_path / (model_name + ".hdf5")
+                self._path_to_output_models / (model_name + ".hdf5")
             )
             if torch.cuda.is_available():
                 map_location = None
@@ -150,7 +158,7 @@ class OutputManager(AbstractOutputManager):
                 map_location = torch.device('cpu')
                 logger.warning(f"No Cuda GPU found for model {model_name}. Step execution will be much slower.")
             model_state = torch.load(
-                self._model_path / (model_name + ".pth"), map_location=map_location
+                self._path_to_output_models / (model_name + ".pth"), map_location=map_location
             )
             importlib.import_module(model_name)
             model_module = sys.modules[model_name]
@@ -167,7 +175,9 @@ class OutputManager(AbstractOutputManager):
 
         new_input_pipe = Pipe()
         new_output_pipe = Pipe()
-        self._input_pipe[output_name] = new_input_pipe
-        self._output_pipe[output_name] = new_output_pipe
+        self._input_pipes[output_name] = new_input_pipe
+        self._output_pipes[output_name] = new_output_pipe
         self._model_processes[output_name] = \
-            Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND], False))
+            Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND],
+                                                 self._config.observation_noise_only, False))
+        self._model_processes[output_name].start()

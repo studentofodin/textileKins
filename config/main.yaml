@@ -1,11 +1,12 @@
 defaults:
   - env_setup: baseline
-  - process_setup: baseline
-  - product_setup: baseline
+  - disturbance_setup: baseline
+  - control_setup: baseline
+  - output_setup: baseline
+  - reward_setup: baseline
   - scenario_setup: baseline
   - gym_setup: baseline
-  - output_setup: baseline
   - _self_
 experiment_tracker:
   project: adanowo-simulator
-  mode: offline
+  mode: online

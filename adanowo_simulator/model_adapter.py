@@ -1,14 +1,16 @@
-from typing import OrderedDict
 from copy import copy
-from types import ModuleType
+from types import ModuleType, MethodType
+from typing import OrderedDict
 
 import numpy as np
 import pandas as pd
-from sklearn.pipeline import Pipeline
 import torch
-from sklearn.preprocessing import RobustScaler
-from sklearn.decomposition import PCA
+from gpytorch.likelihoods import Likelihood
+from gpytorch.models import ExactGP
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.decomposition import PCA
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import RobustScaler
 
 from adanowo_simulator.abstract_base_classes.model_adapter import AbstractModelAdapter
 
@@ -33,10 +35,14 @@ class AdapterGpytorch(AbstractModelAdapter):
 
     def __init__(self, model_module: ModuleType, data: pd.DataFrame, model_state: OrderedDict, model_properties: dict,
                  rescale_y: bool = True) -> None:
-        self._unpack_func = model_module.unpack_dict
-        self._properties = model_properties
-        self._rescale_y = rescale_y
-        self._scaler_y = None
+        self._unpack_func: MethodType = model_module.unpack_dict
+        self._properties: dict = model_properties
+        self._rescale_y: bool = rescale_y
+        self._scaler_y: RobustScaler | None = None
+        self._pipe: Pipeline | None = None
+        self._Tensor: torch.Tensor | None = None
+        self._likelihood: Likelihood | None = None
+        self._model: ExactGP | None = None
 
         # load the internal data transformation pipeline
         x_numpy = data[self._properties["training_inputs"]].to_numpy()
@@ -129,10 +135,12 @@ class AdapterGpytorch(AbstractModelAdapter):
                 var = np.ones_like(y_pred) * var_scalar
         return y_pred, var
 
-    def shutdown(self):
+    def close(self):
         self._Tensor = None
         self._model = None
         self._likelihood = None
+        self._scaler_y: RobustScaler | None = None
+        self._pipe: Pipeline | None = None
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
@@ -140,7 +148,7 @@ class AdapterGpytorch(AbstractModelAdapter):
 class AdapterPyScript(AbstractModelAdapter):
 
     def __init__(self, model_module: ModuleType) -> None:
-        self._model = model_module.model
+        self._model: MethodType = model_module.model
 
     def predict_f(self, X: dict) -> np.array:
         f_pred, var = self._model(X)
@@ -151,5 +159,5 @@ class AdapterPyScript(AbstractModelAdapter):
         f_pred, var = self._model(X)
         return f_pred, var
 
-    def shutdown(self):
+    def close(self):
         pass

@@ -6,7 +6,7 @@ inputs:
   - CardDeliveryWeightPerArea
   - Needleloom1FeedPerStroke
   - Needleloom1DraftRatio
-  - DrawFrameTotalDraft
+  - DrawFrameDraftRatio
   - ProductB
   - Needleloom2DraftRatio
 output: TensileStrengthCD

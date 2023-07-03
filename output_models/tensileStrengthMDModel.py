@@ -4,11 +4,11 @@ from gpytorch.constraints import GreaterThan, Interval
 from gpytorch.kernels import AdditiveKernel, PolynomialKernel, ProductKernel, RBFKernel, ScaleKernel
 
 
-def unpack_dict(X: dict, training_features: list[str]) -> np.array:
+def unpack_dict(X: dict, training_inputs: list[str]) -> np.array:
     for key in X.keys():
         X[key] = np.array(X[key]).reshape(-1, 1)
     X_unpacked = []
-    for f in training_features:
+    for f in training_inputs:
         if f == "CL01_LayersCalculatorLayers":
             X_unpacked.append(X["Cross-lapperLayersCount"].round())
         elif f == "M_031_K_AbliefGew_g_m2":
@@ -17,12 +17,15 @@ def unpack_dict(X: dict, training_features: list[str]) -> np.array:
             X_unpacked.append(X["Needleloom1FeedPerStroke"])
         elif f == "M_007_NM1_AuszVerzug_Proznt":
             X_unpacked.append(X["Needleloom1DraftRatio"])
+        elif f == "M_017_NM2_Einsttiefe_mm":
+            X_unpacked.append(X["Needleloom2NeedlepunchDepth"])
         elif f == "D_018_SW_Gesamtverzug_Perc":
             X_unpacked.append(X["DrawFrameDraftRatio"])
         elif f == "Product_B":
             X_unpacked.append(np.ones_like(X["ProductB"]))
         elif f == "M_010_NM2_AuszVerzug_Proz":
             X_unpacked.append(X["Needleloom2DraftRatio"])
+
     return np.concatenate(X_unpacked, axis=1)
 
 
@@ -40,9 +43,10 @@ class ExactGPModel(gpytorch.models.ExactGP):
                     PolynomialKernel(power=1, active_dims=(1,), offset_constraint=Interval(0, 3)),
                     RBFKernel(ard_num_dims=1, active_dims=(2,), lengthscale_constraint=GreaterThan(10.0)),
                     RBFKernel(ard_num_dims=1, active_dims=(3,), lengthscale_constraint=GreaterThan(5.0)),
-                    RBFKernel(ard_num_dims=1, active_dims=(4,), lengthscale_constraint=GreaterThan(13.0)),
-                    RBFKernel(ard_num_dims=1, active_dims=(5,), lengthscale_constraint=GreaterThan(2.0)),
-                    RBFKernel(ard_num_dims=1, active_dims=(6,), lengthscale_constraint=GreaterThan(5.0))
+                    RBFKernel(ard_num_dims=1, active_dims=(4,), lengthscale_constraint=GreaterThan(5.0)),
+                    RBFKernel(ard_num_dims=1, active_dims=(5,), lengthscale_constraint=GreaterThan(13.0)),
+                    RBFKernel(ard_num_dims=1, active_dims=(6,), lengthscale_constraint=GreaterThan(2.0)),
+                    RBFKernel(ard_num_dims=1, active_dims=(7,), lengthscale_constraint=GreaterThan(5.0))
                 )
             ),
             ScaleKernel(

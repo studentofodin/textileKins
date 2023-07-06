@@ -125,8 +125,9 @@ class OutputManager(AbstractOutputManager):
         mean_pred = dict()
         var_pred = dict()
 
-        for output_name, model_process in self._model_processes.items():
+        for output_name in self._model_processes.keys():
             self._input_pipes[output_name][SEND].send(X)
+        for output_name in self._model_processes.keys():
             mean_pred[output_name], var_pred[output_name] = self._output_pipes[output_name][RECEIVE].recv()
         return mean_pred, var_pred
 

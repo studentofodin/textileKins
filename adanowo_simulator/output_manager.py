@@ -3,6 +3,7 @@ import pathlib as pl
 import logging
 import sys
 from multiprocessing import Process, Pipe
+from multiprocessing.connection import Connection
 
 import yaml
 from omegaconf import DictConfig, OmegaConf
@@ -15,24 +16,21 @@ from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutpu
 from adanowo_simulator import model_adapter
 
 logger = logging.getLogger(__name__)
-RECEIVE = 0
-SEND = 1
 DEFAULT_RELATIVE_PATH = "./output_models"
 
 
-def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pipe, observation_noise_only: bool,
+def model_executor(mdl: AbstractModelAdapter, conn: Connection, observation_noise_only: bool,
                    model_uncertainty_only: bool):
     while True:
-        if input_pipe.poll():
-            input_recv = input_pipe.recv()
-            if input_recv is None:
-                mdl.close()
-                break
-            if model_uncertainty_only:
-                mean_pred, var_pred = mdl.predict_f(input_recv)
-            else:
-                mean_pred, var_pred = mdl.predict_y(input_recv, observation_noise_only=observation_noise_only)
-            output_pipe.send((mean_pred, var_pred))
+        recv = conn.recv()
+        if recv is None:
+            mdl.close()
+            break
+        if model_uncertainty_only:
+            mean_pred, var_pred = mdl.predict_f(recv)
+        else:
+            mean_pred, var_pred = mdl.predict_y(recv, observation_noise_only=observation_noise_only)
+        conn.send((mean_pred, var_pred))
 
 
 class ParallelOutputManager(AbstractOutputManager):
@@ -57,8 +55,8 @@ class ParallelOutputManager(AbstractOutputManager):
         self._initial_config: DictConfig = config.copy()
         self._config: DictConfig = OmegaConf.create()
         self._model_processes: dict[str, Process] = dict()
-        self._input_pipes: dict[str, Pipe] = dict()
-        self._output_pipes: dict[str, Pipe] = dict()
+        self._parent_conns: dict[str, Connection] = dict()
+        self._child_conns: dict[str, Connection] = dict()
         self._model_uncertainty_only: bool = False
         self._ready = False
 
@@ -99,20 +97,18 @@ class ParallelOutputManager(AbstractOutputManager):
         if self._model_processes:
             for output_name in self._model_processes.keys():
                 if self._model_processes[output_name].is_alive():
-                    self._input_pipes[output_name][SEND].send(None)
+                    self._parent_conns[output_name].send(None)
                     self._model_processes[output_name].join()
-                    self._input_pipes[output_name][SEND].close()
             self._model_processes = dict()
-            self._input_pipes = dict()
-            self._output_pipes = dict()
+            self._parent_conns = dict()
+            self._child_conns = dict()
             self._ready = False
 
     def update_model_allocation(self, changed_outputs: list[str]) -> None:
         for changed_output in changed_outputs:
             try:
-                self._input_pipes[changed_output][SEND].send(None)
+                self._parent_conns[changed_output].send(None)
                 self._model_processes[changed_output].join()
-                self._input_pipes[changed_output][SEND].close()
                 model_name = self._config.output_models[changed_output]
                 self._allocate_model_to_output(changed_output, model_name)
 
@@ -125,9 +121,9 @@ class ParallelOutputManager(AbstractOutputManager):
         var_pred = dict()
 
         for output_name in self._model_processes.keys():
-            self._input_pipes[output_name][SEND].send(X)
+            self._parent_conns[output_name].send(X)
         for output_name in self._model_processes.keys():
-            mean_pred[output_name], var_pred[output_name] = self._output_pipes[output_name][RECEIVE].recv()
+            mean_pred[output_name], var_pred[output_name] = self._parent_conns[output_name].recv()
         return mean_pred, var_pred
 
     def _sample_output_distribution(self, mean_pred: dict[str, np.array], var_pred: dict[str, np.array]) \
@@ -173,13 +169,12 @@ class ParallelOutputManager(AbstractOutputManager):
         else:
             raise (TypeError(f"The model class {model_class} is not yet supported"))
 
-        new_input_pipe = Pipe()
-        new_output_pipe = Pipe()
-        self._input_pipes[output_name] = new_input_pipe
-        self._output_pipes[output_name] = new_output_pipe
+        parent_conn, child_conn = Pipe()
+        self._parent_conns[output_name] = parent_conn
+        self._child_conns[output_name] = child_conn
         self._model_processes[output_name] = \
-            Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND],
-                                                 self._config.observation_noise_only, self._model_uncertainty_only))
+            Process(target=model_executor, args=(mdl, child_conn, self._config.observation_noise_only,
+                                                 self._model_uncertainty_only))
         self._model_processes[output_name].start()
         logger.info(f"Allocated model {model_name} to output {output_name}.")
 

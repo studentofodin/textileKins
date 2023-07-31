@@ -8,7 +8,7 @@ import os
 from adanowo_simulator.reward_manager import RewardManager
 from adanowo_simulator.control_manager import ControlManager
 from adanowo_simulator.disturbance_manager import DisturbanceManager
-from adanowo_simulator.output_manager import OutputManager
+from adanowo_simulator.output_manager import ParallelOutputManager, SequentialOutputManager
 from adanowo_simulator.scenario_manager import ScenarioManager
 from adanowo_simulator.experiment_tracker import WandBTracker
 from adanowo_simulator.environment import Environment
@@ -23,7 +23,8 @@ os.environ["WANDB_SILENT"] = "true"
 def main(config: DictConfig):
     disturbance_manager = DisturbanceManager(config.disturbance_setup)
     control_manager = ControlManager(config.control_setup, config.control_setup.actions_are_relative)
-    output_manager = OutputManager(config.output_setup)
+    # output_manager = SequentialOutputManager(config.output_setup)
+    output_manager = ParallelOutputManager(config.output_setup)
     reward_manager = RewardManager(baseline_reward, config.reward_setup)
     scenario_manager = ScenarioManager(config.scenario_setup)
     experiment_tracker = WandBTracker(config.experiment_tracker, config)
@@ -40,10 +41,10 @@ def main(config: DictConfig):
         for _ in range(100):
             observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
                 low=0.0, high=0.5, size=len(config.env_setup.used_primary_controls)))
-        gym_wrapper.reset()
-        for _ in range(100):
-            observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
-                low=0.0, high=0.5, size=len(config.env_setup.used_primary_controls)))
+        # gym_wrapper.reset()
+        # for _ in range(100):
+        #     observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
+        #         low=0.0, high=0.5, size=len(config.env_setup.used_primary_controls)))
         gym_wrapper.close()
     except Exception as e:
         gym_wrapper.close()

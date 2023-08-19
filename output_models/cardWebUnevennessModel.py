@@ -10,6 +10,7 @@ SCALE_THROUGHPUT = 0.030
 
 
 def unpack_dict(X: dict, training_features: list[str]) -> np.array:
+    X = X.copy()
     for key in X.keys():
         X[key] = np.array(X[key]).reshape(-1, 1)
     X_unpacked = []

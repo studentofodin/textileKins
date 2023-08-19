@@ -12,6 +12,7 @@ def prcnt_to_mult(prcnt: float) -> float:
 
 
 def unpack_dict(X: dict, training_inputs: list[str]) -> np.array:
+    X = X.copy()
     for key in X.keys():
         X[key] = np.array(X[key]).reshape(-1, 1)
     X_unpacked = []

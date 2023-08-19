@@ -9,6 +9,7 @@ def prcnt_to_mult(prcnt: float) -> float:
 
 
 def model(X: dict) -> [np.array, np.array]:
+    X = X.copy()
     for key in X.keys():
         X[key] = np.array(X[key]).reshape(-1, 1)
 

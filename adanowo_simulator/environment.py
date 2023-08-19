@@ -144,7 +144,7 @@ class Environment(AbstractEnvironment):
                 self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
                                             self._reward_manager)
                 disturbances = self._disturbance_manager.step()
-
+                state = disturbances | controls | dependent_variables
                 observations = self._collect_observations(state, outputs)
 
             except Exception as e:
@@ -191,7 +191,7 @@ class Environment(AbstractEnvironment):
             self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
                                         self._reward_manager)
             disturbances = self._disturbance_manager.step()
-
+            state = disturbances | controls | dependent_variables
             observations = self._collect_observations(state, outputs)
 
         except Exception as e:

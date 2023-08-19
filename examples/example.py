@@ -22,7 +22,7 @@ os.environ["WANDB_SILENT"] = "true"
             config_name="main")
 def main(config: DictConfig):
     disturbance_manager = DisturbanceManager(config.disturbance_setup)
-    action_manager = ActionManager(config.action_setup, config.control_setup.actions_are_relative)
+    action_manager = ActionManager(config.action_setup, config.action_setup.actions_are_relative)
     output_manager = SequentialOutputManager(config.output_setup)
     # output_manager = ParallelOutputManager(config.output_setup)
     reward_manager = RewardManager(baseline_reward, config.reward_setup)

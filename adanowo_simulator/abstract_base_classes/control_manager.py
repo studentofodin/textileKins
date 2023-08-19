@@ -15,7 +15,8 @@ class AbstractControlManager(ABC):
         pass
 
     @abstractmethod
-    def step(self, actions: dict[str, float], disturbances: dict[str, float] | None) -> tuple[dict[str, float], dict[str, bool]]:
+    def step(self, actions: dict[str, float], disturbances: dict[str, float] | None) -> \
+            tuple[dict[str, float], dict[str, float],  dict[str, bool], dict[str, bool]]:
         """
         calculate controls from actions.
         return controls, if the control constraints are met with the given actions and actions as a dictionary.
@@ -24,7 +25,8 @@ class AbstractControlManager(ABC):
         pass
 
     @abstractmethod
-    def reset(self, disturbances: dict[str, float] | None) -> tuple[dict[str, float], dict[str, bool]]:
+    def reset(self, disturbances: dict[str, float] | None) -> \
+            tuple[dict[str, float], dict[str, float],  dict[str, bool], dict[str, bool]]:
         """
         reset to initial values.
         """

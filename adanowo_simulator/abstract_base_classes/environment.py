@@ -5,7 +5,7 @@ from omegaconf import DictConfig
 
 from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
 from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewardManager
-from adanowo_simulator.abstract_base_classes.control_manager import AbstractControlManager
+from adanowo_simulator.abstract_base_classes.action_manager import AbstractActionManager
 from adanowo_simulator.abstract_base_classes.disturbance_manager import AbstractDisturbanceManager
 from adanowo_simulator.abstract_base_classes.experiment_tracker import AbstractExperimentTracker
 from adanowo_simulator.abstract_base_classes.scenario_manager import AbstractScenarioManager
@@ -30,7 +30,7 @@ class AbstractEnvironment(ABC):
 
     @property
     @abstractmethod
-    def control_manager(self) -> AbstractControlManager:
+    def action_manager(self) -> AbstractActionManager:
         pass
 
     @property

@@ -8,7 +8,7 @@ import sys
 from adanowo_simulator.abstract_base_classes.environment import AbstractEnvironment
 from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
 from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewardManager
-from adanowo_simulator.abstract_base_classes.control_manager import AbstractControlManager
+from adanowo_simulator.abstract_base_classes.action_manager import AbstractActionManager
 from adanowo_simulator.abstract_base_classes.disturbance_manager import AbstractDisturbanceManager
 from adanowo_simulator.abstract_base_classes.experiment_tracker import AbstractExperimentTracker
 from adanowo_simulator.abstract_base_classes.scenario_manager import AbstractScenarioManager
@@ -20,11 +20,11 @@ logger = logging.getLogger(__name__)
 class Environment(AbstractEnvironment):
     def __init__(
             self, config: DictConfig, disturbance_manager: AbstractDisturbanceManager,
-            control_manager: AbstractControlManager, output_manager: AbstractOutputManager,
+            action_manager: AbstractActionManager, output_manager: AbstractOutputManager,
             reward_manager: AbstractRewardManager, scenario_manager: AbstractScenarioManager,
             experiment_tracker: AbstractExperimentTracker):
         self._disturbance_manager: AbstractDisturbanceManager = disturbance_manager
-        self._control_manager: AbstractControlManager = control_manager
+        self._action_manager: AbstractActionManager = action_manager
         self._output_manager: AbstractOutputManager = output_manager
         self._reward_manager: AbstractRewardManager = reward_manager
         self._scenario_manager: AbstractScenarioManager = scenario_manager
@@ -53,8 +53,8 @@ class Environment(AbstractEnvironment):
         return self._reward_manager
 
     @property
-    def control_manager(self) -> AbstractControlManager:
-        return self._control_manager
+    def action_manager(self) -> AbstractActionManager:
+        return self._action_manager
 
     @property
     def disturbance_manager(self) -> AbstractDisturbanceManager:
@@ -117,7 +117,7 @@ class Environment(AbstractEnvironment):
                     logger.info("Experiment is running.")
                 actions = self._array_to_dict(actions_array, OmegaConf.to_container(self._config.used_primary_controls))
                 disturbances = self._disturbance_manager.step()
-                controls, control_constraints_met = self._control_manager.step(actions, disturbances)
+                controls, control_constraints_met = self._action_manager.step(actions, disturbances)
                 outputs = self._output_manager.step(controls | disturbances)
                 reward, output_constraints_met = self._reward_manager.step(
                     controls | disturbances, outputs, control_constraints_met)
@@ -159,7 +159,7 @@ class Environment(AbstractEnvironment):
             self._config = self._initial_config.copy()
             self._scenario_manager.reset()
             disturbances = self._disturbance_manager.reset()
-            controls, control_constraints_met = self._control_manager.reset(disturbances)
+            controls, control_constraints_met = self._action_manager.reset(disturbances)
             outputs = self._output_manager.reset(controls | disturbances)
             reward, output_constraints_met = self._reward_manager.reset(
                 controls | disturbances, outputs, control_constraints_met)

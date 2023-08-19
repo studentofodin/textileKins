@@ -4,7 +4,7 @@ import pathlib as pl
 import logging
 import sys
 
-from adanowo_simulator.abstract_base_classes.control_manager import AbstractControlManager
+from adanowo_simulator.abstract_base_classes.action_manager import AbstractActionManager
 from adanowo_simulator.calculation_adapter import CalculationAdapter
 
 logger = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_RELATIVE_PATH = "./secondary_control_calculations"
 
 
-class ControlManager(AbstractControlManager):
+class ActionManager(AbstractActionManager):
 
     def __init__(self, config: DictConfig, actions_are_relative: bool = True):
         # use default path

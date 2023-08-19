@@ -15,7 +15,8 @@ class AbstractRewardManager(ABC):
         pass
 
     @abstractmethod
-    def step(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: dict[str, bool]) -> \
+    def step(self, state: dict[str, float], outputs: dict[str, float],
+             control_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
             tuple[float, dict[str, bool]]:
         """
         determine reward value from state and outputs.
@@ -26,7 +27,8 @@ class AbstractRewardManager(ABC):
         pass
 
     @abstractmethod
-    def reset(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: dict[str, bool]) -> \
+    def reset(self, state: dict[str, float], outputs: dict[str, float],
+              control_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
             tuple[float, dict[str, bool]]:
         """
         reset to initial values.

@@ -1,5 +1,4 @@
 from typing import Callable
-
 from omegaconf import DictConfig, OmegaConf
 
 from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewardManager
@@ -20,12 +19,14 @@ class RewardManager(AbstractRewardManager):
     def config(self, c):
         self._config = c
 
-    def step(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: dict[str, bool]) \
-            -> tuple[float, dict[str, bool]]:
+    def step(self, state: dict[str, float], outputs: dict[str, float],
+             control_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
+            tuple[float, dict[str, bool]]:
         if self._ready:
             output_constraints_met = self._output_constraints_met(outputs)
             # penalty.
-            if not (all(output_constraints_met.values()) and all(control_constraints_met.values())):
+            if not (all(
+                    (output_constraints_met | control_constraints_met | dependent_variable_constraints_met).values())):
                 reward = -self._config.penalty
             # no penalty.
             else:
@@ -34,11 +35,13 @@ class RewardManager(AbstractRewardManager):
             raise Exception("Cannot call step() before calling reset().")
         return reward, output_constraints_met
 
-    def reset(self, state: dict[str, float], outputs: dict[str, float], control_constraints_met: dict[str, bool]) -> \
+    def reset(self, state: dict[str, float], outputs: dict[str, float],
+              control_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
             tuple[float, dict[str, bool]]:
         self._config = self._initial_config.copy()
         self._ready = True
-        reward, output_constraints_met = self.step(state, outputs, control_constraints_met)
+        reward, output_constraints_met = self.step(
+            state, outputs, control_constraints_met, dependent_variable_constraints_met)
         return reward, output_constraints_met
 
     def _get_reward(self, state: dict[str, float], outputs: dict[str, float]) -> float:

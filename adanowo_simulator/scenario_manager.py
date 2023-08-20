@@ -27,8 +27,7 @@ class ScenarioManager(AbstractScenarioManager):
         if self._ready:
             self._update_disturbances(step_index, disturbance_manager.config.disturbances)
             self._update_output_bounds(step_index, reward_manager.config.output_bounds)
-            changed_outputs = self._update_output_model_allocation(step_index, output_manager.config.output_models)
-            output_manager.update_model_allocation(changed_outputs)
+            self._update_output_model_allocation(step_index, output_manager.config.output_models)
         else:
             raise Exception("Cannot call step() before calling reset().")
 
@@ -36,13 +35,9 @@ class ScenarioManager(AbstractScenarioManager):
         self._config = self._initial_config.copy()
         self._ready = True
 
-    def _update_output_model_allocation(self, step_index: int, output_models_config: DictConfig) -> list[str]:
-        changed_outputs = []
+    def _update_output_model_allocation(self, step_index: int, output_models_config: DictConfig):
         for output_name, scenario in self._config.output_models.items():
-            did_update = self._update_target(step_index, output_models_config, output_name, scenario)
-            if did_update:
-                changed_outputs.append(output_name)
-        return changed_outputs
+            self._update_target(step_index, output_models_config, output_name, scenario)
 
     def _update_output_bounds(self, step_index: int, output_bounds_config: DictConfig) -> None:
         for output_name, scenarios in self._config.output_bounds.items():

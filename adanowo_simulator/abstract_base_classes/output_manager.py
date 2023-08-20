@@ -18,48 +18,12 @@ class AbstractOutputManager(ABC):
 
     @abstractmethod
     def step(self, inputs: dict[str, float]) -> dict[str, float]:
-        """
-        get sampled output value from inputs for each model.
-        return output values as numpy array and as dictionary.
-        """
         pass
 
     @abstractmethod
     def reset(self, state: dict[str, float]) -> dict[str, np.array]:
-        """
-        reset to initial values.
-        """
         pass
 
     @abstractmethod
     def close(self) -> None:
-        """
-        close all processes.
-        """
-        pass
-
-    @abstractmethod
-    def _call_models(self, inputs: dict[str, float]) -> (dict[str, np.array], dict[str, np.array]):
-        """
-        get and return mean and variance prediction of output from inputs for each model.
-        latent=True includes noise, latent=False not.
-        """
-        pass
-
-    @abstractmethod
-    def _sample_output_distribution(self, mean_pred: dict[str, np.array], var_pred: dict[str, np.array]) \
-            -> dict[str, float]:
-        """
-        sample output distribution dependent on corresponding mean and variance prediction
-        (mean_pred, var_pred) for each model.
-        Return output samples as numpy array and as dictionary.
-        """
-        pass
-
-    @abstractmethod
-    def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
-        """
-        load model corresponding to model_name.
-        allocate this model to the output output_name.
-        """
         pass

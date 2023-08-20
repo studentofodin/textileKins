@@ -31,3 +31,7 @@ class AbstractScenarioManager(ABC):
         reset to initial values.
         """
         pass
+
+    @abstractmethod
+    def close(self) -> None:
+        pass

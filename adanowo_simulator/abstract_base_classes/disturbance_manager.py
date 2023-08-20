@@ -25,3 +25,7 @@ class AbstractDisturbanceManager(ABC):
         """
         reset to initial values.
         """
+
+    @abstractmethod
+    def close(self) -> None:
+        pass

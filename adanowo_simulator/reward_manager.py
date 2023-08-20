@@ -41,6 +41,9 @@ class RewardManager(AbstractRewardManager):
         reward, output_constraints_met = self.step(state, outputs, control_constraints_met)
         return reward, output_constraints_met
 
+    def close(self) -> None:
+        pass
+
     def _get_reward(self, state: dict[str, float], outputs: dict[str, float]) -> float:
         reward = self._reward_function(state, outputs, self._config.reward_parameters)
         return reward

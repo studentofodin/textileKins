@@ -29,4 +29,8 @@ class AbstractControlManager(ABC):
         reset to initial values.
         """
 
+    @abstractmethod
+    def close(selfs) -> None:
+        pass
+
 

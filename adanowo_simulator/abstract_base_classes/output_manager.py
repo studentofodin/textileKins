@@ -25,13 +25,6 @@ class AbstractOutputManager(ABC):
         pass
 
     @abstractmethod
-    def update_model_allocation(self, changed_outputs: list[str]) -> None:
-        """
-        update the models for the outputs listed in changed_outputs based on the entries in the own config.
-        """
-        pass
-
-    @abstractmethod
     def reset(self, state: dict[str, float]) -> dict[str, np.array]:
         """
         reset to initial values.

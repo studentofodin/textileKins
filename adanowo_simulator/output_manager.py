@@ -57,6 +57,7 @@ class ParallelOutputManager(AbstractOutputManager):
         self._initial_config: DictConfig = config.copy()
         self._config: DictConfig = OmegaConf.create()
         self._model_processes: dict[str, Process] = dict()
+        self._model_config: DictConfig = OmegaConf.create()
         self._input_pipes: dict[str, Pipe] = dict()
         self._output_pipes: dict[str, Pipe] = dict()
         self._model_uncertainty_only: bool = False
@@ -72,6 +73,7 @@ class ParallelOutputManager(AbstractOutputManager):
 
     def step(self, state: dict[str, float]) -> dict[str, float]:
         if self._ready:
+            self._update_model_allocation()
             try:
                 mean_pred, var_pred = self._call_models(state)
                 outputs = self._sample_output_distribution(mean_pred, var_pred)
@@ -85,6 +87,7 @@ class ParallelOutputManager(AbstractOutputManager):
     def reset(self, state: dict[str, float]) -> dict[str, float]:
         self.close()
         self._config = self._initial_config.copy()
+        self._model_config = self._config.output_models.copy()
         for output_name, model_name in self._config.output_models.items():
             try:
                 self._allocate_model_to_output(output_name, model_name)
@@ -107,18 +110,18 @@ class ParallelOutputManager(AbstractOutputManager):
             self._output_pipes = dict()
             self._ready = False
 
-    def update_model_allocation(self, changed_outputs: list[str]) -> None:
-        for changed_output in changed_outputs:
-            try:
-                self._input_pipes[changed_output][SEND].send(None)
-                self._model_processes[changed_output].join()
-                self._input_pipes[changed_output][SEND].close()
-                model_name = self._config.output_models[changed_output]
-                self._allocate_model_to_output(changed_output, model_name)
-
-            except Exception as e:
-                self.close()
-                raise e
+    def _update_model_allocation(self) -> None:
+        for output_name, model_name in self._config.output_models.items():
+            if self._model_config[output_name] != model_name:
+                try:
+                    self._input_pipes[output_name][SEND].send(None)
+                    self._model_processes[output_name].join()
+                    self._input_pipes[output_name][SEND].close()
+                    self._model_config[output_name] = model_name
+                    self._allocate_model_to_output(output_name, model_name)
+                except Exception as e:
+                    self.close()
+                    raise e
 
     def _call_models(self, X: dict[str, float]) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()
@@ -207,6 +210,7 @@ class SequentialOutputManager(AbstractOutputManager):
         self._initial_config: DictConfig = config.copy()
         self._config: DictConfig = OmegaConf.create()
         self._output_models: dict[str, AbstractModelAdapter] = dict()
+        self._model_config: DictConfig = OmegaConf.create()
         self._model_uncertainty_only: bool = False
         self._ready = False
 
@@ -220,6 +224,7 @@ class SequentialOutputManager(AbstractOutputManager):
 
     def step(self, state: dict[str, float]) -> dict[str, float]:
         if self._ready:
+            self._update_model_allocation()
             mean_pred, var_pred = self._call_models(state)
             outputs = self._sample_output_distribution(mean_pred, var_pred)
         else:
@@ -228,6 +233,7 @@ class SequentialOutputManager(AbstractOutputManager):
 
     def reset(self, state: dict[str, float]) -> dict[str, float]:
         self._config = self._initial_config.copy()
+        self._model_config = self._config.output_models.copy()
         for output_name, model_name in self._config.output_models.items():
             self._allocate_model_to_output(output_name, model_name)
         self._ready = True
@@ -237,10 +243,11 @@ class SequentialOutputManager(AbstractOutputManager):
     def close(self) -> None:
         self._ready = False
 
-    def update_model_allocation(self, changed_outputs: list[str]) -> None:
-        for changed_output in changed_outputs:
-            model_name = self._config.output_models[changed_output]
-            self._allocate_model_to_output(changed_output, model_name)
+    def _update_model_allocation(self) -> None:
+        for output_name, model_name in self._config.output_models.items():
+            if self._model_config[output_name] != model_name:
+                self._model_config[output_name] = model_name
+                self._allocate_model_to_output(output_name, model_name)
 
     def _call_models(self, X: dict[str, float]) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()

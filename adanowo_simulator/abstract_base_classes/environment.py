@@ -69,7 +69,3 @@ class AbstractEnvironment(ABC):
     @abstractmethod
     def close(self) -> None:
         pass
-
-    @abstractmethod
-    def _array_to_dict(self, array: np.array, keys: list[str]) -> dict[str, float]:
-        pass

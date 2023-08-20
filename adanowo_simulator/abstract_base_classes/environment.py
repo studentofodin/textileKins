@@ -60,32 +60,16 @@ class AbstractEnvironment(ABC):
 
     @abstractmethod
     def step(self, actions: np.array) -> Tuple[np.array, float]:
-        """
-        run one timestep of the environment’s dynamics using the agent actions.
-        return:
-            observations (ObsType): observations due to the agent actions.
-            reward (float): the reward as a result of taking the action.
-        """
         pass
 
     @abstractmethod
     def reset(self) -> Tuple[np.array, float]:
-        """
-        resets the environment to an initial internal state, returning an initial observation
-        and reward resulting from internal state.
-        """
         pass
 
     @abstractmethod
     def close(self) -> None:
-        """
-        closes the environment.
-        """
         pass
 
     @abstractmethod
     def _array_to_dict(self, array: np.array, keys: list[str]) -> dict[str, float]:
-        """
-        Converts a 1D array to a dict with given keys.
-        """
         pass

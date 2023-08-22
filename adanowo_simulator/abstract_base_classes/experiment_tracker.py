@@ -17,21 +17,12 @@ class AbstractExperimentTracker(ABC):
 
     @abstractmethod
     def step(self, log_variables: dict[str, Any], step_index: int) -> None:
-        """
-        log the given log_variables in wandb.
-        """
         pass
 
     @abstractmethod
     def reset(self, log_variables: dict[str, Any], step_index: int) -> None:
-        """
-        finish wandb run and reset to initial values.
-        """
         pass
 
     @abstractmethod
     def close(self) -> None:
-        """
-        finish experiment tracking run.
-        """
         pass

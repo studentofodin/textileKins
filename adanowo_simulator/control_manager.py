@@ -85,6 +85,9 @@ class ControlManager(AbstractControlManager):
         self._ready = True
         return self._controls, control_constraints_met
 
+    def close(self) -> None:
+        pass
+
     def _control_constraints_met(self, controls: dict[str, float]) -> dict[str, bool]:
         control_constraints_met = dict()
         for control_name, bounds in self._config.control_bounds.items():

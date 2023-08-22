@@ -195,7 +195,11 @@ class Environment(AbstractEnvironment):
 
     def close(self) -> None:
         logger.info("Closing environment...")
+        self._disturbance_manager.close()
+        self._control_manager.close()
         self._output_manager.close()
+        self._reward_manager.close()
+        self._scenario_manager.close()
         self._experiment_tracker.close()
         self._config = OmegaConf.create()
         self._step_index = -1

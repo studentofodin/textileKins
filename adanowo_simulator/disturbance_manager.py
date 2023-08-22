@@ -29,3 +29,6 @@ class DisturbanceManager(AbstractDisturbanceManager):
         self._ready = True
         disturbances = self.step()
         return disturbances
+
+    def close(self) -> None:
+        pass

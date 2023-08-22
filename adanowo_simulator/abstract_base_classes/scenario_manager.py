@@ -21,13 +21,11 @@ class AbstractScenarioManager(ABC):
     @abstractmethod
     def step(self, step_index: int, disturbance_manager: AbstractDisturbanceManager,
              output_manager: AbstractOutputManager, reward_manager: AbstractRewardManager) -> None:
-        """
-        update the configs of the managers according to own config.
-        """
         pass
 
     def reset(self) -> None:
-        """
-        reset to initial values.
-        """
+        pass
+
+    @abstractmethod
+    def close(self) -> None:
         pass

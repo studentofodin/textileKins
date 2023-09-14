@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from omegaconf import DictConfig
 
 
-class AbstractControlManager(ABC):
+class AbstractActionManager(ABC):
     @property
     @abstractmethod
     def config(self) -> DictConfig:

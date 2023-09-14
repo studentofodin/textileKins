@@ -8,7 +8,7 @@ import sys
 from adanowo_simulator.abstract_base_classes.environment import AbstractEnvironment
 from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
 from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewardManager
-from adanowo_simulator.abstract_base_classes.control_manager import AbstractControlManager
+from adanowo_simulator.abstract_base_classes.action_manager import AbstractActionManager
 from adanowo_simulator.abstract_base_classes.disturbance_manager import AbstractDisturbanceManager
 from adanowo_simulator.abstract_base_classes.experiment_tracker import AbstractExperimentTracker
 from adanowo_simulator.abstract_base_classes.scenario_manager import AbstractScenarioManager
@@ -20,11 +20,11 @@ logger = logging.getLogger(__name__)
 class Environment(AbstractEnvironment):
     def __init__(
             self, config: DictConfig, disturbance_manager: AbstractDisturbanceManager,
-            control_manager: AbstractControlManager, output_manager: AbstractOutputManager,
+            action_manager: AbstractActionManager, output_manager: AbstractOutputManager,
             reward_manager: AbstractRewardManager, scenario_manager: AbstractScenarioManager,
             experiment_tracker: AbstractExperimentTracker):
         self._disturbance_manager: AbstractDisturbanceManager = disturbance_manager
-        self._control_manager: AbstractControlManager = control_manager
+        self._action_manager: AbstractActionManager = action_manager
         self._output_manager: AbstractOutputManager = output_manager
         self._reward_manager: AbstractRewardManager = reward_manager
         self._scenario_manager: AbstractScenarioManager = scenario_manager
@@ -53,8 +53,8 @@ class Environment(AbstractEnvironment):
         return self._reward_manager
 
     @property
-    def control_manager(self) -> AbstractControlManager:
-        return self._control_manager
+    def action_manager(self) -> AbstractActionManager:
+        return self._action_manager
 
     @property
     def disturbance_manager(self) -> AbstractDisturbanceManager:
@@ -89,19 +89,19 @@ class Environment(AbstractEnvironment):
             array[index] = dictionary[key]
         return array
 
-    def _collect_observations(self, state: dict[str, float], outputs: dict[str, float]) -> np.array:
+    def _collect_observations(self, disturbances: dict[str, float], controls: dict[str, float],
+                              outputs: dict[str, float]) -> np.array:
         # fill observations
         observations = list()
         for component_name in self._config.observations:
             if component_name == "disturbances":
                 for disturbance_name in self._config.used_disturbances:
-                    observations.append(state[disturbance_name])
+                    observations.append(disturbances[disturbance_name])
             elif component_name == "controls":
-                for control_name in self._config.used_controls:
-                    observations.append(state[control_name])
-            elif component_name == "dependent_variables":
-                for dependent_variable_name in self._config.used_dependent_variables:
-                    observations.append(state[dependent_variable_name])
+                for control_name in self._config.used_primary_controls:
+                    observations.append(controls[control_name])
+                for control_name in self._config.used_secondary_controls:
+                    observations.append(controls[control_name])
             elif component_name == "outputs":
                 for output_name in self._config.used_outputs:
                     observations.append(outputs[output_name])
@@ -115,23 +115,18 @@ class Environment(AbstractEnvironment):
             try:
                 if self._step_index == 1:
                     logger.info("Experiment is running.")
-                actions = self._array_to_dict(actions_array, OmegaConf.to_container(self._config.used_controls))
+                actions = self._array_to_dict(actions_array, OmegaConf.to_container(self._config.used_primary_controls))
                 disturbances = self._disturbance_manager.step()
-                controls, dependent_variables, control_constraints_met, dependent_variable_constraints_met = \
-                    self._control_manager.step(actions, disturbances)
-                state = disturbances | controls | dependent_variables
-                outputs = self._output_manager.step(state)
+                controls, control_constraints_met = self._action_manager.step(actions, disturbances)
+                outputs = self._output_manager.step(controls | disturbances)
                 reward, output_constraints_met = self._reward_manager.step(
-                    state, outputs, control_constraints_met, dependent_variable_constraints_met)
+                    controls | disturbances, outputs, control_constraints_met)
                 log_variables = {
                     "Performance-Metrics": {
                         "Reward": reward,
                         "Control-Constraints-Met": int(all(control_constraints_met.values())),
-                        "Dependent-Variable-Constraints-Met": int(all(dependent_variable_constraints_met.values())),
                         "Output-Constraints-Met": int(all(output_constraints_met.values()))},
                     "Control-Constraints-Met": {key: int(value) for key, value in control_constraints_met.items()},
-                    "Dependent-Variable-Constraints-Met":
-                        {key: int(value) for key, value in dependent_variable_constraints_met.items()},
                     "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
                     "Actions": actions,
                     "Controls": controls,
@@ -144,8 +139,8 @@ class Environment(AbstractEnvironment):
                 self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
                                             self._reward_manager)
                 disturbances = self._disturbance_manager.step()
-                state = disturbances | controls | dependent_variables
-                observations = self._collect_observations(state, outputs)
+
+                observations = self._collect_observations(disturbances, controls, outputs)
 
             except Exception as e:
                 self.close()
@@ -164,21 +159,16 @@ class Environment(AbstractEnvironment):
             self._config = self._initial_config.copy()
             self._scenario_manager.reset()
             disturbances = self._disturbance_manager.reset()
-            controls, dependent_variables, control_constraints_met, dependent_variable_constraints_met = \
-                self._control_manager.reset(disturbances)
-            state = disturbances | controls | dependent_variables
-            outputs = self._output_manager.reset(state)
+            controls, control_constraints_met = self._action_manager.reset(disturbances)
+            outputs = self._output_manager.reset(controls | disturbances)
             reward, output_constraints_met = self._reward_manager.reset(
-                state, outputs, control_constraints_met, dependent_variable_constraints_met)
+                controls | disturbances, outputs, control_constraints_met)
             log_variables = {
                 "Performance-Metrics": {
                     "Reward": reward,
                     "Control-Constraints-Met": int(all(control_constraints_met.values())),
-                    "Dependent-Variable-Constraints-Met": int(all(dependent_variable_constraints_met.values())),
                     "Output-Constraints-Met": int(all(output_constraints_met.values()))},
                 "Control-Constraints-Met": {key: int(value) for key, value in control_constraints_met.items()},
-                "Dependent-Variable-Constraints-Met":
-                    {key: int(value) for key, value in dependent_variable_constraints_met.items()},
                 "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
                 "Actions": {},
                 "Controls": controls,
@@ -191,8 +181,8 @@ class Environment(AbstractEnvironment):
             self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
                                         self._reward_manager)
             disturbances = self._disturbance_manager.step()
-            state = disturbances | controls | dependent_variables
-            observations = self._collect_observations(state, outputs)
+
+            observations = self._collect_observations(disturbances, controls, outputs)
 
         except Exception as e:
             self.close()

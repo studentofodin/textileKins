@@ -22,3 +22,4 @@ class AbstractControlManager(ABC):
     def reset(self, disturbances: dict[str, float] | None) -> tuple[dict[str, float], dict[str, bool]]:
         pass
 
+

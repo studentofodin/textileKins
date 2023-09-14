@@ -1,7 +1,7 @@
 defaults:
   - env_setup: baseline
   - disturbance_setup: baseline
-  - control_setup: baseline
+  - action_setup: baseline
   - output_setup: baseline
   - reward_setup: baseline
   - scenario_setup: baseline

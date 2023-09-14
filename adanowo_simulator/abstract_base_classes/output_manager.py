@@ -27,3 +27,4 @@ class AbstractOutputManager(ABC):
     @abstractmethod
     def close(self) -> None:
         pass
+

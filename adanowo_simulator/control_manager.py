@@ -9,7 +9,7 @@ from adanowo_simulator.calculation_adapter import CalculationAdapter
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_RELATIVE_PATH = "./secondary_control_calculations"
+DEFAULT_RELATIVE_PATH = "./dependent_variable_calculations"
 
 
 class ControlManager(AbstractControlManager):
@@ -17,27 +17,27 @@ class ControlManager(AbstractControlManager):
     def __init__(self, config: DictConfig, actions_are_relative: bool = True):
         # use default path
         main_script_path = pl.Path(__file__).resolve().parent
-        self._path_to_secondary_control_calculations = main_script_path.parent / DEFAULT_RELATIVE_PATH
+        self._path_to_dependent_variable_calculations = main_script_path.parent / DEFAULT_RELATIVE_PATH
 
-        if config.path_to_secondary_control_calculations is not None:
-            temp_path = pl.Path(config.path_to_secondary_control_calculations)
-            if self._path_to_secondary_control_calculations.is_dir():
-                logger.info(f"Using custom secondary control calculation path "
-                            f"{self._path_to_secondary_control_calculations}.")
-                self._path_to_secondary_control_calculations = temp_path
+        if config.path_to_dependent_variable_calculations is not None:
+            temp_path = pl.Path(config.path_to_dependent_variable_calculations)
+            if self._path_to_dependent_variable_calculations.is_dir():
+                logger.info(f"Using custom dependent variable calculation path "
+                            f"{self._path_to_dependent_variable_calculations}.")
+                self._path_to_dependent_variable_calculations = temp_path
             else:
                 raise Exception(
-                    f"Custom secondary control calculation path {self._path_to_secondary_control_calculations}"
+                    f"Custom dependent variable calculation path {self._path_to_dependent_variable_calculations}"
                     f" is not valid.")
 
         # Add calculation path to sys.path so that the calculations can be imported.
-        sys.path.append(str(self._path_to_secondary_control_calculations))
+        sys.path.append(str(self._path_to_dependent_variable_calculations))
 
         self._initial_config: DictConfig = config.copy()
         self._config: DictConfig = OmegaConf.create()
         self._actions_are_relative: bool = actions_are_relative
         self._controls: dict[str, float] = dict()
-        self._secondary_control_calculations: dict[str, CalculationAdapter] = dict()
+        self._dependent_variable_calculations: dict[str, CalculationAdapter] = dict()
         self._ready: bool = False
 
     @property
@@ -48,44 +48,52 @@ class ControlManager(AbstractControlManager):
     def config(self, c):
         self._config = c
 
-    def step(self, actions: dict[str, float], disturbances: dict[str, float] = None) -> \
-            tuple[dict[str, float], dict[str, bool]]:
+    def step(self, actions: dict[str, float], disturbances: dict[str, float] | None) -> \
+            tuple[dict[str, float], dict[str, float],  dict[str, bool], dict[str, bool]]:
         if disturbances is None:
             disturbances = dict()
         if self._ready:
-            potential_primary_controls = self._calculate_potential_primary_controls(actions)
-            X = potential_primary_controls | disturbances
-            potential_secondary_controls = self._calculate_potential_secondary_controls(X)
-            potential_controls = potential_primary_controls | potential_secondary_controls
+            potential_controls = self._calculate_potential_controls(actions)
+            potential_dependent_variables = \
+                self._calculate_potential_dependent_variables(potential_controls | disturbances)
+            control_constraints_met, dependent_variable_constraints_met = \
+                self._constraints_met(potential_controls, potential_dependent_variables)
 
-            control_constraints_met = self._control_constraints_met(potential_controls)
-            if all(control_constraints_met.values()):
+            if all((control_constraints_met | dependent_variable_constraints_met).values()):
                 self._controls = potential_controls
+            dependent_variables = \
+                self._calculate_potential_dependent_variables(self._controls | disturbances)
         else:
             raise Exception("Cannot call step() before calling reset().")
 
-        return self._controls, control_constraints_met
+        return self._controls, dependent_variables, control_constraints_met, dependent_variable_constraints_met
 
-    def reset(self, disturbances: dict[str, float] = None) -> tuple[dict[str, float], dict[str, bool]]:
+    def reset(self, disturbances: dict[str, float] | None) -> \
+            tuple[dict[str, float], dict[str, float],  dict[str, bool], dict[str, bool]]:
         if disturbances is None:
             disturbances = dict()
         self._config = self._initial_config.copy()
 
-        potential_primary_controls = OmegaConf.to_container(self._config.initial_primary_controls)
-        if not self._secondary_control_calculations:
-            self._allocate_secondary_control_calculations()
-        X = potential_primary_controls | disturbances
-        potential_secondary_controls = self._calculate_potential_secondary_controls(X)
-        potential_controls = potential_primary_controls | potential_secondary_controls
+        potential_controls = OmegaConf.to_container(self._config.initial_controls)
+        if not self._dependent_variable_calculations:
+            self._allocate_dependent_variable_calculations()
+        potential_dependent_variables = \
+            self._calculate_potential_dependent_variables(potential_controls | disturbances)
+        control_constraints_met, dependent_variable_constraints_met = \
+            self._constraints_met(potential_controls, potential_dependent_variables)
 
-        control_constraints_met = self._control_constraints_met(potential_controls)
-        if not all(control_constraints_met.values()):
-            raise AssertionError("The initial controls do not meet control constraints. Aborting Experiment.")
+        if not all((control_constraints_met | dependent_variable_constraints_met).values()):
+            raise AssertionError("The initial controls and dependent variables do not meet constraints. Aborting Experiment.")
         self._controls = potential_controls
+        dependent_variables = \
+            self._calculate_potential_dependent_variables(self._controls | disturbances)
         self._ready = True
-        return self._controls, control_constraints_met
 
-    def _control_constraints_met(self, controls: dict[str, float]) -> dict[str, bool]:
+        return self._controls, dependent_variables, control_constraints_met, dependent_variable_constraints_met
+
+    def _constraints_met(self, controls: dict[str, float], dependent_variables: dict[str, float]) -> \
+            tuple[dict[str, bool], dict[str, bool]]:
+        # controls
         control_constraints_met = dict()
         for control_name, bounds in self._config.control_bounds.items():
             if "lower" in bounds.keys():
@@ -99,30 +107,44 @@ class ControlManager(AbstractControlManager):
                 else:
                     control_constraints_met[f"{control_name}.upper"] = True
 
-        return control_constraints_met
+        # dependent_variables
+        dependent_variable_constraints_met = dict()
+        for control_name, bounds in self._config.dependent_variable_bounds.items():
+            if "lower" in bounds.keys():
+                if dependent_variables[control_name] < bounds.lower:
+                    dependent_variable_constraints_met[f"{control_name}.lower"] = False
+                else:
+                    dependent_variable_constraints_met[f"{control_name}.lower"] = True
+            if "upper" in bounds.keys():
+                if dependent_variables[control_name] > bounds.upper:
+                    dependent_variable_constraints_met[f"{control_name}.upper"] = False
+                else:
+                    dependent_variable_constraints_met[f"{control_name}.upper"] = True
 
-    def _allocate_secondary_control_calculations(self) -> None:
-        for control_name, calculation_name in self._config.secondary_control_calculations.items():
-            importlib.import_module(calculation_name)
-            calculation_module = sys.modules[calculation_name]
-            self._secondary_control_calculations[control_name] = CalculationAdapter(calculation_module)
-            logger.info(f"Allocated calculation {calculation_name} to secondary control {control_name}.")
+        return control_constraints_met, dependent_variable_constraints_met
 
-    def _calculate_potential_primary_controls(self, actions: dict[str, float]) -> dict[str, float]:
+    def _allocate_dependent_variable_calculations(self) -> None:
+        for dependent_variable_name, calculation in self._config.dependent_variable_calculations.items():
+            importlib.import_module(calculation)
+            calculation_module = sys.modules[calculation]
+            self._dependent_variable_calculations[dependent_variable_name] = CalculationAdapter(calculation_module)
+            logger.info(f"Allocated calculation {calculation} to dependent variable {dependent_variable_name}.")
+
+    def _calculate_potential_controls(self, actions: dict[str, float]) -> dict[str, float]:
         # relative actions.
         if self._config.actions_are_relative:
-            potential_primary_controls = dict()
-            for control_name in self._config.initial_primary_controls.keys():
-                potential_primary_controls[control_name] = self._controls[control_name] + actions[control_name]
+            potential_controls = dict()
+            for control_name in self._config.initial_controls.keys():
+                potential_controls[control_name] = self._controls[control_name] + actions[control_name]
         # absolute actions.
         else:
-            potential_primary_controls = actions
+            potential_controls = actions
 
-        return potential_primary_controls
+        return potential_controls
 
-    def _calculate_potential_secondary_controls(self, X: dict[str, float]) -> dict[str, float]:
-        potential_secondary_controls = dict()
-        for control_name, calculation in self._secondary_control_calculations.items():
-            potential_secondary_controls[control_name] = calculation.calculate(X).item()
-        return potential_secondary_controls
+    def _calculate_potential_dependent_variables(self, X: dict[str, float]) -> dict[str, float]:
+        potential_dependent_variables = dict()
+        for dependent_variable_name, calculation in self._dependent_variable_calculations.items():
+            potential_dependent_variables[dependent_variable_name] = calculation.calculate(X).item()
+        return potential_dependent_variables
 

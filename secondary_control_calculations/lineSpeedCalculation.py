@@ -10,7 +10,7 @@ def prcnt_to_mult(prcnt: float) -> float:
 def calculate(X: dict[str, float]) -> np.array:
     weight_per_area_theoretical = \
         X["CardDeliveryWeightPerArea"] * \
-        X["Cross-lapperLayersCount"].round() * 2 / \
+        round(X["Cross-lapperLayersCount"]) * 2 / \
         prcnt_to_mult(X["Needleloom2DraftRatio"]) / \
         prcnt_to_mult(X["Needleloom1DraftRatioIntake"]) / \
         prcnt_to_mult(X["Needleloom1DraftRatio"]) / \

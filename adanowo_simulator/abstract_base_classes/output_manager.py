@@ -19,6 +19,7 @@ class AbstractOutputManager(ABC):
     @abstractmethod
     def step(self, inputs: dict[str, float]) -> dict[str, float]:
         pass
+
     @abstractmethod
     def reset(self, state: dict[str, float]) -> dict[str, np.array]:
         pass

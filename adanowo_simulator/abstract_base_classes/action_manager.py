@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from omegaconf import DictConfig
 
 
-class AbstractControlManager(ABC):
+class AbstractActionManager(ABC):
     @property
     @abstractmethod
     def config(self) -> DictConfig:
@@ -20,10 +20,6 @@ class AbstractControlManager(ABC):
 
     @abstractmethod
     def reset(self, disturbances: dict[str, float] | None) -> tuple[dict[str, float], dict[str, bool]]:
-        pass
-
-    @abstractmethod
-    def close(selfs) -> None:
         pass
 
 

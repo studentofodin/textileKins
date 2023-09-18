@@ -91,7 +91,6 @@ class Environment(AbstractEnvironment):
         return array
 
     def _collect_observations(self, state: dict[str, float], outputs: dict[str, float]) -> np.array:
-        # fill observations
         observations = list()
         for component_name in self._config.observations:
             if component_name == "disturbances":
@@ -212,3 +211,4 @@ class Environment(AbstractEnvironment):
         self._step_index = -1
         self._ready = False
         logger.info("...environment has been closed.")
+

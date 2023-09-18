@@ -23,8 +23,8 @@ os.environ["WANDB_SILENT"] = "true"
 def main(config: DictConfig):
     disturbance_manager = DisturbanceManager(config.disturbance_setup)
     action_manager = ActionManager(config.action_setup, config.action_setup.actions_are_relative)
-    output_manager = SequentialOutputManager(config.output_setup)
-    # output_manager = ParallelOutputManager(config.output_setup)
+    # output_manager = SequentialOutputManager(config.output_setup)
+    output_manager = ParallelOutputManager(config.output_setup)
     reward_manager = RewardManager(baseline_reward, config.reward_setup)
     scenario_manager = ScenarioManager(config.scenario_setup)
     experiment_tracker = WandBTracker(config.experiment_tracker, config)
@@ -40,11 +40,11 @@ def main(config: DictConfig):
         gym_wrapper.reset()
         for _ in range(100):
             observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
-                low=0.0, high=0.5, size=len(config.env_setup.used_primary_controls)))
+                low=0.0, high=0.5, size=len(config.env_setup.used_controls)))
         # gym_wrapper.reset()
         # for _ in range(100):
         #     observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
-        #         low=0.0, high=0.5, size=len(config.env_setup.used_primary_controls)))
+        #         low=0.0, high=0.5, size=len(config.env_setup.used_controls)))
         gym_wrapper.close()
     except Exception as e:
         gym_wrapper.close()

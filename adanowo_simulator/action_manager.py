@@ -48,10 +48,8 @@ class ActionManager(AbstractActionManager):
     def config(self, c):
         self._config = c
 
-    def step(self, actions: dict[str, float], disturbances: dict[str, float] | None) -> \
+    def step(self, actions: dict[str, float], disturbances: dict[str, float]) -> \
             tuple[dict[str, float], dict[str, float],  dict[str, bool], dict[str, bool]]:
-        if disturbances is None:
-            disturbances = dict()
         if self._ready:
             potential_controls = self._calculate_potential_controls(actions)
             potential_dependent_variables = \
@@ -68,10 +66,8 @@ class ActionManager(AbstractActionManager):
 
         return self._controls, dependent_variables, control_constraints_met, dependent_variable_constraints_met
 
-    def reset(self, disturbances: dict[str, float] | None) -> \
+    def reset(self, disturbances: dict[str, float]) -> \
             tuple[dict[str, float], dict[str, float],  dict[str, bool], dict[str, bool]]:
-        if disturbances is None:
-            disturbances = dict()
         self._config = self._initial_config.copy()
 
         potential_controls = OmegaConf.to_container(self._config.initial_controls)

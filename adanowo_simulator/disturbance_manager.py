@@ -31,4 +31,4 @@ class DisturbanceManager(AbstractDisturbanceManager):
         return disturbances
 
     def close(self) -> None:
-        pass
+        self._ready = False

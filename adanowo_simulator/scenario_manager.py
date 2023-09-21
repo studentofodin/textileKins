@@ -36,7 +36,7 @@ class ScenarioManager(AbstractScenarioManager):
         self._ready = True
 
     def close(self) -> None:
-        pass
+        self._ready = False
 
     def _update_output_model_allocation(self, step_index: int, output_models_config: DictConfig):
         for output_name, scenario in self._config.output_models.items():

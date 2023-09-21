@@ -88,7 +88,7 @@ class ActionManager(AbstractActionManager):
         return self._controls, dependent_variables, control_constraints_met, dependent_variable_constraints_met
 
     def close(self) -> None:
-        pass
+        self._ready = False
 
     def _constraints_met(self, controls: dict[str, float], dependent_variables: dict[str, float]) -> \
             tuple[dict[str, bool], dict[str, bool]]:

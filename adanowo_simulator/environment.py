@@ -191,7 +191,6 @@ class Environment(AbstractEnvironment):
             self._experiment_tracker.close()
         except Exception as e:
             exceptions.append(e)
-        self._config = OmegaConf.create()
         self._step_index = -1
         self._ready = False
         if exceptions:

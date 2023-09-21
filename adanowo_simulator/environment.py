@@ -205,14 +205,35 @@ class Environment(AbstractEnvironment):
 
     def close(self) -> None:
         logger.info("Closing environment...")
-        self._disturbance_manager.close()
-        self._action_manager.close()
-        self._output_manager.close()
-        self._reward_manager.close()
-        self._scenario_manager.close()
-        self._experiment_tracker.close()
+        exceptions = []
+        try:
+            self._disturbance_manager.close()
+        except Exception as e:
+            exceptions.append(e)
+        try:
+            self._action_manager.close()
+        except Exception as e:
+            exceptions.append(e)
+        try:
+            self._output_manager.close()
+        except Exception as e:
+            exceptions.append(e)
+        try:
+            self._reward_manager.close()
+        except Exception as e:
+            exceptions.append(e)
+        try:
+            self._scenario_manager.close()
+        except Exception as e:
+            exceptions.append(e)
+        try:
+            self._experiment_tracker.close()
+        except Exception as e:
+            exceptions.append(e)
         self._config = OmegaConf.create()
         self._step_index = -1
         self._ready = False
+        if exceptions:
+            raise Exception(exceptions)
         logger.info("...environment has been closed.")
 

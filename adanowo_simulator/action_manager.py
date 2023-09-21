@@ -34,7 +34,7 @@ class ActionManager(AbstractActionManager):
         sys.path.append(str(self._path_to_dependent_variable_calculations))
 
         self._initial_config: DictConfig = config.copy()
-        self._config: DictConfig = OmegaConf.create()
+        self._config: DictConfig = self._initial_config.copy()
         self._actions_are_relative: bool = actions_are_relative
         self._controls: dict[str, float] = dict()
         self._dependent_variable_calculations: dict[str, CalculationAdapter] = dict()

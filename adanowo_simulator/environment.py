@@ -30,7 +30,7 @@ class Environment(AbstractEnvironment):
         self._experiment_tracker: AbstractExperimentTracker = experiment_tracker
 
         self._initial_config: DictConfig = config.copy()
-        self._config: DictConfig = OmegaConf.create()
+        self._config: DictConfig = self._initial_config.copy()
         self._step_index: int = -1
         self._ready: bool = False
         logger.info("Environment has been created.")

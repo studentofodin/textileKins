@@ -25,7 +25,7 @@ class AbstractEnvironment(ABC):
 
     @property
     @abstractmethod
-    def reward_manager(self) -> AbstractRewardManager:
+    def disturbance_manager(self) -> AbstractDisturbanceManager:
         pass
 
     @property
@@ -35,7 +35,7 @@ class AbstractEnvironment(ABC):
 
     @property
     @abstractmethod
-    def disturbance_manager(self) -> AbstractDisturbanceManager:
+    def action_manager(self) -> AbstractActionManager:
         pass
 
     @property
@@ -45,12 +45,17 @@ class AbstractEnvironment(ABC):
 
     @property
     @abstractmethod
-    def experiment_tracker(self) -> AbstractExperimentTracker:
+    def reward_manager(self) -> AbstractRewardManager:
         pass
 
     @property
     @abstractmethod
     def scenario_manager(self) -> AbstractScenarioManager:
+        pass
+
+    @property
+    @abstractmethod
+    def experiment_tracker(self) -> AbstractExperimentTracker:
         pass
 
     @property

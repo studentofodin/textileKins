@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-
 from omegaconf import DictConfig
 
 from adanowo_simulator.abstract_base_classes.disturbance_manager import AbstractDisturbanceManager

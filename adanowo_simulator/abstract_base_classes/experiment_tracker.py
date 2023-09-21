@@ -16,11 +16,11 @@ class AbstractExperimentTracker(ABC):
         pass
 
     @abstractmethod
-    def step(self, log_variables: dict[str, Any], step_index: int) -> None:
+    def step(self, log_variables: dict[str, dict[str, float]], step_index: int) -> None:
         pass
 
     @abstractmethod
-    def reset(self, log_variables: dict[str, Any], step_index: int) -> None:
+    def reset(self, log_variables: dict[str, dict[str, float]], step_index: int) -> None:
         pass
 
     @abstractmethod

@@ -25,3 +25,7 @@ class AbstractScenarioManager(ABC):
 
     def reset(self) -> None:
         pass
+
+    @abstractmethod
+    def close(self) -> None:
+        pass

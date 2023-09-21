@@ -206,7 +206,7 @@ class Environment(AbstractEnvironment):
     def close(self) -> None:
         logger.info("Closing environment...")
         self._disturbance_manager.close()
-        self._control_manager.close()
+        self._action_manager.close()
         self._output_manager.close()
         self._reward_manager.close()
         self._scenario_manager.close()

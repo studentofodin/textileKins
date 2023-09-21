@@ -71,7 +71,7 @@ class Environment(AbstractEnvironment):
     def step_index(self):
         return self._step_index
 
-    def step(self, actions_array: np.array) -> tuple[Any, float]:
+    def step(self, actions_array: np.array) -> tuple[np.array, float]:
         if self._ready:
             try:
                 if self._step_index == 1:
@@ -117,7 +117,7 @@ class Environment(AbstractEnvironment):
 
         return observations, reward
 
-    def reset(self) -> tuple[Any, float]:
+    def reset(self) -> tuple[np.array, float]:
         logger.info("Resetting environment...")
         try:
             # step 0.

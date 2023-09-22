@@ -3,7 +3,6 @@ import pathlib as pl
 import logging
 import sys
 from multiprocessing import Process, Pipe
-
 import yaml
 from omegaconf import DictConfig, OmegaConf
 import numpy as np
@@ -55,7 +54,7 @@ class ParallelOutputManager(AbstractOutputManager):
         sys.path.append(str(self._path_to_output_models))
 
         self._initial_config: DictConfig = config.copy()
-        self._config: DictConfig = OmegaConf.create()
+        self._config: DictConfig = self._initial_config.copy()
         self._model_processes: dict[str, Process] = dict()
         self._model_config: DictConfig = OmegaConf.create()
         self._input_pipes: dict[str, Pipe] = dict()
@@ -208,7 +207,7 @@ class SequentialOutputManager(AbstractOutputManager):
         sys.path.append(str(self._path_to_output_models))
 
         self._initial_config: DictConfig = config.copy()
-        self._config: DictConfig = OmegaConf.create()
+        self._config: DictConfig = self._initial_config.copy()
         self._output_models: dict[str, AbstractModelAdapter] = dict()
         self._model_config: DictConfig = OmegaConf.create()
         self._model_uncertainty_only: bool = False

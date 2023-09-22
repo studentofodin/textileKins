@@ -11,7 +11,7 @@ class ScenarioManager(AbstractScenarioManager):
 
     def __init__(self, config: DictConfig):
         self._initial_config: DictConfig = config.copy()
-        self._config: DictConfig = OmegaConf.create()
+        self._config: DictConfig = self._initial_config.copy()
         self._ready: bool = False
 
     @property
@@ -34,6 +34,9 @@ class ScenarioManager(AbstractScenarioManager):
     def reset(self) -> None:
         self._config = self._initial_config.copy()
         self._ready = True
+
+    def close(self) -> None:
+        self._ready = False
 
     def _update_output_model_allocation(self, step_index: int, output_models_config: DictConfig):
         for output_name, scenario in self._config.output_models.items():

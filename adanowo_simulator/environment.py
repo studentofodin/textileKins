@@ -1,5 +1,4 @@
 from typing import Any
-
 import numpy as np
 from omegaconf import DictConfig, OmegaConf
 import logging
@@ -31,7 +30,7 @@ class Environment(AbstractEnvironment):
         self._experiment_tracker: AbstractExperimentTracker = experiment_tracker
 
         self._initial_config: DictConfig = config.copy()
-        self._config: DictConfig = OmegaConf.create()
+        self._config: DictConfig = self._initial_config.copy()
         self._step_index: int = -1
         self._ready: bool = False
         logger.info("Environment has been created.")
@@ -45,6 +44,14 @@ class Environment(AbstractEnvironment):
         self._config = c
 
     @property
+    def disturbance_manager(self) -> AbstractDisturbanceManager:
+        return self._disturbance_manager
+
+    @property
+    def action_manager(self) -> AbstractActionManager:
+        return self._action_manager
+
+    @property
     def output_manager(self) -> AbstractOutputManager:
         return self._output_manager
 
@@ -53,64 +60,18 @@ class Environment(AbstractEnvironment):
         return self._reward_manager
 
     @property
-    def action_manager(self) -> AbstractActionManager:
-        return self._action_manager
-
-    @property
-    def disturbance_manager(self) -> AbstractDisturbanceManager:
-        return self._disturbance_manager
+    def scenario_manager(self) -> AbstractScenarioManager:
+        return self._scenario_manager
 
     @property
     def experiment_tracker(self) -> AbstractExperimentTracker:
         return self._experiment_tracker
 
     @property
-    def scenario_manager(self) -> AbstractScenarioManager:
-        return self._scenario_manager
-
-    @property
     def step_index(self):
         return self._step_index
 
-    @staticmethod
-    def _array_to_dict(array: np.array, keys: list[str]) -> dict[str, float]:
-        if array.size != len(keys):
-            raise Exception("Length of array and keys are not the same.")
-        dictionary = dict()
-        for index, key in enumerate(keys):
-            dictionary[key] = array[index]
-        return dictionary
-
-    @staticmethod
-    def _dict_to_array(dictionary: dict[str, float], keys: list[str]) -> np.array:
-        if len(dictionary) != len(keys):
-            raise Exception("Length of dictionary and keys are not the same.")
-        array = np.zeros(len(dictionary))
-        for index, key in enumerate(keys):
-            array[index] = dictionary[key]
-        return array
-
-    def _collect_observations(self, state: dict[str, float], outputs: dict[str, float]) -> np.array:
-        observations = list()
-        for component_name in self._config.observations:
-            if component_name == "disturbances":
-                for disturbance_name in self._config.used_disturbances:
-                    observations.append(state[disturbance_name])
-            elif component_name == "controls":
-                for control_name in self._config.used_controls:
-                    observations.append(state[control_name])
-            elif component_name == "dependent_variables":
-                for dependent_variable_name in self._config.used_dependent_variables:
-                    observations.append(state[dependent_variable_name])
-            elif component_name == "outputs":
-                for output_name in self._config.used_outputs:
-                    observations.append(outputs[output_name])
-            else:
-                raise Exception(f"{component_name} in observation config is not known!")
-        observations = np.array(observations)
-        return observations
-
-    def step(self, actions_array: np.array) -> tuple[Any, float]:
+    def step(self, actions_array: np.array) -> tuple[np.array, float]:
         if self._ready:
             try:
                 if self._step_index == 1:
@@ -156,7 +117,7 @@ class Environment(AbstractEnvironment):
 
         return observations, reward
 
-    def reset(self) -> tuple[Any, float]:
+    def reset(self) -> tuple[np.array, float]:
         logger.info("Resetting environment...")
         try:
             # step 0.
@@ -205,10 +166,72 @@ class Environment(AbstractEnvironment):
 
     def close(self) -> None:
         logger.info("Closing environment...")
-        self._output_manager.close()
-        self._experiment_tracker.close()
-        self._config = OmegaConf.create()
+        exceptions = []
+        try:
+            self._disturbance_manager.close()
+        except Exception as e:
+            exceptions.append(e)
+        try:
+            self._action_manager.close()
+        except Exception as e:
+            exceptions.append(e)
+        try:
+            self._output_manager.close()
+        except Exception as e:
+            exceptions.append(e)
+        try:
+            self._reward_manager.close()
+        except Exception as e:
+            exceptions.append(e)
+        try:
+            self._scenario_manager.close()
+        except Exception as e:
+            exceptions.append(e)
+        try:
+            self._experiment_tracker.close()
+        except Exception as e:
+            exceptions.append(e)
         self._step_index = -1
         self._ready = False
+        if exceptions:
+            raise Exception(exceptions)
         logger.info("...environment has been closed.")
+
+    def _collect_observations(self, state: dict[str, float], outputs: dict[str, float]) -> np.array:
+        observations = list()
+        for component_name in self._config.observations:
+            if component_name == "disturbances":
+                for disturbance_name in self._config.used_disturbances:
+                    observations.append(state[disturbance_name])
+            elif component_name == "controls":
+                for control_name in self._config.used_controls:
+                    observations.append(state[control_name])
+            elif component_name == "dependent_variables":
+                for dependent_variable_name in self._config.used_dependent_variables:
+                    observations.append(state[dependent_variable_name])
+            elif component_name == "outputs":
+                for output_name in self._config.used_outputs:
+                    observations.append(outputs[output_name])
+            else:
+                raise Exception(f"{component_name} in observation config is not known!")
+        observations = np.array(observations)
+        return observations
+
+    @staticmethod
+    def _array_to_dict(array: np.array, keys: list[str]) -> dict[str, float]:
+        if array.size != len(keys):
+            raise Exception("Length of array and keys are not the same.")
+        dictionary = dict()
+        for index, key in enumerate(keys):
+            dictionary[key] = array[index]
+        return dictionary
+
+    @staticmethod
+    def _dict_to_array(dictionary: dict[str, float], keys: list[str]) -> np.array:
+        if len(dictionary) != len(keys):
+            raise Exception("Length of dictionary and keys are not the same.")
+        array = np.zeros(len(dictionary))
+        for index, key in enumerate(keys):
+            array[index] = dictionary[key]
+        return array
 

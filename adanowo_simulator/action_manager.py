@@ -34,7 +34,7 @@ class ActionManager(AbstractActionManager):
         sys.path.append(str(self._path_to_dependent_variable_calculations))
 
         self._initial_config: DictConfig = config.copy()
-        self._config: DictConfig = OmegaConf.create()
+        self._config: DictConfig = self._initial_config.copy()
         self._actions_are_relative: bool = actions_are_relative
         self._controls: dict[str, float] = dict()
         self._dependent_variable_calculations: dict[str, CalculationAdapter] = dict()
@@ -48,10 +48,8 @@ class ActionManager(AbstractActionManager):
     def config(self, c):
         self._config = c
 
-    def step(self, actions: dict[str, float], disturbances: dict[str, float] | None) -> \
+    def step(self, actions: dict[str, float], disturbances: dict[str, float]) -> \
             tuple[dict[str, float], dict[str, float],  dict[str, bool], dict[str, bool]]:
-        if disturbances is None:
-            disturbances = dict()
         if self._ready:
             potential_controls = self._calculate_potential_controls(actions)
             potential_dependent_variables = \
@@ -68,10 +66,8 @@ class ActionManager(AbstractActionManager):
 
         return self._controls, dependent_variables, control_constraints_met, dependent_variable_constraints_met
 
-    def reset(self, disturbances: dict[str, float] | None) -> \
+    def reset(self, disturbances: dict[str, float]) -> \
             tuple[dict[str, float], dict[str, float],  dict[str, bool], dict[str, bool]]:
-        if disturbances is None:
-            disturbances = dict()
         self._config = self._initial_config.copy()
 
         potential_controls = OmegaConf.to_container(self._config.initial_controls)
@@ -90,6 +86,9 @@ class ActionManager(AbstractActionManager):
         self._ready = True
 
         return self._controls, dependent_variables, control_constraints_met, dependent_variable_constraints_met
+
+    def close(self) -> None:
+        self._ready = False
 
     def _constraints_met(self, controls: dict[str, float], dependent_variables: dict[str, float]) -> \
             tuple[dict[str, bool], dict[str, bool]]:

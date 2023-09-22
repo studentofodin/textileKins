@@ -1,5 +1,4 @@
 from types import ModuleType, MethodType
-
 import numpy as np
 
 from adanowo_simulator.abstract_base_classes.calculation_adapter import AbstractCalculationAdapter

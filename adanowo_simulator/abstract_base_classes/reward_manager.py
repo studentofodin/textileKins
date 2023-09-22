@@ -25,3 +25,7 @@ class AbstractRewardManager(ABC):
               control_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
             tuple[float, dict[str, bool]]:
         pass
+
+    @abstractmethod
+    def close(self) -> None:
+        pass

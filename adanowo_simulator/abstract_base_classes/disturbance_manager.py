@@ -20,3 +20,7 @@ class AbstractDisturbanceManager(ABC):
     @abstractmethod
     def reset(self) -> dict[str, float]:
         pass
+
+    @abstractmethod
+    def close(self) -> None:
+        pass

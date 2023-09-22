@@ -8,8 +8,8 @@ class WandBTracker(AbstractExperimentTracker):
 
     def __init__(self, tracker_config: DictConfig, tracked_config: DictConfig):
         self._initial_tracker_config: DictConfig = tracker_config.copy()
+        self._tracker_config: DictConfig = self._initial_tracker_config.copy()
         self._tracked_config: DictConfig = tracked_config.copy()
-        self._tracker_config: DictConfig = OmegaConf.create()
         self._run = None
         self._ready: bool = False
 

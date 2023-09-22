@@ -7,7 +7,7 @@ from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewar
 class RewardManager(AbstractRewardManager):
     def __init__(self, reward_function: Callable, config: DictConfig):
         self._initial_config: DictConfig = config.copy()
-        self._config: DictConfig = OmegaConf.create()
+        self._config: DictConfig = self._initial_config.copy()
         self._reward_function = reward_function
         self._ready: bool = False
 
@@ -43,6 +43,9 @@ class RewardManager(AbstractRewardManager):
         reward, output_constraints_met = self.step(
             state, outputs, control_constraints_met, dependent_variable_constraints_met)
         return reward, output_constraints_met
+
+    def close(self) -> None:
+        self._ready = False
 
     def _get_reward(self, state: dict[str, float], outputs: dict[str, float]) -> float:
         reward = self._reward_function(state, outputs, self._config.reward_parameters)

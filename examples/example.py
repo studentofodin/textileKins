@@ -23,8 +23,8 @@ os.environ["WANDB_SILENT"] = "true"
 def main(config: DictConfig):
     disturbance_manager = DisturbanceManager(config.disturbance_setup)
     action_manager = ActionManager(config.action_setup, config.action_setup.actions_are_relative)
-    # output_manager = SequentialOutputManager(config.output_setup)
-    output_manager = ParallelOutputManager(config.output_setup)
+    output_manager = SequentialOutputManager(config.output_setup)
+    # output_manager = ParallelOutputManager(config.output_setup)
     reward_manager = RewardManager(baseline_reward, config.reward_setup)
     scenario_manager = ScenarioManager(config.scenario_setup)
     experiment_tracker = WandBTracker(config.experiment_tracker, config)

@@ -1,4 +1,3 @@
-from typing import Any
 import numpy as np
 from omegaconf import DictConfig, OmegaConf
 import logging
@@ -71,12 +70,11 @@ class Environment(AbstractEnvironment):
     def step_index(self):
         return self._step_index
 
-    def step(self, actions_array: np.array) -> tuple[np.array, float]:
+    def step(self, actions: dict) -> tuple[np.array, float]:
         if self._ready:
             try:
                 if self._step_index == 1:
                     logger.info("Experiment is running.")
-                actions = self._array_to_dict(actions_array, OmegaConf.to_container(self._config.used_controls))
                 disturbances = self._disturbance_manager.step()
                 controls, dependent_variables, control_constraints_met, dependent_variable_constraints_met = \
                     self._action_manager.step(actions, disturbances)
@@ -216,15 +214,6 @@ class Environment(AbstractEnvironment):
                 raise Exception(f"{component_name} in observation config is not known!")
         observations = np.array(observations)
         return observations
-
-    @staticmethod
-    def _array_to_dict(array: np.array, keys: list[str]) -> dict[str, float]:
-        if array.size != len(keys):
-            raise Exception("Length of array and keys are not the same.")
-        dictionary = dict()
-        for index, key in enumerate(keys):
-            dictionary[key] = array[index]
-        return dictionary
 
     @staticmethod
     def _dict_to_array(dictionary: dict[str, float], keys: list[str]) -> np.array:

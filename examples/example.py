@@ -30,25 +30,21 @@ def main(config: DictConfig):
     experiment_tracker = WandBTracker(config.experiment_tracker, config)
     environment = Environment(config.env_setup, disturbance_manager, action_manager, output_manager,
                               reward_manager, scenario_manager, experiment_tracker)
-    gym_wrapper = GymWrapper(environment, config.gym_setup)
+    gym_wrapper = GymWrapper(environment, config.gym_setup, config.env_setup)
 
     # check_env(gym_wrapper)
     # agent = A2C("MlpPolicy", gym_wrapper, verbose=1)
     # agent.learn(1000)
 
-    try:
-        gym_wrapper.reset()
-        for _ in range(100):
-            observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
-                low=0.0, high=0.5, size=len(config.env_setup.used_controls)))
-        # gym_wrapper.reset()
-        # for _ in range(100):
-        #     observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
-        #         low=0.0, high=0.5, size=len(config.env_setup.used_controls)))
-        gym_wrapper.close()
-    except Exception as e:
-        gym_wrapper.close()
-        raise e
+    gym_wrapper.reset()
+    for _ in range(100):
+        observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
+            low=0.0, high=0.5, size=len(config.env_setup.used_controls)))
+    # gym_wrapper.reset()
+    # for _ in range(100):
+    #     observation, _, _, _, _ = gym_wrapper.step(np.random.uniform(
+    #         low=0.0, high=0.5, size=len(config.env_setup.used_controls)))
+    gym_wrapper.close()
 
 
 if __name__ == "__main__":

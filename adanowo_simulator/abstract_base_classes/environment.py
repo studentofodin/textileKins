@@ -64,7 +64,7 @@ class AbstractEnvironment(ABC):
         pass
 
     @abstractmethod
-    def step(self, actions: np.array) -> Tuple[np.array, float]:
+    def step(self, actions: dict) -> Tuple[np.array, float]:
         pass
 
     @abstractmethod

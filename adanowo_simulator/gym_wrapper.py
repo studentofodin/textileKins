@@ -1,4 +1,5 @@
 import numpy as np
+from omegaconf import OmegaConf
 from gymnasium import Env, spaces
 from gymnasium.core import RenderFrame
 from gymnasium.envs.registration import register
@@ -9,9 +10,10 @@ from adanowo_simulator.abstract_base_classes.environment import AbstractEnvironm
 
 class GymWrapper(Env):
 
-    def __init__(self, environment: AbstractEnvironment, config: DictConfig):
+    def __init__(self, environment: AbstractEnvironment, config: DictConfig, action_config: DictConfig):
         self._environment: AbstractEnvironment = environment
         self._config: DictConfig = config.copy()
+        self._action_config = action_config.copy()
         self._action_space: spaces.Box = spaces.Box(low=0, high=0)
         self._observation_space: spaces.Box = spaces.Box(low=0, high=0)
 
@@ -44,7 +46,8 @@ class GymWrapper(Env):
     def observation_space(self) -> spaces.Box:
         return self._observation_space
 
-    def step(self, action: np.array) -> tuple[np.array, float, bool, bool, dict]:
+    def step(self, actions_array: np.array) -> tuple[np.array, float, bool, bool, dict]:
+        action = self._array_to_dict(actions_array, OmegaConf.to_container(self._action_config.used_controls))
         observation, reward = self._environment.step(action)
         return observation, reward, False, False, dict()
 
@@ -58,6 +61,15 @@ class GymWrapper(Env):
 
     def close(self) -> None:
         self._environment.close()
+
+    @staticmethod
+    def _array_to_dict(array: np.array, keys: list[str]) -> dict[str, float]:
+        if array.size != len(keys):
+            raise Exception("Length of array and keys are not the same.")
+        dictionary = dict()
+        for index, key in enumerate(keys):
+            dictionary[key] = array[index]
+        return dictionary
 
 
 register(

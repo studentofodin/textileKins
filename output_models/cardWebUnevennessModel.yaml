@@ -3,7 +3,7 @@ model_class: Gpytorch
 data_source: EasyVlies
 inputs:
   - CardDeliveryWeightPerArea
-  - CardMassThroughputSetpoint
+  - MassThroughput
   - v_PreRoll
   - v_MainCylinder
   - v_WorkerMain

@@ -1,3 +1,6 @@
+name: massThroughputCalculation
+model_class: Python_script
+data_source: None
 inputs:
   - CardDeliveryWeightPerArea
   - Cross-lapperLayersCount
@@ -5,6 +8,6 @@ inputs:
   - Needleloom1DraftRatioIntake
   - Needleloom1DraftRatio
   - DrawFrameDraftRatio
-  - CardMassThroughputSetpoint
+  - ProductionSpeedSetpoint
   - ProductWidth
-output: LineSpeed
+output: MassThroughput

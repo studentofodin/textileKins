@@ -6,7 +6,7 @@ used_controls:
   - Cross-lapperProfiling # percent
   - DrawFrameDraftRatio # percent
   # power consumption (additional)
-  - CardMassThroughputSetpoint # kg per h
+  - ProductionSpeedSetpoint # kg per h
   - Needleloom1FeedPerStroke # mm per stroke
   # tensile strength CD (additional)
   # tensile strength MD (additional)
@@ -19,7 +19,7 @@ used_controls:
   - v_WorkerPre # m per min
   - v_StripperPre # m per min
 used_dependent_variable_controls:
-  - LineSpeed # m per min
+  - MassThroughput # m per min
 used_disturbances:
   - FeederDeliverySpeed # m per min
   - ProductB # bool

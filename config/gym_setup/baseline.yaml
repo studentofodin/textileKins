@@ -8,6 +8,9 @@ action_space:
   Needleloom1DraftRatio:
     low: -100.0
     high: 100.0
+  ProductionSpeedSetpoint:
+    low:  0.0
+    high: 100.0
   Cross-lapperProfiling:
     low: -1000.0
     high: 1000.0
@@ -78,6 +81,9 @@ observation_space:
   DrawFrameDraftRatio:
     low: -1000.0
     high: 1000.0
+  ProductionSpeedSetpoint:
+    low:  0.0
+    high: 100.0
   CardMassThroughputSetpoint:
     low: -10000.0
     high: 10000.0

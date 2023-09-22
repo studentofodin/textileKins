@@ -18,18 +18,18 @@ def unpack_dict(X: dict, training_inputs: list[str]) -> np.array:
     X_unpacked = []
     for f in training_inputs:
         if f == "D_009_NM2_AuszGeschwS_m_min":
-            X_unpacked.append(X["LineSpeed"])
+            X_unpacked.append(X["ProductionSpeedSetpoint"])
         elif f == "D_036_K_Durchsatz_Ist_kg_h":
-            X_unpacked.append(X["CardMassThroughputSetpoint"])
+            X_unpacked.append(X["MassThroughput"])
         elif f == "M_010_FS_Zufuehr_m_min":
             X_unpacked.append(X["FeederDeliverySpeed"])
         elif f == "CL01_BeltSpeedActual":
-            cardDeliversSpeed = \
-                X["CardMassThroughputSetpoint"] * \
+            cardDeliverySpeed = \
+                X["MassThroughput"] * \
                 KG_H_TO_G_MIN / \
                 X["CardDeliveryWeightPerArea"] / \
                 CARD_DELIVERY_WIDTH
-            X_unpacked.append(cardDeliversSpeed)
+            X_unpacked.append(cardDeliverySpeed)
         elif f == "M_015_NM1_Vorschub_mm_H":
             X_unpacked.append(X["Needleloom1FeedPerStroke"])
         elif f == "M_005_NM2_Vorschub_mm_H":

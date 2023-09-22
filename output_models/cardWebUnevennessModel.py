@@ -28,7 +28,7 @@ def unpack_dict(X: dict, training_features: list[str]) -> np.array:
                     X["v_StripperPre"]
                 ), axis=1
             )
-            mean_masses = np.divide(X["CardMassThroughputSetpoint"] * SCALE_THROUGHPUT, velocities)
+            mean_masses = np.divide(X["MassThroughput"] * SCALE_THROUGHPUT, velocities)
             X_unpacked.append(np.mean(mean_masses, axis=1).reshape(-1, 1))
         elif f == "Diff_ArbeiterZuWender":
             X_unpacked.append(X["v_WorkerMain"] - X["v_StripperMain"])

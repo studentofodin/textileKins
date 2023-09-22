@@ -1,6 +1,6 @@
 import numpy as np
 
-KG_H_TO_G_MIN = 100 / 6
+G_MIN_TO_KG_H = 6 / 100
 
 
 def prcnt_to_mult(prcnt: float) -> float:
@@ -16,11 +16,11 @@ def calculate(X: dict[str, float]) -> np.array:
         prcnt_to_mult(X["Needleloom1DraftRatio"]) / \
         prcnt_to_mult(X["DrawFrameDraftRatio"])
 
-    line_speed = \
-        X["CardMassThroughputSetpoint"] / \
-        weight_per_area_theoretical / \
+    mass_throughput = \
+        X["ProductionSpeedSetpoint"] * \
+        weight_per_area_theoretical * \
         X["ProductWidth"] * \
-        KG_H_TO_G_MIN
+        G_MIN_TO_KG_H
 
-    line_speed = np.array(line_speed)
-    return line_speed
+    mass_throughput = np.array(mass_throughput)
+    return mass_throughput

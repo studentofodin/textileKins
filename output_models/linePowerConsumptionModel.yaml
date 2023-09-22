@@ -2,8 +2,8 @@ name: linePowerConsumptionModel
 model_class: Gpytorch
 data_source: BNP
 inputs:
-  - LineSpeed
-  - CardMassThroughputSetpoint
+  - ProductionSpeedSetpoint
+  - MassThroughput
   - FeederDeliverySpeed
   - CardDeliveryWeightPerArea
   - Needleloom1FeedPerStroke

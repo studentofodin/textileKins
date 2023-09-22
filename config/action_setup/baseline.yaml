@@ -5,7 +5,7 @@ initial_controls:
   Needleloom1DraftRatio: 43.0 # percent
   Cross-lapperProfiling: 0.0 # percent
   DrawFrameDraftRatio: 44.7 # percent
-  CardMassThroughputSetpoint: 715.6 # kg per h
+  ProductionSpeedSetpoint: 10.0 # m per min
   Needleloom1FeedPerStroke: 10.5 # mm per stroke
   Needleloom2NeedlepunchDepth: 10.8 # mm
   v_PreRoll: 215.0 # m per min
@@ -16,7 +16,7 @@ initial_controls:
   v_StripperPre: 65.0 # m per min
 path_to_dependent_variable_calculations: # use default if not a valid path
 dependent_variable_calculations:
-  LineSpeed: lineSpeedCalculation # m per min
+  MassThroughput: massThroughputCalculation # kg per h
 control_bounds:
   CardDeliveryWeightPerArea:
     lower: 45
@@ -33,12 +33,12 @@ control_bounds:
   DrawFrameDraftRatio:
     lower: 20
     upper: 90
-  CardMassThroughputSetpoint:
-    lower: 350
-    upper: 1100
   Needleloom1FeedPerStroke:
     lower: 9
     upper: 15
+  ProductionSpeedSetpoint:
+    lower: 3.0
+    upper: 15.5
   Needleloom2NeedlepunchDepth:
     lower: 9
     upper: 14
@@ -61,6 +61,6 @@ control_bounds:
     lower: 40
     upper: 85
 dependent_variable_bounds:
-  LineSpeed:
-    lower: 0
-    upper: 11
+  MassThroughput:
+    lower: 350
+    upper: 1150

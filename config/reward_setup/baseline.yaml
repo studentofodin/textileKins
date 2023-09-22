@@ -1,4 +1,3 @@
-penalty : 100.0
 reward_parameters:
   fibre_costs: 1.20 # € per kg
   energy_costs: 0.28 # € per kWh

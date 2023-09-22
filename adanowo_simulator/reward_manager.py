@@ -5,10 +5,11 @@ from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewar
 
 
 class RewardManager(AbstractRewardManager):
-    def __init__(self, reward_function: Callable, config: DictConfig):
+    def __init__(self, reward_function: Callable, penalty_function: Callable, config: DictConfig):
         self._initial_config: DictConfig = config.copy()
         self._config: DictConfig = self._initial_config.copy()
         self._reward_function = reward_function
+        self._penalty_function = penalty_function
         self._ready: bool = False
 
     @property
@@ -27,7 +28,7 @@ class RewardManager(AbstractRewardManager):
             # penalty.
             if not (all(
                     (output_constraints_met | control_constraints_met | dependent_variable_constraints_met).values())):
-                reward = -self._config.penalty
+                reward = -self._get_penalty(state, outputs)
             # no penalty.
             else:
                 reward = self._get_reward(state, outputs)
@@ -50,6 +51,10 @@ class RewardManager(AbstractRewardManager):
     def _get_reward(self, state: dict[str, float], outputs: dict[str, float]) -> float:
         reward = self._reward_function(state, outputs, self._config.reward_parameters)
         return reward
+
+    def _get_penalty(self, state: dict[str, float], outputs: dict[str, float]) -> float:
+        penalty = self._penalty_function(state, outputs, self._config.reward_parameters)
+        return penalty
 
     def _output_constraints_met(self, outputs: dict[str, float]) -> dict[str, bool]:
         output_constraints_met = dict()

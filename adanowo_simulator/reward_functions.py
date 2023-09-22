@@ -19,3 +19,15 @@ def baseline_reward(state: dict[str, float], outputs: dict[str, float], config: 
     reward = contribution_margin - floor_quality
 
     return reward
+
+
+def baseline_penalty(state: dict[str, float], outputs: dict[str, float], config: DictConfig) -> float:
+    # material costs
+    material_costs = state["MassThroughput"] * config.fibre_costs
+    # energy costs
+    energy_costs = outputs["LinePowerConsumption"] * config.energy_costs
+
+    # Calculate economic loss
+    penalty = - energy_costs - material_costs
+
+    return penalty

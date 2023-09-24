@@ -1,9 +1,7 @@
 import gpytorch
 import numpy as np
 from gpytorch.constraints import GreaterThan
-from gpytorch.kernels import (AdditiveKernel, PolynomialKernel, ProductKernel,
-                              RBFKernel, ScaleKernel)
-
+from gpytorch.kernels import PolynomialKernel, RBFKernel, ScaleKernel
 
 SCALE_AREA_WEIGHT = 0.158
 SCALE_THROUGHPUT = 0.030
@@ -42,13 +40,11 @@ class ExactGPModel(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood_mdl):
         super(ExactGPModel, self).__init__(train_x, train_y, likelihood_mdl)
 
-        kernel = AdditiveKernel(
-            ScaleKernel(
-                ProductKernel(PolynomialKernel(power=1, ard_num_dims=1, active_dims=(0,)),
-                              RBFKernel(ard_num_dims=1, active_dims=(0,)))
-            ),
+        kernel = ScaleKernel(
+           PolynomialKernel(power=1, ard_num_dims=1, active_dims=(0,)) *
+           RBFKernel(ard_num_dims=1, active_dims=(0,))
+        ) + \
             ScaleKernel(RBFKernel(ard_num_dims=3, lengthscale_constraint=GreaterThan(0.4)))
-        )
 
         self.mean_module = gpytorch.means.ConstantMean()
         self.covar_module = kernel

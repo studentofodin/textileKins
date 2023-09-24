@@ -1,7 +1,7 @@
 import gpytorch
 import numpy as np
 from gpytorch.constraints import GreaterThan, Interval
-from gpytorch.kernels import AdditiveKernel, PolynomialKernel, ProductKernel, RBFKernel, ScaleKernel
+from gpytorch.kernels import PolynomialKernel, RBFKernel, ScaleKernel
 
 
 def unpack_dict(X: dict, training_inputs: list[str]) -> np.array:
@@ -34,21 +34,14 @@ class ExactGPModel(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood_mdl):
         super(ExactGPModel, self).__init__(train_x, train_y, likelihood_mdl)
 
-        kernel = AdditiveKernel(
-            ScaleKernel(
-                ProductKernel(
-                    PolynomialKernel(power=1, active_dims=(0,), offset_constraint=Interval(0, 1)),
-                    PolynomialKernel(power=1, active_dims=(1,), offset_constraint=Interval(0, 3)),
-                    RBFKernel(ard_num_dims=1, active_dims=(2,), lengthscale_constraint=GreaterThan(10.0)),
-                    RBFKernel(ard_num_dims=1, active_dims=(3,), lengthscale_constraint=GreaterThan(5.0)),
-                    RBFKernel(ard_num_dims=1, active_dims=(4,), lengthscale_constraint=GreaterThan(13.0)),
-                    RBFKernel(ard_num_dims=1, active_dims=(5,), lengthscale_constraint=GreaterThan(2.0)),
+        kernel = ScaleKernel(
+                    PolynomialKernel(power=1, active_dims=(0,), offset_constraint=Interval(0, 1)) *
+                    PolynomialKernel(power=1, active_dims=(1,), offset_constraint=Interval(0, 3)) *
+                    RBFKernel(ard_num_dims=1, active_dims=(2,), lengthscale_constraint=GreaterThan(5.0)) *
+                    RBFKernel(ard_num_dims=1, active_dims=(3,), lengthscale_constraint=GreaterThan(5.0)) *
+                    RBFKernel(ard_num_dims=1, active_dims=(4,), lengthscale_constraint=GreaterThan(5.0)) *
+                    RBFKernel(ard_num_dims=1, active_dims=(5,), lengthscale_constraint=GreaterThan(5.0)) *
                     RBFKernel(ard_num_dims=1, active_dims=(6,), lengthscale_constraint=GreaterThan(5.0))
-                )
-            ),
-            ScaleKernel(
-                    PolynomialKernel(power=0, active_dims=(0,))
-            )
         )
 
         self.mean_module = gpytorch.means.ConstantMean()

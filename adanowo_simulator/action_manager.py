@@ -79,7 +79,8 @@ class ActionManager(AbstractActionManager):
             self._constraints_met(potential_controls, potential_dependent_variables)
 
         if not all((control_constraints_met | dependent_variable_constraints_met).values()):
-            raise AssertionError("The initial controls and dependent variables do not meet constraints. Aborting Experiment.")
+            raise AssertionError("The initial controls and dependent variables do not meet constraints. "
+                                 "Aborting Experiment.")
         self._controls = potential_controls
         dependent_variables = \
             self._calculate_potential_dependent_variables(self._controls | disturbances)
@@ -92,33 +93,25 @@ class ActionManager(AbstractActionManager):
 
     def _constraints_met(self, controls: dict[str, float], dependent_variables: dict[str, float]) -> \
             tuple[dict[str, bool], dict[str, bool]]:
-        # controls
-        control_constraints_met = dict()
-        for control_name, bounds in self._config.control_bounds.items():
-            if "lower" in bounds.keys():
-                if controls[control_name] < bounds.lower:
-                    control_constraints_met[f"{control_name}.lower"] = False
-                else:
-                    control_constraints_met[f"{control_name}.lower"] = True
-            if "upper" in bounds.keys():
-                if controls[control_name] > bounds.upper:
-                    control_constraints_met[f"{control_name}.upper"] = False
-                else:
-                    control_constraints_met[f"{control_name}.upper"] = True
 
-        # dependent_variables
-        dependent_variable_constraints_met = dict()
-        for control_name, bounds in self._config.dependent_variable_bounds.items():
-            if "lower" in bounds.keys():
-                if dependent_variables[control_name] < bounds.lower:
-                    dependent_variable_constraints_met[f"{control_name}.lower"] = False
-                else:
-                    dependent_variable_constraints_met[f"{control_name}.lower"] = True
-            if "upper" in bounds.keys():
-                if dependent_variables[control_name] > bounds.upper:
-                    dependent_variable_constraints_met[f"{control_name}.upper"] = False
-                else:
-                    dependent_variable_constraints_met[f"{control_name}.upper"] = True
+        def check_constraints(boundaries_to_check: DictConfig, actual_vars: dict[str, float]):
+            constraints_met = dict()
+            for ctrl_name, boundaries in boundaries_to_check.items():
+                if "lower" in boundaries.keys():
+                    if actual_vars[ctrl_name] < boundaries.lower:
+                        constraints_met[f"{ctrl_name}.lower"] = False
+                    else:
+                        constraints_met[f"{ctrl_name}.lower"] = True
+                if "upper" in boundaries.keys():
+                    if actual_vars[ctrl_name] > boundaries.upper:
+                        constraints_met[f"{ctrl_name}.upper"] = False
+                    else:
+                        constraints_met[f"{ctrl_name}.upper"] = True
+            return constraints_met
+
+        control_constraints_met = check_constraints(self._config.control_bounds, controls)
+        dependent_variable_constraints_met = check_constraints(self._config.dependent_variable_bounds,
+                                                               dependent_variables)
 
         return control_constraints_met, dependent_variable_constraints_met
 

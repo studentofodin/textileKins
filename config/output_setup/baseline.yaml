@@ -7,4 +7,3 @@ output_models:
   TensileStrengthCD: tensileStrengthCDModel
   TensileStrengthMD: tensileStrengthMDModel
   CardWebUnevenness: cardWebUnevennessModel
-observation_noise_only: True

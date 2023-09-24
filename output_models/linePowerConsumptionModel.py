@@ -1,7 +1,7 @@
 import gpytorch
 import numpy as np
 from gpytorch.constraints import GreaterThan
-from gpytorch.kernels import AdditiveKernel, RBFKernel, ScaleKernel
+from gpytorch.kernels import RBFKernel, ScaleKernel
 
 CARD_DELIVERY_WIDTH = 3  # m
 KG_H_TO_G_MIN = 100/6
@@ -45,16 +45,14 @@ class ExactGPModel(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood_mdl):
         super(ExactGPModel, self).__init__(train_x, train_y, likelihood_mdl)
 
-        kernel = AdditiveKernel(
+        kernel = ScaleKernel(
+            RBFKernel(ard_num_dims=3, active_dims=(0, 1, 2), lengthscale_constraint=GreaterThan(2.0))
+            ) + \
             ScaleKernel(
-                RBFKernel(ard_num_dims=3, active_dims=(0, 1, 2), lengthscale_constraint=GreaterThan(2.0)),
-            ),
+                RBFKernel(ard_num_dims=3, active_dims=(0, 1, 3), lengthscale_constraint=GreaterThan(1.0))
+            ) + \
             ScaleKernel(
-                RBFKernel(ard_num_dims=3, active_dims=(0, 1, 3), lengthscale_constraint=GreaterThan(1.0)),
-            ),
-            ScaleKernel(
-                RBFKernel(ard_num_dims=4, active_dims=(0, 1, 4, 5), lengthscale_constraint=GreaterThan(3.0)),
-            ),
+                RBFKernel(ard_num_dims=4, active_dims=(0, 1, 4, 5), lengthscale_constraint=GreaterThan(3.0))
         )
 
         self.mean_module = gpytorch.means.ConstantMean()

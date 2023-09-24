@@ -1,14 +1,14 @@
 from typing import Callable
 from omegaconf import DictConfig, OmegaConf
 
-from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewardManager
+from adanowo_simulator.abstract_base_classes.objective_manager import AbstractObjectiveManager
 
 
-class RewardManager(AbstractRewardManager):
-    def __init__(self, reward_function: Callable, penalty_function: Callable, config: DictConfig):
+class ObjectiveManager(AbstractObjectiveManager):
+    def __init__(self, objective_function: Callable, penalty_function: Callable, config: DictConfig):
         self._initial_config: DictConfig = config.copy()
         self._config: DictConfig = self._initial_config.copy()
-        self._reward_function = reward_function
+        self._reward_function = objective_function
         self._penalty_function = penalty_function
         self._ready: bool = False
 

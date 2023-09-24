@@ -10,6 +10,7 @@ class AbstractActionManager(ABC):
     An action manager processes actions into controls and dependent variables.
     It is not useful on its own and should be a member of an :py:class:'AbstractEnvironment'.
     """
+
     @property
     @abstractmethod
     def config(self) -> DictConfig:
@@ -23,7 +24,7 @@ class AbstractActionManager(ABC):
 
     @abstractmethod
     def step(self, actions: dict[str, float], disturbances: dict[str, float]) -> \
-            tuple[dict[str, float], dict[str, float], dict[str, bool], dict[str, bool]]:
+            tuple[dict[str, float], dict[str, bool]]:
         """Calculates controls and dependent variables.
 
         Checks if the control and dependent variable bounds (known from :py:attr:'config') would be exceeded
@@ -70,10 +71,10 @@ class AbstractActionManager(ABC):
             Initial dependent variables.
         dict[str, bool]
             A dictionary which contains for each control bound if it is exceeded (False) or not (True) by the initial controls.
-            This means meeting the constraints corresponds to the value True and violating them corresponds to the value False.
+            This means being within bounds corresponds to the value True and being out of bounds to the value False.
         dict[str, bool]
             A dictionary which contains for each dependent variable bound if it is exceeded (False) or not (True) by the initial dependent variables.
-            This means meeting the constraints corresponds to the value True and violating them corresponds to the value False.
+            This means being within bounds corresponds to the value True and being out of bounds to the value False.
         """
         pass
 
@@ -81,6 +82,3 @@ class AbstractActionManager(ABC):
     def close(self) -> None:
         """Closes the action manager."""
         pass
-
-
-

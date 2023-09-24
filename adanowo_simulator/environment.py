@@ -1,11 +1,11 @@
 import numpy as np
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 import logging
 import sys
 
 from adanowo_simulator.abstract_base_classes.environment import AbstractEnvironment
 from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
-from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewardManager
+from adanowo_simulator.abstract_base_classes.objective_manager import AbstractObjectiveManager
 from adanowo_simulator.abstract_base_classes.action_manager import AbstractActionManager
 from adanowo_simulator.abstract_base_classes.disturbance_manager import AbstractDisturbanceManager
 from adanowo_simulator.abstract_base_classes.experiment_tracker import AbstractExperimentTracker
@@ -19,12 +19,12 @@ class Environment(AbstractEnvironment):
     def __init__(
             self, config: DictConfig, disturbance_manager: AbstractDisturbanceManager,
             action_manager: AbstractActionManager, output_manager: AbstractOutputManager,
-            reward_manager: AbstractRewardManager, scenario_manager: AbstractScenarioManager,
+            reward_manager: AbstractObjectiveManager, scenario_manager: AbstractScenarioManager,
             experiment_tracker: AbstractExperimentTracker):
         self._disturbance_manager: AbstractDisturbanceManager = disturbance_manager
         self._action_manager: AbstractActionManager = action_manager
         self._output_manager: AbstractOutputManager = output_manager
-        self._reward_manager: AbstractRewardManager = reward_manager
+        self._objective_manager: AbstractObjectiveManager = reward_manager
         self._scenario_manager: AbstractScenarioManager = scenario_manager
         self._experiment_tracker: AbstractExperimentTracker = experiment_tracker
 
@@ -55,8 +55,8 @@ class Environment(AbstractEnvironment):
         return self._output_manager
 
     @property
-    def reward_manager(self) -> AbstractRewardManager:
-        return self._reward_manager
+    def reward_manager(self) -> AbstractObjectiveManager:
+        return self._objective_manager
 
     @property
     def scenario_manager(self) -> AbstractScenarioManager:
@@ -80,7 +80,7 @@ class Environment(AbstractEnvironment):
                     self._action_manager.step(actions, disturbances)
                 state = disturbances | controls | dependent_variables
                 outputs = self._output_manager.step(state)
-                reward, output_constraints_met = self._reward_manager.step(
+                reward, output_constraints_met = self._objective_manager.step(
                     state, outputs, control_constraints_met, dependent_variable_constraints_met)
                 log_variables = {
                     "Performance-Metrics": {
@@ -101,7 +101,7 @@ class Environment(AbstractEnvironment):
                 # prepare next step.
                 self._step_index += 1
                 self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
-                                            self._reward_manager)
+                                            self._objective_manager)
                 disturbances = self._disturbance_manager.step()
                 state = disturbances | controls | dependent_variables
                 observations = self._collect_observations(state, outputs)
@@ -127,7 +127,7 @@ class Environment(AbstractEnvironment):
                 self._action_manager.reset(disturbances)
             state = disturbances | controls | dependent_variables
             outputs = self._output_manager.reset(state)
-            reward, output_constraints_met = self._reward_manager.reset(
+            reward, output_constraints_met = self._objective_manager.reset(
                 state, outputs, control_constraints_met, dependent_variable_constraints_met)
             log_variables = {
                 "Performance-Metrics": {
@@ -148,7 +148,7 @@ class Environment(AbstractEnvironment):
             # prepare step 1.
             self._step_index = 1
             self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
-                                        self._reward_manager)
+                                        self._objective_manager)
             disturbances = self._disturbance_manager.step()
             state = disturbances | controls | dependent_variables
             observations = self._collect_observations(state, outputs)
@@ -178,7 +178,7 @@ class Environment(AbstractEnvironment):
         except Exception as e:
             exceptions.append(e)
         try:
-            self._reward_manager.close()
+            self._objective_manager.close()
         except Exception as e:
             exceptions.append(e)
         try:
@@ -223,4 +223,3 @@ class Environment(AbstractEnvironment):
         for index, key in enumerate(keys):
             array[index] = dictionary[key]
         return array
-

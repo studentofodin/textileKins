@@ -1,6 +1,6 @@
 output_models:
   # [[step_index_1, model_name_1], [step_index_2, model_name_2],...]
-  AreaWeightLane2: [[1, areaWeightLane2Model]]
+  AreaWeightLane2: [[1, "areaWeightLane2Model"]]
 output_bounds:
   # [[step_index_1, value_1], [step_index_2, value_2],...]
   AreaWeightLane1:

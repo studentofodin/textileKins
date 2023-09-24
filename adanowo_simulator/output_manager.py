@@ -19,8 +19,7 @@ SEND = 1
 DEFAULT_RELATIVE_PATH = "./output_models"
 
 
-def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pipe, observation_noise_only: bool,
-                   model_uncertainty_only: bool):
+def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pipe, model_uncertainty_only: bool):
     while True:
         if input_pipe.poll():
             input_recv = input_pipe.recv()
@@ -30,7 +29,7 @@ def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pip
             if model_uncertainty_only:
                 mean_pred, var_pred = mdl.predict_f(input_recv)
             else:
-                mean_pred, var_pred = mdl.predict_y(input_recv, observation_noise_only=observation_noise_only)
+                mean_pred, var_pred = mdl.predict_y(input_recv, observation_noise_only=True)
             output_pipe.send((mean_pred, var_pred))
 
 
@@ -181,10 +180,9 @@ class ParallelOutputManager(AbstractOutputManager):
         self._output_pipes[output_name] = new_output_pipe
         self._model_processes[output_name] = \
             Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND],
-                                                 self._config.observation_noise_only, self._model_uncertainty_only))
+                                                 True, self._model_uncertainty_only))
         self._model_processes[output_name].start()
         logger.info(f"Allocated model {model_name} to output {output_name}.")
-
 
 
 class SequentialOutputManager(AbstractOutputManager):
@@ -257,7 +255,7 @@ class SequentialOutputManager(AbstractOutputManager):
                 mean_pred[output_name], var_pred[output_name] = mdl.predict_f(X)
             else:
                 mean_pred[output_name], var_pred[output_name] = mdl.predict_y(
-                    X, observation_noise_only=self._config.observation_noise_only)
+                    X, observation_noise_only=True)
 
         return mean_pred, var_pred
 

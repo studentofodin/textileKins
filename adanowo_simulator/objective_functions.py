@@ -3,7 +3,7 @@ from omegaconf import DictConfig
 H_TO_MIN = 60
 
 
-def baseline_reward(state: dict[str, float], outputs: dict[str, float], config: DictConfig) -> float:
+def baseline_objective(state: dict[str, float], outputs: dict[str, float], config: DictConfig) -> float:
     # material costs
     material_costs = state["MassThroughput"] * config.fibre_costs
     # energy costs

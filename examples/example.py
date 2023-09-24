@@ -5,7 +5,7 @@ import os
 # from stable_baselines3.common.env_checker import check_env
 # from stable_baselines3 import A2C
 
-from adanowo_simulator.reward_manager import RewardManager
+from adanowo_simulator.objective_manager import ObjectiveManager
 from adanowo_simulator.action_manager import ActionManager
 from adanowo_simulator.disturbance_manager import DisturbanceManager
 from adanowo_simulator.output_manager import ParallelOutputManager, SequentialOutputManager
@@ -13,7 +13,7 @@ from adanowo_simulator.scenario_manager import ScenarioManager
 from adanowo_simulator.experiment_tracker import WandBTracker
 from adanowo_simulator.environment import Environment
 from adanowo_simulator.gym_wrapper import GymWrapper
-from adanowo_simulator.reward_functions import baseline_reward, baseline_penalty
+from adanowo_simulator.objective_functions import baseline_objective, baseline_penalty
 
 os.environ["WANDB_SILENT"] = "true"
 
@@ -25,7 +25,7 @@ def main(config: DictConfig):
     action_manager = ActionManager(config.action_setup, config.action_setup.actions_are_relative)
     output_manager = SequentialOutputManager(config.output_setup)
     # output_manager = ParallelOutputManager(config.output_setup)
-    reward_manager = RewardManager(baseline_reward, baseline_penalty, config.reward_setup)
+    reward_manager = ObjectiveManager(baseline_objective, baseline_penalty, config.reward_setup)
     scenario_manager = ScenarioManager(config.scenario_setup)
     experiment_tracker = WandBTracker(config.experiment_tracker, config)
     environment = Environment(config.env_setup, disturbance_manager, action_manager, output_manager,

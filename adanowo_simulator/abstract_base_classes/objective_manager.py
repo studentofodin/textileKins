@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from omegaconf import DictConfig
 
 
-class AbstractRewardManager(ABC):
+class AbstractObjectiveManager(ABC):
 
     @property
     @abstractmethod

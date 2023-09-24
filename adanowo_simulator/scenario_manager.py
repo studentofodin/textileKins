@@ -3,7 +3,7 @@ import numpy as np
 
 from adanowo_simulator.abstract_base_classes.scenario_manager import AbstractScenarioManager
 from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
-from adanowo_simulator.abstract_base_classes.reward_manager import AbstractRewardManager
+from adanowo_simulator.abstract_base_classes.objective_manager import AbstractObjectiveManager
 from adanowo_simulator.abstract_base_classes.disturbance_manager import AbstractDisturbanceManager
 
 
@@ -23,7 +23,7 @@ class ScenarioManager(AbstractScenarioManager):
         self._config = c
 
     def step(self, step_index: int, disturbance_manager: AbstractDisturbanceManager,
-             output_manager: AbstractOutputManager, reward_manager: AbstractRewardManager):
+             output_manager: AbstractOutputManager, reward_manager: AbstractObjectiveManager):
         if self._ready:
             self._update_disturbances(step_index, disturbance_manager.config.disturbances)
             self._update_output_bounds(step_index, reward_manager.config.output_bounds)

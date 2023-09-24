@@ -14,7 +14,8 @@ class AbstractActionManager(ABC):
         pass
 
     @abstractmethod
-    def step(self, actions: dict[str, float], disturbances: dict[str, float]) -> tuple[dict[str, float], dict[str, bool]]:
+    def step(self, actions: dict[str, float], disturbances: dict[str, float]) -> (
+            tuple)[dict[str, float], dict[str, bool]]:
         pass
 
     @abstractmethod

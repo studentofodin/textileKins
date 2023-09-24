@@ -35,11 +35,6 @@ class AbstractEnvironment(ABC):
 
     @property
     @abstractmethod
-    def action_manager(self) -> AbstractActionManager:
-        pass
-
-    @property
-    @abstractmethod
     def output_manager(self) -> AbstractOutputManager:
         pass
 

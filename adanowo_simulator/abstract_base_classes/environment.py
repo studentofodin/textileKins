@@ -24,7 +24,7 @@ class AbstractEnvironment(ABC):
         The additional process variables are:
         * *Disturbances* - Variables that can not be manipulated.
         Some of them might be manipulable in general but the considered configuration predefines their values.
-        * *setpoints* - Variables that can be manipulated with the purpose of maximizing the objective value.
+        * *Setpoints* - Variables that can be manipulated with the purpose of maximizing the objective value.
         They can be calculated from the actions either in an absolute or relative manner.
         | Absolute manner: setpoints(t) = actions(t)
         | Relative manner: setpoints(t) = setpoints(t-1) + actions(t)
@@ -40,12 +40,13 @@ class AbstractEnvironment(ABC):
         Thus, outputs have to be measured on a physical machine.
         In a simulation environment models have to be used that are not capable to fully describe the real world.
 
-        setpoints, dependent variables and outputs may be bounded.
+        Setpoints, dependent variables and outputs may be bounded.
         If so, their bounds have to be checked.
         An environment's behaviour in the case of bound exceedance depends on the specific implementation.
 
         The observations of an environment also depend on the specific implementation.
-        They have to be calculable from the process variables und usually are a subset of them.
+        They have to be calculable from the process variables, i.e. observations(t) = f(process_variables(t)) and
+        usually are a subset of them.
 
         .. note::
         Assume variable y depends on a variable x.

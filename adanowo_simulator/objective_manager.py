@@ -21,13 +21,13 @@ class ObjectiveManager(AbstractObjectiveManager):
         self._config = c
 
     def step(self, state: dict[str, float], outputs: dict[str, float],
-             control_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
+             setpoint_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
             tuple[float, dict[str, bool]]:
         if self._ready:
             output_constraints_met = self._output_constraints_met(outputs)
             # penalty.
             if not (all(
-                    (output_constraints_met | control_constraints_met | dependent_variable_constraints_met).values())):
+                    (output_constraints_met | setpoint_constraints_met | dependent_variable_constraints_met).values())):
                 reward = -self._get_penalty(state, outputs)
             # no penalty.
             else:
@@ -37,12 +37,12 @@ class ObjectiveManager(AbstractObjectiveManager):
         return reward, output_constraints_met
 
     def reset(self, state: dict[str, float], outputs: dict[str, float],
-              control_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
+              setpoint_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
             tuple[float, dict[str, bool]]:
         self._config = self._initial_config.copy()
         self._ready = True
         reward, output_constraints_met = self.step(
-            state, outputs, control_constraints_met, dependent_variable_constraints_met)
+            state, outputs, setpoint_constraints_met, dependent_variable_constraints_met)
         return reward, output_constraints_met
 
     def close(self) -> None:

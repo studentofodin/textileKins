@@ -16,13 +16,13 @@ class AbstractObjectiveManager(ABC):
 
     @abstractmethod
     def step(self, state: dict[str, float], outputs: dict[str, float],
-             control_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
+             setpoint_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
             tuple[float, dict[str, bool]]:
         pass
 
     @abstractmethod
     def reset(self, state: dict[str, float], outputs: dict[str, float],
-              control_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
+              setpoint_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
             tuple[float, dict[str, bool]]:
         pass
 

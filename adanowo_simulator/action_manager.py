@@ -36,7 +36,7 @@ class ActionManager(AbstractActionManager):
         self._initial_config: DictConfig = config.copy()
         self._config: DictConfig = self._initial_config.copy()
         self._actions_are_relative: bool = actions_are_relative
-        self._controls: dict[str, float] = dict()
+        self._setpoints: dict[str, float] = dict()
         self._dependent_variable_calculations: dict[str, CalculationAdapter] = dict()
         self._ready: bool = False
 
@@ -51,47 +51,47 @@ class ActionManager(AbstractActionManager):
     def step(self, actions: dict[str, float], disturbances: dict[str, float]) -> \
             tuple[dict[str, float], dict[str, float],  dict[str, bool], dict[str, bool]]:
         if self._ready:
-            potential_controls = self._calculate_potential_controls(actions)
+            potential_setpoints = self._calculate_potential_setpoints(actions)
             potential_dependent_variables = \
-                self._calculate_potential_dependent_variables(potential_controls | disturbances)
-            control_constraints_met, dependent_variable_constraints_met = \
-                self._constraints_met(potential_controls, potential_dependent_variables)
+                self._calculate_potential_dependent_variables(potential_setpoints | disturbances)
+            setpoint_constraints_met, dependent_variable_constraints_met = \
+                self._constraints_met(potential_setpoints, potential_dependent_variables)
 
-            if all((control_constraints_met | dependent_variable_constraints_met).values()):
-                self._controls = potential_controls
+            if all((setpoint_constraints_met | dependent_variable_constraints_met).values()):
+                self._setpoints = potential_setpoints
             dependent_variables = \
-                self._calculate_potential_dependent_variables(self._controls | disturbances)
+                self._calculate_potential_dependent_variables(self._setpoints | disturbances)
         else:
             raise Exception("Cannot call step() before calling reset().")
 
-        return self._controls, dependent_variables, control_constraints_met, dependent_variable_constraints_met
+        return self._setpoints, dependent_variables, setpoint_constraints_met, dependent_variable_constraints_met
 
     def reset(self, disturbances: dict[str, float]) -> \
             tuple[dict[str, float], dict[str, float],  dict[str, bool], dict[str, bool]]:
         self._config = self._initial_config.copy()
 
-        potential_controls = OmegaConf.to_container(self._config.initial_controls)
+        potential_setpoints = OmegaConf.to_container(self._config.initial_setpoints)
         if not self._dependent_variable_calculations:
             self._allocate_dependent_variable_calculations()
         potential_dependent_variables = \
-            self._calculate_potential_dependent_variables(potential_controls | disturbances)
-        control_constraints_met, dependent_variable_constraints_met = \
-            self._constraints_met(potential_controls, potential_dependent_variables)
+            self._calculate_potential_dependent_variables(potential_setpoints | disturbances)
+        setpoint_constraints_met, dependent_variable_constraints_met = \
+            self._constraints_met(potential_setpoints, potential_dependent_variables)
 
-        if not all((control_constraints_met | dependent_variable_constraints_met).values()):
-            raise AssertionError("The initial controls and dependent variables do not meet constraints. "
+        if not all((setpoint_constraints_met | dependent_variable_constraints_met).values()):
+            raise AssertionError("The initial setpoints and dependent variables do not meet constraints. "
                                  "Aborting Experiment.")
-        self._controls = potential_controls
+        self._setpoints = potential_setpoints
         dependent_variables = \
-            self._calculate_potential_dependent_variables(self._controls | disturbances)
+            self._calculate_potential_dependent_variables(self._setpoints | disturbances)
         self._ready = True
 
-        return self._controls, dependent_variables, control_constraints_met, dependent_variable_constraints_met
+        return self._setpoints, dependent_variables, setpoint_constraints_met, dependent_variable_constraints_met
 
     def close(self) -> None:
         self._ready = False
 
-    def _constraints_met(self, controls: dict[str, float], dependent_variables: dict[str, float]) -> \
+    def _constraints_met(self, setpoints: dict[str, float], dependent_variables: dict[str, float]) -> \
             tuple[dict[str, bool], dict[str, bool]]:
 
         def check_constraints(boundaries_to_check: DictConfig, actual_vars: dict[str, float]):
@@ -109,11 +109,11 @@ class ActionManager(AbstractActionManager):
                         constraints_met[f"{ctrl_name}.upper"] = True
             return constraints_met
 
-        control_constraints_met = check_constraints(self._config.control_bounds, controls)
+        setpoint_constraints_met = check_constraints(self._config.setpoint_bounds, setpoints)
         dependent_variable_constraints_met = check_constraints(self._config.dependent_variable_bounds,
                                                                dependent_variables)
 
-        return control_constraints_met, dependent_variable_constraints_met
+        return setpoint_constraints_met, dependent_variable_constraints_met
 
     def _allocate_dependent_variable_calculations(self) -> None:
         for dependent_variable_name, calculation in self._config.dependent_variable_calculations.items():
@@ -122,17 +122,17 @@ class ActionManager(AbstractActionManager):
             self._dependent_variable_calculations[dependent_variable_name] = CalculationAdapter(calculation_module)
             logger.info(f"Allocated calculation {calculation} to dependent variable {dependent_variable_name}.")
 
-    def _calculate_potential_controls(self, actions: dict[str, float]) -> dict[str, float]:
+    def _calculate_potential_setpoints(self, actions: dict[str, float]) -> dict[str, float]:
         # relative actions.
         if self._config.actions_are_relative:
-            potential_controls = dict()
-            for control_name in self._config.initial_controls.keys():
-                potential_controls[control_name] = self._controls[control_name] + actions[control_name]
+            potential_setpoints = dict()
+            for setpoint_name in self._config.initial_setpoints.keys():
+                potential_setpoints[setpoint_name] = self._setpoints[setpoint_name] + actions[setpoint_name]
         # absolute actions.
         else:
-            potential_controls = actions
+            potential_setpoints = actions
 
-        return potential_controls
+        return potential_setpoints
 
     def _calculate_potential_dependent_variables(self, X: dict[str, float]) -> dict[str, float]:
         potential_dependent_variables = dict()

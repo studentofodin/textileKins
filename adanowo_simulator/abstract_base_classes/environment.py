@@ -23,24 +23,24 @@ class AbstractEnvironment(ABC):
         This means the process variables are considered after all transient phenomena have decayed.
         The additional process variables are:
         * *Disturbances* - Variables that can not be manipulated.
-        Some of them might be manipulatable in general but the considered configuration predefines their values.
-        * *Controls* - Variables that can be manipulated with the purpose of maximizing the objective value.
+        Some of them might be manipulable in general but the considered configuration predefines their values.
+        * *setpoints* - Variables that can be manipulated with the purpose of maximizing the objective value.
         They can be calculated from the actions either in an absolute or relative manner.
-        | Absolute manner: controls(t) = actions(t)
-        | Relative manner: controls(t) = controls(t-1) + actions(t)
+        | Absolute manner: setpoints(t) = actions(t)
+        | Relative manner: setpoints(t) = setpoints(t-1) + actions(t)
         The absolute manner results in a static system, whereas the relative manner results in a dynamic system.
-        * *Dependent variables* - Important variables that can be calculated from the controls and disturbances, i.e.
-        dependent_variables(t) = g(controls(t), disturbances(t)).
+        * *Dependent variables* - Important variables that can be calculated from the setpoints and disturbances, i.e.
+        dependent_variables(t) = g(setpoints(t), disturbances(t)).
         They are introduced either because their bounds have to be checked or
         their values are needed several at several points and by saving them their calculation is done only once instead of several times.
-        * *State* - Combination of disturbances, controls and dependent variables.
+        * *State* - Combination of disturbances, setpoints and dependent variables.
         * *Outputs* - Variables that can not be calculated directly.
         They depend not only on the state but on many more variables that are not incorporated in the state.
         Furthermore, the relationship between the state and the outputs can be complex.
         Thus, outputs have to be measured on a physical machine.
         In a simulation environment models have to be used that are not capable to fully describe the real world.
 
-        Controls, dependent variables and outputs may be bounded.
+        setpoints, dependent variables and outputs may be bounded.
         If so, their bounds have to be checked.
         An environment's behaviour in the case of bound exceedance depends on the specific implementation.
 
@@ -59,9 +59,9 @@ class AbstractEnvironment(ABC):
         A scenario describes changes in the :py:attr:'config' of the members during a sequence of steps.
         The members are:
         * :py:attr:'disturbance_manager' - Gets the disturbances and returns them.
-        * :py:attr:'action_manager' - Checks if the control and dependent variable bounds would be exceeded
+        * :py:attr:'action_manager' - Checks if the setpoint and dependent variable bounds would be exceeded
         if the actions received from the agent were applied blindly and returns the results of the checks.
-        Based on the check results, calculates the controls and dependent variables and returns them.
+        Based on the check results, calculates the setpoints and dependent variables and returns them.
         * :py:attr:'output_manager' - Gets the outputs (via measurement or model)  and returns them.
         * :py:attr:'objective_manager' - Checks if the output bounds are exceeded and returns the results of the checks.
         Calculates the objective value (which may depend on the results of the output bound checks) and returns it.
@@ -100,11 +100,11 @@ class AbstractEnvironment(ABC):
     @property
     @abstractmethod
     def action_manager(self) -> AbstractActionManager:
-        """Processes the actions and disturbances into controls and dependent variables. Readonly.
+        """Processes the actions and disturbances into setpoints and dependent variables. Readonly.
 
-        Checks if the control and dependent variable bounds would be exceeded
+        Checks if the setpoint and dependent variable bounds would be exceeded
         if the actions received from the agent were applied blindly and returns the results of the checks.
-        Based on the check results, calculates the controls and dependent variables and returns them.
+        Based on the check results, calculates the setpoints and dependent variables and returns them.
         """
         pass
 

@@ -5,7 +5,7 @@ from omegaconf import DictConfig
 class AbstractActionManager(ABC):
     """Abstract class for an action manager.
 
-    An action manager processes actions into controls and dependent variables.
+    An action manager processes actions into setpoints and dependent variables.
     It is not useful on its own and should be a member of an
     :py:class:'~adanowo_simulator.abstract_base_classes.environment.AbstractEnvironment'.
     """
@@ -13,7 +13,7 @@ class AbstractActionManager(ABC):
     @property
     @abstractmethod
     def config(self) -> DictConfig:
-        """Configuration of an action manager. Must contain the control and dependent variable bounds."""
+        """Configuration of an action manager. Must contain the setpoint and dependent variable bounds."""
         pass
 
     @config.setter
@@ -24,27 +24,27 @@ class AbstractActionManager(ABC):
     @abstractmethod
     def step(self, actions: dict[str, float], disturbances: dict[str, float]) -> \
             tuple[dict[str, float], dict[str, bool]]:
-        """Calculates controls and dependent variables.
+        """Calculates setpoints and dependent variables.
 
-        Checks if the control and dependent variable bounds (known from :py:attr:'config') would be exceeded
+        Checks if the setpoint and dependent variable bounds (known from :py:attr:'config') would be exceeded
         if the received actions were applied blindly.
-        Based on the check results, calculates controls and dependent variables.
+        Based on the check results, calculates setpoints and dependent variables.
 
-        If the control bounds are not exceeded we have
-        controls(t) = actions(t) if the action manager is implemented in an absolute manner and
-        controls(t) = controls(t-1) + actions(t) if the action manager is implemented in a relative manner.
+        If the setpoint bounds are not exceeded we have
+        setpoints(t) = actions(t) if the action manager is implemented in an absolute manner and
+        setpoints(t) = setpoints(t-1) + actions(t) if the action manager is implemented in a relative manner.
         The absolute manner results in a static system, whereas the relative manner results in a dynamic system.
         For the dependent variables we have an arbitrary calculation
-        dependent_variables(t) = g(controls(t), disturbances(t)).
+        dependent_variables(t) = g(setpoints(t), disturbances(t)).
 
         Returns
         -------
         dict[str, float]
-            controls.
+            Setpoints.
         dict[str, float]
             Dependent variables.
         dict[str, bool]
-            A dictionary which contains for each control bound if it was exceeded (False) or not (True)
+            A dictionary which contains for each setpoint bound if it was exceeded (False) or not (True)
             if the actions would be applied blindly.
             This means meeting the constraints corresponds to the value True and violating them corresponds to the value False.
         dict[str, bool]
@@ -60,16 +60,16 @@ class AbstractActionManager(ABC):
         """Resets the action manager to initial values and calculates initial dependent variables from them.
 
         For the initial dependent variables we have an arbitrary calculation
-        initial_dependent_variables = g(initial_controls, initial_disturbances).
+        initial_dependent_variables = g(initial_setpoints, initial_disturbances).
 
         Returns
         -------
         dict[str, float]
-            Initial controls.
+            Initial setpoints.
         dict[str, float]
             Initial dependent variables.
         dict[str, bool]
-            A dictionary which contains for each control bound if it is exceeded (False) or not (True) by the initial controls.
+            A dictionary which contains for each setpoint bound if it is exceeded (False) or not (True) by the initial setpoints.
             This means being within bounds corresponds to the value True and being out of bounds to the value False.
         dict[str, bool]
             A dictionary which contains for each dependent variable bound if it is exceeded (False) or not (True) by the initial dependent variables.

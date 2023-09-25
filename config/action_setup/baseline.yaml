@@ -1,5 +1,5 @@
 actions_are_relative: True
-initial_controls:
+initial_setpoints:
   CardDeliveryWeightPerArea: 63.7 # g per sqm
   Cross-lapperLayersCount: 12.0 # -
   Needleloom1DraftRatio: 43.0 # percent
@@ -17,7 +17,7 @@ initial_controls:
 path_to_dependent_variable_calculations: # use default if not a valid path
 dependent_variable_calculations:
   MassThroughput: massThroughputCalculation # kg per h
-control_bounds:
+setpoint_bounds:
   CardDeliveryWeightPerArea:
     lower: 45
     upper: 85

@@ -1,14 +1,13 @@
 from abc import ABC, abstractmethod
 from omegaconf import DictConfig
 
-from adanowo_simulator.abstract_base_classes.environment import AbstractEnvironment
-
 
 class AbstractActionManager(ABC):
     """Abstract class for an action manager.
 
     An action manager processes actions into controls and dependent variables.
-    It is not useful on its own and should be a member of an :py:class:'AbstractEnvironment'.
+    It is not useful on its own and should be a member of an
+    :py:class:'~adanowo_simulator.abstract_base_classes.environment.AbstractEnvironment'.
     """
 
     @property
@@ -41,7 +40,7 @@ class AbstractActionManager(ABC):
         Returns
         -------
         dict[str, float]
-            Controls.
+            controls.
         dict[str, float]
             Dependent variables.
         dict[str, bool]

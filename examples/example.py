@@ -25,11 +25,11 @@ def main(config: DictConfig):
     action_manager = ActionManager(config.action_setup, config.action_setup.actions_are_relative)
     output_manager = SequentialOutputManager(config.output_setup)
     # output_manager = ParallelOutputManager(config.output_setup)
-    reward_manager = ObjectiveManager(baseline_objective, baseline_penalty, config.reward_setup)
+    objective_manager = ObjectiveManager(baseline_objective, baseline_penalty, config.objective_setup)
     scenario_manager = ScenarioManager(config.scenario_setup)
     experiment_tracker = WandBTracker(config.experiment_tracker, config)
     environment = Environment(config.env_setup, disturbance_manager, action_manager, output_manager,
-                              reward_manager, scenario_manager, experiment_tracker)
+                              objective_manager, scenario_manager, experiment_tracker)
     gym_wrapper = GymWrapper(environment, config.gym_setup, config.env_setup)
 
     # check_env(gym_wrapper)

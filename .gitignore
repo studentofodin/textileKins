@@ -5,7 +5,7 @@
 *.ipynb
 *.xlsx
 *outputs
-wandb/
 .idea/
 *__pycache__*
-*/wandb/*
+*wandb/
+*poetry.lock

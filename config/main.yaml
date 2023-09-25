@@ -3,7 +3,7 @@ defaults:
   - disturbance_setup: baseline
   - action_setup: baseline
   - output_setup: baseline
-  - reward_setup: baseline
+  - objective_setup: baseline
   - scenario_setup: baseline
   - gym_setup: baseline
   - _self_

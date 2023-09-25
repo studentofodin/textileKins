@@ -23,10 +23,10 @@ class ScenarioManager(AbstractScenarioManager):
         self._config = c
 
     def step(self, step_index: int, disturbance_manager: AbstractDisturbanceManager,
-             output_manager: AbstractOutputManager, reward_manager: AbstractObjectiveManager):
+             output_manager: AbstractOutputManager, objective_manager: AbstractObjectiveManager):
         if self._ready:
             self._update_disturbances(step_index, disturbance_manager.config.disturbances)
-            self._update_output_bounds(step_index, reward_manager.config.output_bounds)
+            self._update_output_bounds(step_index, objective_manager.config.output_bounds)
             self._update_output_model_allocation(step_index, output_manager.config.output_models)
         else:
             raise Exception("Cannot call step() before calling reset().")

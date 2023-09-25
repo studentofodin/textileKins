@@ -19,7 +19,7 @@ class AbstractScenarioManager(ABC):
 
     @abstractmethod
     def step(self, step_index: int, disturbance_manager: AbstractDisturbanceManager,
-             output_manager: AbstractOutputManager, reward_manager: AbstractObjectiveManager) -> None:
+             output_manager: AbstractOutputManager, objective_manager: AbstractObjectiveManager) -> None:
         pass
 
     def reset(self) -> None:

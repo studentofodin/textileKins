@@ -19,12 +19,12 @@ class Environment(AbstractEnvironment):
     def __init__(
             self, config: DictConfig, disturbance_manager: AbstractDisturbanceManager,
             action_manager: AbstractActionManager, output_manager: AbstractOutputManager,
-            reward_manager: AbstractObjectiveManager, scenario_manager: AbstractScenarioManager,
+            objective_manager: AbstractObjectiveManager, scenario_manager: AbstractScenarioManager,
             experiment_tracker: AbstractExperimentTracker):
         self._disturbance_manager: AbstractDisturbanceManager = disturbance_manager
         self._action_manager: AbstractActionManager = action_manager
         self._output_manager: AbstractOutputManager = output_manager
-        self._objective_manager: AbstractObjectiveManager = reward_manager
+        self._objective_manager: AbstractObjectiveManager = objective_manager
         self._scenario_manager: AbstractScenarioManager = scenario_manager
         self._experiment_tracker: AbstractExperimentTracker = experiment_tracker
 
@@ -55,7 +55,7 @@ class Environment(AbstractEnvironment):
         return self._output_manager
 
     @property
-    def reward_manager(self) -> AbstractObjectiveManager:
+    def objective_manager(self) -> AbstractObjectiveManager:
         return self._objective_manager
 
     @property
@@ -80,11 +80,11 @@ class Environment(AbstractEnvironment):
                     self._action_manager.step(actions, disturbances)
                 state = disturbances | controls | dependent_variables
                 outputs = self._output_manager.step(state)
-                reward, output_constraints_met = self._objective_manager.step(
+                objective_value, output_constraints_met = self._objective_manager.step(
                     state, outputs, control_constraints_met, dependent_variable_constraints_met)
                 log_variables = {
                     "Performance-Metrics": {
-                        "Reward": reward,
+                        "Objective Value": objective_value,
                         "Control-Constraints-Met": int(all(control_constraints_met.values())),
                         "Dependent-Variable-Constraints-Met": int(all(dependent_variable_constraints_met.values())),
                         "Output-Constraints-Met": int(all(output_constraints_met.values()))},
@@ -113,7 +113,7 @@ class Environment(AbstractEnvironment):
         else:
             raise Exception("Cannot call step() before calling reset().")
 
-        return observations, reward
+        return observations, objective_value
 
     def reset(self) -> tuple[np.array, float]:
         logger.info("Resetting environment...")
@@ -127,11 +127,11 @@ class Environment(AbstractEnvironment):
                 self._action_manager.reset(disturbances)
             state = disturbances | controls | dependent_variables
             outputs = self._output_manager.reset(state)
-            reward, output_constraints_met = self._objective_manager.reset(
+            objective_value, output_constraints_met = self._objective_manager.reset(
                 state, outputs, control_constraints_met, dependent_variable_constraints_met)
             log_variables = {
                 "Performance-Metrics": {
-                    "Reward": reward,
+                    "Objective-Value": objective_value,
                     "Control-Constraints-Met": int(all(control_constraints_met.values())),
                     "Dependent-Variable-Constraints-Met": int(all(dependent_variable_constraints_met.values())),
                     "Output-Constraints-Met": int(all(output_constraints_met.values()))},
@@ -160,7 +160,7 @@ class Environment(AbstractEnvironment):
         self._ready = True
         logger.info("...environment has been reset.")
 
-        return observations, reward
+        return observations, objective_value
 
     def close(self) -> None:
         logger.info("Closing environment...")

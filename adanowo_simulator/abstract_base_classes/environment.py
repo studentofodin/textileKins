@@ -15,7 +15,7 @@ class AbstractEnvironment(ABC):
     """Abstract class for an environment that represent the stationary behaviour of a non-woven production process.
 
         From an outside point of view an environment receives *actions* from an *agent*,
-        processes them and returns *observations* as well as a *reward*.
+        processes them and returns *observations* as well as a *objective value*.
         This is called a *step*.
 
         Internally, process variables are used.
@@ -24,7 +24,7 @@ class AbstractEnvironment(ABC):
         The additional process variables are:
         * *Disturbances* - Variables that can not be manipulated.
         Some of them might be manipulatable in general but the considered configuration predefines their values.
-        * *Controls* - Variables that can be manipulated with the purpose of maximizing the reward.
+        * *Controls* - Variables that can be manipulated with the purpose of maximizing the objective value.
         They can be calculated from the actions either in an absolute or relative manner.
         | Absolute manner: controls(t) = actions(t)
         | Relative manner: controls(t) = controls(t-1) + actions(t)
@@ -63,14 +63,14 @@ class AbstractEnvironment(ABC):
         if the actions received from the agent were applied blindly and returns the results of the checks.
         Based on the check results, calculates the controls and dependent variables and returns them.
         * :py:attr:'output_manager' - Gets the outputs (via measurement or model)  and returns them.
-        * :py:attr:'reward_manager' - Checks if the output bounds are exceeded and returns the results of the checks.
-        Calculates the reward (which may depend on the results of the output bound checks) and returns it.
+        * :py:attr:'objective_manager' - Checks if the output bounds are exceeded and returns the results of the checks.
+        Calculates the objective value (which may depend on the results of the output bound checks) and returns it.
         * :py:attr:'scenario_manager' - Implements a scenario by changing the :py:attr:'config' of the other members.
         * :py:attr:'experiment_tracker' - Tracks a sequence of steps, e.g. by saving some variables in files or creating diagrams.
 
         The API methods of an environment are:
-        * :py:meth:step - Updates the environment with actions returning observations and a reward.
-        * :py:meth:reset - Resets the environment to initial process variable values returning initial observations and reward.
+        * :py:meth:step - Updates the environment with actions returning observations and an objective value.
+        * :py:meth:reset - Resets the environment to initial process variable values returning initial observations and objective value.
         Required before a sequence of steps.
         * :py:meth:close - Closes the environment. Important if the environment starts background processes that have to be shutdown.
         Thus, it is recommended to always call it if the environment is not needed anymore.
@@ -116,11 +116,11 @@ class AbstractEnvironment(ABC):
 
     @property
     @abstractmethod
-    def reward_manager(self) -> AbstractObjectiveManager:
-        """Calculates the reward. Readonly.
+    def objective_manager(self) -> AbstractObjectiveManager:
+        """Calculates the objective value. Readonly.
 
         Checks if the output bounds are exceeded and returns the results of the checks.
-        Calculates the reward (which may depend on the results of the output bound checks) and returns it.
+        Calculates the objective value (which may depend on the results of the output bound checks) and returns it.
         """
         pass
 
@@ -144,12 +144,12 @@ class AbstractEnvironment(ABC):
 
     @abstractmethod
     def step(self, actions: dict) -> Tuple[np.array, float]:
-        """Updates the environment with actions returning observations and a reward."""
+        """Updates the environment with actions returning observations and an objective value."""
         pass
 
     @abstractmethod
     def reset(self) -> Tuple[np.array, float]:
-        """Resets the environment to initial process variable values returning initial observations and reward.
+        """Resets the environment to initial process variable values returning initial observations and objective value.
         Required before a sequence of steps.
         """
         pass

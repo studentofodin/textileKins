@@ -143,7 +143,7 @@ class Environment(AbstractEnvironment):
                 "Setpoints": setpoints,
                 "Disturbances": disturbances,
                 "Outputs": outputs}
-            self._experiment_tracker.reset(log_variables, self._step_index)
+            self._experiment_tracker.reset(log_variables)
 
             # prepare step 1.
             self._step_index = 1

@@ -33,14 +33,14 @@ class WandBTracker(AbstractExperimentTracker):
         else:
             raise Exception("Cannot call step() before calling reset().")
 
-    def reset(self, log_variables: dict[str, dict[str, float]], step_index: int) -> None:
+    def reset(self, initial_log_variables: dict[str, dict[str, float]]) -> None:
         self.close()
         try:
             self._tracker_config = self._initial_tracker_config.copy()
             tracked_config_container = OmegaConf.to_container(self._tracked_config)
             self._run = wb.init(config=tracked_config_container, **self._tracker_config)
             self._ready = True
-            self.step(log_variables, step_index)
+            self.step(initial_log_variables, 0)
         except Exception as e:
             self.close()
             raise e

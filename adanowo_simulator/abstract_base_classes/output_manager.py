@@ -14,7 +14,7 @@ class AbstractOutputManager(ABC):
     @property
     @abstractmethod
     def config(self) -> DictConfig:
-        """Configuration of an output manager."""
+        """Configuration of the output manager."""
         pass
 
     @config.setter

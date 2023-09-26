@@ -15,7 +15,7 @@ class AbstractScenarioManager(ABC):
     @property
     @abstractmethod
     def config(self) -> DictConfig:
-        """Configuration of a scenario manager."""
+        """Configuration of the scenario manager."""
         pass
 
     @config.setter

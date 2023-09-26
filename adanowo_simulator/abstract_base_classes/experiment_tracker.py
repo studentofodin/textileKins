@@ -14,7 +14,7 @@ class AbstractExperimentTracker(ABC):
     @property
     @abstractmethod
     def config(self) -> DictConfig:
-        """Configuration of an experiment tracker."""
+        """Configuration of the experiment tracker."""
         pass
 
     @config.setter
@@ -24,7 +24,15 @@ class AbstractExperimentTracker(ABC):
 
     @abstractmethod
     def step(self, log_variables: dict[str, dict[str, float]], step_index: int) -> None:
-        """Logs passed variables."""
+        """Performs a variable log.
+
+        Parameters
+        -------
+        log_variables : dict[str, dict[str, float]]
+            Variables to log. The first key indicates a category/group of variables, the second one the name of one variable.
+        step_index : int
+            Index of the current step.
+        """
         pass
 
     @abstractmethod

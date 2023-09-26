@@ -42,12 +42,12 @@ class AbstractEnvironment(ABC):
 
     Setpoints, dependent variables and outputs may be bounded.
     If so, their bounds have to be checked.
-    An environment's behaviour in the case of bound exceedance depends on the specific implementation.
+    An environment's behaviour in the case of bound violations depends on the specific implementation.
 
     The observations and the objective value of an environment also depend on the specific implementation.
     There is no restriction regarding the observations, they can consist of anything that may be useful for the agent.
     The objective value is calculated from state and outputs, i.e. objective_value(t) = h(state(t), outputs(t)) and
-    often incorporates bound exceedances of these variables.
+    often incorporates bound violations of these variables.
 
     .. note::
     Assume variable y depends on a variable x.
@@ -61,11 +61,11 @@ class AbstractEnvironment(ABC):
     A scenario describes changes in the :py:attr:'config' of the members during a sequence of steps.
     The members are:
     * :py:attr:'disturbance_manager' - Gets the disturbances and returns them.
-    * :py:attr:'action_manager' - Checks if the setpoint and dependent variable bounds would be exceeded
+    * :py:attr:'action_manager' - Checks if the setpoint and dependent variable bounds would be satisfied
     if the actions received from the agent were applied blindly and returns the results of the checks.
     Based on the check results, calculates the setpoints and dependent variables and returns them.
     * :py:attr:'output_manager' - Gets the outputs (via measurement or model)  and returns them.
-    * :py:attr:'objective_manager' - Checks if the output bounds are exceeded and returns the results of the checks.
+    * :py:attr:'objective_manager' - Checks if the output bounds are satisfied and returns the results of the checks.
     Calculates the objective value (which may depend on the results of the output bound checks) and returns it.
     * :py:attr:'scenario_manager' - Implements a scenario by changing the :py:attr:'config' of the other members.
     * :py:attr:'experiment_tracker' - Tracks a sequence of steps, e.g. by saving some variables in files or creating diagrams.
@@ -85,7 +85,7 @@ class AbstractEnvironment(ABC):
     @property
     @abstractmethod
     def config(self) -> DictConfig:
-        """Configuration of environment."""
+        """Configuration of the environment."""
         pass
 
     @config.setter
@@ -104,9 +104,9 @@ class AbstractEnvironment(ABC):
     def action_manager(self) -> AbstractActionManager:
         """Processes the actions and disturbances into setpoints and dependent variables. Readonly.
 
-        Checks if the setpoint and dependent variable bounds would be exceeded
-        if the actions received from the agent were applied blindly and returns the results of the checks.
-        Based on the check results, calculates the setpoints and dependent variables and returns them.
+        Checks if the setpoint and dependent variable bounds would be satisfied if the actions received from the agent
+        were applied blindly and returns the results of the checks. Based on the check results, calculates the setpoints
+        and dependent variables and returns them.
         """
         pass
 
@@ -121,8 +121,8 @@ class AbstractEnvironment(ABC):
     def objective_manager(self) -> AbstractObjectiveManager:
         """Calculates the objective value. Readonly.
 
-        Checks if the output bounds are exceeded and returns the results of the checks.
-        Calculates the objective value (which may depend on the results of the output bound checks) and returns it.
+        Checks if the output bounds are satisfied and returns the results of the checks. Calculates the objective value
+        (which may depend on the results of the output bound checks) and returns it.
         """
         pass
 

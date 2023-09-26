@@ -13,7 +13,7 @@ class AbstractActionManager(ABC):
     @property
     @abstractmethod
     def config(self) -> DictConfig:
-        """Configuration of an action manager. Must contain the setpoint and dependent variable bounds."""
+        """Configuration of the action manager. Must contain the setpoint and dependent variable bounds."""
         pass
 
     @config.setter
@@ -24,20 +24,20 @@ class AbstractActionManager(ABC):
     @abstractmethod
     def step(self, actions: dict[str, float], disturbances: dict[str, float]) -> \
             tuple[dict[str, float], dict[str, bool]]:
-        """Calculates setpoints and dependent variables and checks bound exceedances of them.
+        """Calculates setpoints and dependent variables and checks bound violations of them.
 
-        Checks if the setpoint and dependent variable bounds (known from :py:attr:'config') would be exceeded
+        Checks if the setpoint and dependent variable bounds (usually known from :py:attr:'config') would be violated
         if the received actions were applied blindly.
         Based on the check results, calculates setpoints and dependent variables.
 
-        If the setpoint and dependent variable bounds are not exceeded when applying the actions, we have
+        If the setpoint and dependent variable bounds are satisfied when applying the actions, we have
         setpoints(t) = actions(t) if the action manager is implemented in an absolute manner and
         setpoints(t) = setpoints(t-1) + actions(t) if the action manager is implemented in a relative manner.
         The absolute manner results in a static system, whereas the relative manner results in a dynamic system.
         For the dependent variables we have an arbitrary, implementation dependent calculation
         dependent_variables(t) = f(setpoints(t), disturbances(t)).
 
-        If one of the setpoint or dependent variable bounds would be exceeded if the actions were applied blindly,
+        If one of the setpoint or dependent variable bounds would be violated if the actions were applied blindly,
         the resulting values depend on the specific implementation of an action manager.
 
         Returns
@@ -47,13 +47,13 @@ class AbstractActionManager(ABC):
         dict[str, float]
             Dependent variables.
         dict[str, bool]
-            A dictionary which contains for each setpoint bound if it was exceeded (False) or not (True)
-            if the actions would be applied blindly.
-            This means meeting the constraints corresponds to the value True and violating them corresponds to the value False.
+            A dictionary which indicates for each setpoint bound if it was satisfied (True) or not (False) if the
+            actions would be applied blindly. This means, one variable with an upper and a lower bound results in
+            two key value pairs.
         dict[str, bool]
-            A dictionary which contains for each dependent variable bound if it was exceeded (False) or not (True)
-            if the actions would be applied blindly.
-            This means meeting the constraints corresponds to the value True and violating them corresponds to the value False.
+            A dictionary which indicates for each dependent variable bound if it was satisfied (True) or not (False) if
+            the actions would be applied blindly. This means, one variable with an upper and a lower bound results in
+            two key value pairs.
         """
         pass
 
@@ -72,11 +72,12 @@ class AbstractActionManager(ABC):
         dict[str, float]
             Initial dependent variables.
         dict[str, bool]
-            A dictionary which contains for each setpoint bound if it is exceeded (False) or not (True) by the initial setpoints.
-            This means being within bounds corresponds to the value True and being out of bounds to the value False.
+            A dictionary which indicates for each setpoint bound if it is satisfied (True) or not (False) by the initial
+            septoints. This means, one variable with an upper and a lower bound results in two key value pairs.
         dict[str, bool]
-            A dictionary which contains for each dependent variable bound if it is exceeded (False) or not (True) by the initial dependent variables.
-            This means being within bounds corresponds to the value True and being out of bounds to the value False.
+            A dictionary which indicates for each dependent variable bound if it is satisfied (True) or not (False) by
+            the initial dependent variables. This means, one variable with an upper and a lower bound results in
+            two key value pairs.
         """
         pass
 

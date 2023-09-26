@@ -11,7 +11,7 @@ class AbstractDisturbanceManager(ABC):
     @property
     @abstractmethod
     def config(self) -> DictConfig:
-        """Configuration of a disturbance manager."""
+        """Configuration of the disturbance manager."""
         pass
 
     @config.setter

@@ -66,7 +66,7 @@ class ActionManager(AbstractActionManager):
 
         return self._setpoints, dependent_variables, setpoint_constraints_met, dependent_variable_constraints_met
 
-    def reset(self, disturbances: dict[str, float]) -> \
+    def reset(self, initial_disturbances: dict[str, float]) -> \
             tuple[dict[str, float], dict[str, float],  dict[str, bool], dict[str, bool]]:
         self._config = self._initial_config.copy()
 
@@ -74,7 +74,7 @@ class ActionManager(AbstractActionManager):
         if not self._dependent_variable_calculations:
             self._allocate_dependent_variable_calculations()
         potential_dependent_variables = \
-            self._calculate_potential_dependent_variables(potential_setpoints | disturbances)
+            self._calculate_potential_dependent_variables(potential_setpoints | initial_disturbances)
         setpoint_constraints_met, dependent_variable_constraints_met = \
             self._constraints_met(potential_setpoints, potential_dependent_variables)
 
@@ -83,7 +83,7 @@ class ActionManager(AbstractActionManager):
                                  "Aborting Experiment.")
         self._setpoints = potential_setpoints
         dependent_variables = \
-            self._calculate_potential_dependent_variables(self._setpoints | disturbances)
+            self._calculate_potential_dependent_variables(self._setpoints | initial_disturbances)
         self._ready = True
 
         return self._setpoints, dependent_variables, setpoint_constraints_met, dependent_variable_constraints_met

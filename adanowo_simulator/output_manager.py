@@ -228,13 +228,13 @@ class SequentialOutputManager(AbstractOutputManager):
             raise Exception("Cannot call step() before calling reset().")
         return outputs
 
-    def reset(self, state: dict[str, float]) -> dict[str, float]:
+    def reset(self, initial_state: dict[str, float]) -> dict[str, float]:
         self._config = self._initial_config.copy()
         self._model_config = self._config.output_models.copy()
         for output_name, model_name in self._config.output_models.items():
             self._allocate_model_to_output(output_name, model_name)
         self._ready = True
-        outputs = self.step(state)
+        outputs = self.step(initial_state)
         return outputs
 
     def close(self) -> None:

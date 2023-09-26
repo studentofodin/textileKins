@@ -120,12 +120,12 @@ class AdapterGpytorch(AbstractModelAdapter):
         y_pred, var = self._rescaler_y(y_pred, var)
         return y_pred, var
 
-    def predict_f(self, X: dict) -> np.array:
+    def predict_f(self, X: dict[str, float]) -> np.array:
         X = self._unpack_func(X, self._properties["training_inputs"])
         y_pred, var = self._predict_f_internal(X)
         return y_pred, var
 
-    def predict_y(self, X: dict, **kwargs) -> np.array:
+    def predict_y(self, X: dict[str, float], **kwargs) -> np.array:
         X = self._unpack_func(X, self._properties["training_inputs"])
         y_pred, var = self._predict_y_internal(X)
         if "observation_noise_only" in kwargs:
@@ -149,12 +149,12 @@ class AdapterPyScript(AbstractModelAdapter):
     def __init__(self, model_module: ModuleType) -> None:
         self._model: MethodType = model_module.model
 
-    def predict_f(self, X: dict) -> np.array:
+    def predict_f(self, X: dict[str, float]) -> np.array:
         f_pred, var = self._model(X)
         var = np.zeros_like(var)
         return f_pred, var
 
-    def predict_y(self, X: dict, **kwargs) -> np.array:
+    def predict_y(self, X: dict[str, float], **kwargs) -> np.array:
         f_pred, var = self._model(X)
         return f_pred, var
 

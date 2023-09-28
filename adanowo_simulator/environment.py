@@ -19,12 +19,12 @@ class Environment(AbstractEnvironment):
     def __init__(
             self, config: DictConfig, disturbance_manager: AbstractDisturbanceManager,
             action_manager: AbstractActionManager, output_manager: AbstractOutputManager,
-            reward_manager: AbstractObjectiveManager, scenario_manager: AbstractScenarioManager,
+            objective_manager: AbstractObjectiveManager, scenario_manager: AbstractScenarioManager,
             experiment_tracker: AbstractExperimentTracker):
         self._disturbance_manager: AbstractDisturbanceManager = disturbance_manager
         self._action_manager: AbstractActionManager = action_manager
         self._output_manager: AbstractOutputManager = output_manager
-        self._objective_manager: AbstractObjectiveManager = reward_manager
+        self._objective_manager: AbstractObjectiveManager = objective_manager
         self._scenario_manager: AbstractScenarioManager = scenario_manager
         self._experiment_tracker: AbstractExperimentTracker = experiment_tracker
 
@@ -55,7 +55,7 @@ class Environment(AbstractEnvironment):
         return self._output_manager
 
     @property
-    def reward_manager(self) -> AbstractObjectiveManager:
+    def objective_manager(self) -> AbstractObjectiveManager:
         return self._objective_manager
 
     @property
@@ -76,24 +76,24 @@ class Environment(AbstractEnvironment):
                 if self._step_index == 1:
                     logger.info("Experiment is running.")
                 disturbances = self._disturbance_manager.step()
-                controls, dependent_variables, control_constraints_met, dependent_variable_constraints_met = \
+                setpoints, dependent_variables, setpoint_constraints_met, dependent_variable_constraints_met = \
                     self._action_manager.step(actions, disturbances)
-                state = disturbances | controls | dependent_variables
+                state = disturbances | setpoints | dependent_variables
                 outputs = self._output_manager.step(state)
-                reward, output_constraints_met = self._objective_manager.step(
-                    state, outputs, control_constraints_met, dependent_variable_constraints_met)
+                objective_value, output_constraints_met = self._objective_manager.step(
+                    state, outputs, setpoint_constraints_met, dependent_variable_constraints_met)
                 log_variables = {
                     "Performance-Metrics": {
-                        "Reward": reward,
-                        "Control-Constraints-Met": int(all(control_constraints_met.values())),
+                        "Objective Value": objective_value,
+                        "Setpoint-Constraints-Met": int(all(setpoint_constraints_met.values())),
                         "Dependent-Variable-Constraints-Met": int(all(dependent_variable_constraints_met.values())),
                         "Output-Constraints-Met": int(all(output_constraints_met.values()))},
-                    "Control-Constraints-Met": {key: int(value) for key, value in control_constraints_met.items()},
+                    "Setpoint-Constraints-Met": {key: int(value) for key, value in setpoint_constraints_met.items()},
                     "Dependent-Variable-Constraints-Met":
                         {key: int(value) for key, value in dependent_variable_constraints_met.items()},
                     "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
                     "Actions": actions,
-                    "Controls": controls,
+                    "Setpoints": setpoints,
                     "Disturbances": disturbances,
                     "Outputs": outputs}
                 self._experiment_tracker.step(log_variables, self._step_index)
@@ -103,7 +103,7 @@ class Environment(AbstractEnvironment):
                 self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
                                             self._objective_manager)
                 disturbances = self._disturbance_manager.step()
-                state = disturbances | controls | dependent_variables
+                state = disturbances | setpoints | dependent_variables
                 observations = self._collect_observations(state, outputs)
 
             except Exception as e:
@@ -113,7 +113,7 @@ class Environment(AbstractEnvironment):
         else:
             raise Exception("Cannot call step() before calling reset().")
 
-        return observations, reward
+        return observations, objective_value
 
     def reset(self) -> tuple[np.array, float]:
         logger.info("Resetting environment...")
@@ -123,34 +123,34 @@ class Environment(AbstractEnvironment):
             self._config = self._initial_config.copy()
             self._scenario_manager.reset()
             disturbances = self._disturbance_manager.reset()
-            controls, dependent_variables, control_constraints_met, dependent_variable_constraints_met = \
+            setpoints, dependent_variables, setpoint_constraints_met, dependent_variable_constraints_met = \
                 self._action_manager.reset(disturbances)
-            state = disturbances | controls | dependent_variables
+            state = disturbances | setpoints | dependent_variables
             outputs = self._output_manager.reset(state)
-            reward, output_constraints_met = self._objective_manager.reset(
-                state, outputs, control_constraints_met, dependent_variable_constraints_met)
+            objective_value, output_constraints_met = self._objective_manager.reset(
+                state, outputs, setpoint_constraints_met, dependent_variable_constraints_met)
             log_variables = {
                 "Performance-Metrics": {
-                    "Reward": reward,
-                    "Control-Constraints-Met": int(all(control_constraints_met.values())),
+                    "Objective-Value": objective_value,
+                    "Setpoint-Constraints-Met": int(all(setpoint_constraints_met.values())),
                     "Dependent-Variable-Constraints-Met": int(all(dependent_variable_constraints_met.values())),
                     "Output-Constraints-Met": int(all(output_constraints_met.values()))},
-                "Control-Constraints-Met": {key: int(value) for key, value in control_constraints_met.items()},
+                "Setpoint-Constraints-Met": {key: int(value) for key, value in setpoint_constraints_met.items()},
                 "Dependent-Variable-Constraints-Met":
                     {key: int(value) for key, value in dependent_variable_constraints_met.items()},
                 "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
                 "Actions": {},
-                "Controls": controls,
+                "Setpoints": setpoints,
                 "Disturbances": disturbances,
                 "Outputs": outputs}
-            self._experiment_tracker.reset(log_variables, self._step_index)
+            self._experiment_tracker.reset(log_variables)
 
             # prepare step 1.
             self._step_index = 1
             self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
                                         self._objective_manager)
             disturbances = self._disturbance_manager.step()
-            state = disturbances | controls | dependent_variables
+            state = disturbances | setpoints | dependent_variables
             observations = self._collect_observations(state, outputs)
 
         except Exception as e:
@@ -160,7 +160,7 @@ class Environment(AbstractEnvironment):
         self._ready = True
         logger.info("...environment has been reset.")
 
-        return observations, reward
+        return observations, objective_value
 
     def close(self) -> None:
         logger.info("Closing environment...")
@@ -201,9 +201,9 @@ class Environment(AbstractEnvironment):
             if component_name == "disturbances":
                 for disturbance_name in self._config.used_disturbances:
                     observations.append(state[disturbance_name])
-            elif component_name == "controls":
-                for control_name in self._config.used_controls:
-                    observations.append(state[control_name])
+            elif component_name == "setpoints":
+                for setpoint_name in self._config.used_setpoints:
+                    observations.append(state[setpoint_name])
             elif component_name == "dependent_variables":
                 for dependent_variable_name in self._config.used_dependent_variables:
                     observations.append(state[dependent_variable_name])

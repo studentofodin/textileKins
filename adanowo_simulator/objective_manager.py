@@ -21,13 +21,13 @@ class ObjectiveManager(AbstractObjectiveManager):
         self._config = c
 
     def step(self, state: dict[str, float], outputs: dict[str, float],
-             control_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
+             setpoint_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
             tuple[float, dict[str, bool]]:
         if self._ready:
             output_constraints_met = self._output_constraints_met(outputs)
             # penalty.
             if not (all(
-                    (output_constraints_met | control_constraints_met | dependent_variable_constraints_met).values())):
+                    (output_constraints_met | setpoint_constraints_met | dependent_variable_constraints_met).values())):
                 reward = -self._get_penalty(state, outputs)
             # no penalty.
             else:
@@ -36,13 +36,14 @@ class ObjectiveManager(AbstractObjectiveManager):
             raise Exception("Cannot call step() before calling reset().")
         return reward, output_constraints_met
 
-    def reset(self, state: dict[str, float], outputs: dict[str, float],
-              control_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
-            tuple[float, dict[str, bool]]:
+    def reset(self, initial_state: dict[str, float], initial_outputs: dict[str, float],
+              setpoint_constraints_met_initially: dict[str, bool],
+              dependent_variable_constraints_met_initially: dict[str, bool]) -> tuple[float, dict[str, bool]]:
         self._config = self._initial_config.copy()
         self._ready = True
         reward, output_constraints_met = self.step(
-            state, outputs, control_constraints_met, dependent_variable_constraints_met)
+            initial_state, initial_outputs, setpoint_constraints_met_initially,
+            dependent_variable_constraints_met_initially)
         return reward, output_constraints_met
 
     def close(self) -> None:

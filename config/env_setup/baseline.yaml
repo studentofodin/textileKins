@@ -1,4 +1,4 @@
-used_controls:
+used_setpoints:
   # weight per area
   - CardDeliveryWeightPerArea # g per sqm
   - Cross-lapperLayersCount
@@ -18,7 +18,7 @@ used_controls:
   - v_StripperMain # m per min
   - v_WorkerPre # m per min
   - v_StripperPre # m per min
-used_dependent_variable_controls:
+used_dependent_variable_setpoints:
   - MassThroughput # m per min
 used_disturbances:
   - FeederDeliverySpeed # m per min
@@ -38,5 +38,5 @@ used_outputs:
   - CardWebUnevenness # -
 observations:
   - disturbances
-  - controls
+  - setpoints
   - outputs

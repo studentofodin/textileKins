@@ -19,7 +19,7 @@ class GymWrapper(Env):
 
         action_space_low = []
         action_space_high = []
-        for action_name in self._environment.config.used_controls:
+        for action_name in self._environment.config.used_setpoints:
             action_space_low.append(self._config.action_space[action_name]["low"])
             action_space_high.append(self._config.action_space[action_name]["high"])
         self._action_space = spaces.Box(low=np.array(action_space_low, dtype=np.float32),
@@ -47,7 +47,7 @@ class GymWrapper(Env):
         return self._observation_space
 
     def step(self, actions_array: np.array) -> tuple[np.array, float, bool, bool, dict]:
-        action = self._array_to_dict(actions_array, OmegaConf.to_container(self._action_config.used_controls))
+        action = self._array_to_dict(actions_array, OmegaConf.to_container(self._action_config.used_setpoints))
         observation, reward = self._environment.step(action)
         return observation, reward, False, False, dict()
 

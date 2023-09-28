@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from omegaconf import DictConfig
-import numpy as np
 
 
 class AbstractOutputManager(ABC):

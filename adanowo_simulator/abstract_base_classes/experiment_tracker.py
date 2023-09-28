@@ -1,13 +1,12 @@
 from abc import ABC, abstractmethod
 from omegaconf import DictConfig
-from typing import Any
 
 
 class AbstractExperimentTracker(ABC):
     """Abstract class for an experiment tracker.
 
     An experiment tracker tracks a sequence of steps of an environment, e.g. by saving some variables in files or
-    creating diagrams. Thus, it is not useful on its own and should be a member of an
+    creating diagrams. Thus, it is a necessary member of und should be used together with an
     :py:class:'~adanowo_simulator.abstract_base_classes.environment.AbstractEnvironment'.
     """
 
@@ -29,7 +28,8 @@ class AbstractExperimentTracker(ABC):
         Parameters
         -------
         log_variables : dict[str, dict[str, float]]
-            Variables to log. The first key indicates a category/group of variables, the second one the name of one variable.
+            Variables to log. The first key indicates a category/group of variables,
+            the second one the name of one variable.
         step_index : int
             Index of the current step.
         """

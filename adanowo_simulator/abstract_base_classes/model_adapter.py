@@ -11,7 +11,7 @@ class AbstractModelAdapter(ABC):
     To get a value you have to sample from the modeled distribution.
 
     More specifically, a model returns a mean and a variance (covariance matrix) resulting from uncertainties.
-    The uncertainties can be divided into observation noise and model uncertainty.
+    The uncertainties can be divided into observation/process noise and model uncertainty.
     """
 
     @abstractmethod

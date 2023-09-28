@@ -12,14 +12,14 @@ from adanowo_simulator.abstract_base_classes.scenario_manager import AbstractSce
 
 
 class AbstractEnvironment(ABC):
-    """Abstract class for an environment that represent the stationary behaviour of a non-woven production process.
+    """Abstract class for an environment that represent the stationary behaviour of a nonwoven production process.
 
     From an outside point of view an environment receives *actions* from an *agent*,
-    processes them and returns *observations* as well as a *objective value*.
+    processes them and returns *observations* as well as an *objective value*.
     This is called a *step*.
 
     Internally, process variables are used.
-    As written above stationary behaviour is considered.
+    As written above only stationary behaviour is considered.
     This means the process variables are considered after all transient phenomena have decayed.
     The process variables are:
     * *Disturbances* - Variables that can not be manipulated.
@@ -31,17 +31,16 @@ class AbstractEnvironment(ABC):
     The absolute manner results in a static system, whereas the relative manner results in a dynamic system.
     * *Dependent variables* - Important variables that are calculated from the setpoints and disturbances, i.e.
     dependent_variables(t) = f(setpoints(t), disturbances(t)).
-    They are introduced either because their bounds have to be checked or
-    their values are needed several at several points and by saving them their calculation is done only once instead of several times.
+    They can be introduced either because their bounds have to be checked or
+    their values are needed at other places in the simulation.
     * *State* - Combination of disturbances, setpoints and dependent variables.
     * *Outputs* - Variables that can not be calculated directly.
     They depend not only on the state but on many more variables that are not incorporated in the state.
     Furthermore, the relationship between the state and the outputs can be complex.
-    Thus, on a physical machine, outputs have to be measured .
-    In a simulation environment, output models have to be used that are not capable to fully describe the real world.
+    Thus, on a physical machine, outputs have to be measured.
+    In a simulation environment, output models have to be used that approximate real-world behavior.
 
-    Setpoints, dependent variables and outputs may be bounded.
-    If so, their bounds have to be checked.
+    Setpoints, dependent variables and outputs may be bounded. If so, their bounds are checked.
     An environment's behaviour in the case of bound violations depends on the specific implementation.
 
     The observations and the objective value of an environment also depend on the specific implementation.
@@ -53,10 +52,11 @@ class AbstractEnvironment(ABC):
     Assume variable y depends on a variable x.
     * We use the term *calculation* if, given x, a value for y is directly returned.
     * We use the term *model* if, given x, a probability distribution for y is returned.
-    To get a value you have to sample from the modeled distribution.
+    To get an output value, you have to sample from the modeled distribution.
 
     An environment consists of several members, each responsible for assigned subtasks.
-    An environment as well as its members each have the attribute :py:attr:'config' which allows the user to configure them.
+    An environment as well as its members each have the attribute :py:attr:'config'
+    which allows the user to configure them.
     We recommend *Hydra* (https://hydra.cc/) for configuration management.
     A scenario describes changes in the :py:attr:'config' of the members during a sequence of steps.
     The members are:
@@ -68,7 +68,8 @@ class AbstractEnvironment(ABC):
     * :py:attr:'objective_manager' - Checks if the output bounds are satisfied and returns the results of the checks.
     Calculates the objective value (which may depend on the results of the output bound checks) and returns it.
     * :py:attr:'scenario_manager' - Implements a scenario by changing the :py:attr:'config' of the other members.
-    * :py:attr:'experiment_tracker' - Tracks a sequence of steps, e.g. by saving some variables in files or creating diagrams.
+    * :py:attr:'experiment_tracker' - Tracks a sequence of steps,
+    e.g. by saving some variables in files or creating diagrams.
 
     The API methods of an environment are:
     * :py:meth:step - Updates the environment with actions returning observations and an objective value.

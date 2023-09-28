@@ -1,5 +1,5 @@
 from typing import Callable
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 
 from adanowo_simulator.abstract_base_classes.objective_manager import AbstractObjectiveManager
 

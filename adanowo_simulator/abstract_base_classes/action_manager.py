@@ -6,7 +6,7 @@ class AbstractActionManager(ABC):
     """Abstract class for an action manager.
 
     An action manager processes actions into setpoints and dependent variables.
-    It is not useful on its own and should be a member of an
+    It is a necessary member of an
     :py:class:'~adanowo_simulator.abstract_base_classes.environment.AbstractEnvironment'.
     """
 
@@ -24,7 +24,7 @@ class AbstractActionManager(ABC):
     @abstractmethod
     def step(self, actions: dict[str, float], disturbances: dict[str, float]) -> \
             tuple[dict[str, float], dict[str, bool]]:
-        """Calculates setpoints and dependent variables and checks bound violations of them.
+        """Calculates setpoints and dependent variables and checks boundary constraint violations of them.
 
         Checks if the setpoint and dependent variable bounds (usually known from :py:attr:'config') would be violated
         if the received actions were applied blindly.

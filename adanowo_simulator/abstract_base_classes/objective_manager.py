@@ -6,7 +6,7 @@ class AbstractObjectiveManager(ABC):
     """Abstract class for an objective manager.
 
     An objective manager calculates an objective value depending on state and outputs.
-    It is not useful on its own and should be a member of an
+    It is a necessary member of an
     :py:class:'~adanowo_simulator.abstract_base_classes.environment.AbstractEnvironment'."""
 
     @property

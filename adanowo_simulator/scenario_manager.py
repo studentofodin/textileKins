@@ -1,4 +1,4 @@
-from omegaconf import ListConfig, DictConfig, OmegaConf
+from omegaconf import ListConfig, DictConfig
 import numpy as np
 
 from adanowo_simulator.abstract_base_classes.scenario_manager import AbstractScenarioManager

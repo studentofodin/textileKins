@@ -39,10 +39,14 @@ class ScenarioManager(AbstractScenarioManager):
         self._ready = False
 
     def _update_output_model_allocation(self, step_index: int, output_models_config: DictConfig):
+        if self._config.output_models is None:
+            return
         for output_name, scenario in self._config.output_models.items():
             self._update_target(step_index, output_models_config, output_name, scenario)
 
     def _update_output_bounds(self, step_index: int, output_bounds_config: DictConfig) -> None:
+        if self._config.output_bounds is None:
+            return
         for output_name, scenarios in self._config.output_bounds.items():
             if "lower" in scenarios.keys():
                 scenario = scenarios.lower
@@ -52,6 +56,8 @@ class ScenarioManager(AbstractScenarioManager):
                 self._update_target(step_index, output_bounds_config[output_name], "upper", scenario)
 
     def _update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> None:
+        if self._config.disturbances is None:
+            return
         for disturbance_name, scenario in self._config.disturbances.items():
             self._update_target(step_index, disturbance_config, disturbance_name, scenario)
 

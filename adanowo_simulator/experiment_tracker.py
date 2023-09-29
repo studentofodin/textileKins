@@ -51,3 +51,30 @@ class WandBTracker(AbstractExperimentTracker):
             self._tracker_config = OmegaConf.create()
             self._run = None
             self._ready = False
+
+
+class EmptyTracker(AbstractExperimentTracker):
+
+    def __init__(self, tracker_config: DictConfig, tracked_config: DictConfig):
+        self._initial_tracker_config: DictConfig = tracker_config.copy()
+        self._tracker_config: DictConfig = self._initial_tracker_config.copy()
+        self._tracked_config: DictConfig = tracked_config.copy()
+        self._run = None
+        self._ready: bool = False
+
+    @property
+    def config(self) -> DictConfig:
+        return self._tracker_config
+
+    @config.setter
+    def config(self, c):
+        self._tracker_config = c
+
+    def step(self, log_variables: dict[str, dict[str, float]], step_index: int) -> None:
+        return
+
+    def reset(self, initial_log_variables: dict[str, dict[str, float]]) -> None:
+        return
+
+    def close(self) -> None:
+        return

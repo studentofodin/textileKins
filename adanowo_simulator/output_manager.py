@@ -57,14 +57,14 @@ def model_loader(model_name: str, path_to_output_models: pl.Path) -> AbstractMod
     return mdl
 
 
-def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pipe, model_uncertainty_only: bool):
+def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pipe, latent_uncertainty_only: bool):
     while True:
         if input_pipe.poll():
             input_recv = input_pipe.recv()
             if input_recv is None:
                 mdl.close()
                 break
-            if model_uncertainty_only:
+            if latent_uncertainty_only:
                 mean_pred, var_pred = mdl.predict_f(input_recv)
             else:
                 mean_pred, var_pred = mdl.predict_y(input_recv, observation_noise_only=True)
@@ -94,7 +94,6 @@ class SequentialOutputManager(AbstractOutputManager):
         self._config: DictConfig = self._initial_config.copy()
         self._output_models: dict[str, AbstractModelAdapter] = dict()
         self._model_config: DictConfig = OmegaConf.create()
-        self._model_uncertainty_only: bool = False
         self._ready = False
 
     @property
@@ -144,9 +143,10 @@ class SequentialOutputManager(AbstractOutputManager):
     def _call_models(self, X: dict[str, float]) -> (dict[str, np.array], dict[str, np.array]):
         mean_pred = dict()
         var_pred = dict()
+        model_uncertainty_only = False
 
         for output_name, mdl in self._output_models.items():
-            if self._model_uncertainty_only:
+            if model_uncertainty_only:
                 mean_pred[output_name], var_pred[output_name] = mdl.predict_f(X)
             else:
                 mean_pred[output_name], var_pred[output_name] = mdl.predict_y(
@@ -220,7 +220,6 @@ class ParallelOutputManager(SequentialOutputManager):
         self._input_pipes[output_name] = new_input_pipe
         self._output_pipes[output_name] = new_output_pipe
         self._model_processes[output_name] = \
-            Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND],
-                                                 True, self._model_uncertainty_only))
+            Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND], False))
         self._model_processes[output_name].start()
         logger.info(f"Allocated model {model_name} to output {output_name}.")

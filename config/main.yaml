@@ -7,6 +7,9 @@ defaults:
   - scenario_setup: baseline
   - gym_setup: baseline
   - _self_
-experiment_tracker:
+tracking_enabled: true
+wandb_settings:
   project: adanowo-simulator
   mode: online
+parallel_execution: true
+num_experiment_steps: 100

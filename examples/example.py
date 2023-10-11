@@ -10,8 +10,7 @@ from adanowo_simulator.gym_wrapper import GymWrapper
 os.environ["WANDB_SILENT"] = "true"
 
 
-@hydra.main(version_base=None, config_path="../config",
-            config_name="main")
+@hydra.main(version_base=None, config_path="../config", config_name="main")
 def main(config: DictConfig):
     factory = EnvironmentFactory(config)
     environment = factory.create_environment()

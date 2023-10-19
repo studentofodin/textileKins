@@ -1,6 +1,6 @@
 import numpy as np
 
-VARIANCE_AT_100_GSM = 49  # (g per sqm)^2
+VARIANCE_AT_100_GSM = 16  # (g per sqm)^2
 GSM_100 = 100  # g per sqm
 
 

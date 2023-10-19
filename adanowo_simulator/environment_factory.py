@@ -21,7 +21,7 @@ class EnvironmentFactory:
         return ActionManager(self.config.action_setup, self.config.action_setup.actions_are_relative)
 
     def create_output_manager(self):
-        # Decide whether to create a SequentialOutputManager or ParallelOutputManager based on some config or logic
+        # Decide whether to create a SequentialOutputManager or ParallelOutputManager
         if self.config.parallel_execution:
             return ParallelOutputManager(self.config.output_setup)
         else:

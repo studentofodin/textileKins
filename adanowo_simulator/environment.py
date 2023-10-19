@@ -84,7 +84,7 @@ class Environment(AbstractEnvironment):
                     state, outputs, setpoint_constraints_met, dependent_variable_constraints_met)
                 log_variables = {
                     "Performance-Metrics": {
-                        "Objective Value": objective_value,
+                        "Objective-Value": objective_value,
                         "Setpoint-Constraints-Met": int(all(setpoint_constraints_met.values())),
                         "Dependent-Variable-Constraints-Met": int(all(dependent_variable_constraints_met.values())),
                         "Output-Constraints-Met": int(all(output_constraints_met.values()))},

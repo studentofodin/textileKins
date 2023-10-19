@@ -28,7 +28,7 @@ class ObjectiveManager(AbstractObjectiveManager):
             # penalty.
             if not (all(
                     (output_constraints_met | setpoint_constraints_met | dependent_variable_constraints_met).values())):
-                reward = -self._get_penalty(state, outputs)
+                reward = self._get_penalty(state, outputs)
             # no penalty.
             else:
                 reward = self._get_reward(state, outputs)

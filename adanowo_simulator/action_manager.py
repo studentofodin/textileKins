@@ -9,15 +9,15 @@ from adanowo_simulator.calculation_adapter import CalculationAdapter
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_RELATIVE_PATH = "./dependent_variable_calculations"
+DEFAULT_RELATIVE_PATH = "dependent_variable_calculations"
 
 
 class ActionManager(AbstractActionManager):
 
     def __init__(self, config: DictConfig, actions_are_relative: bool = True):
         # use default path
-        main_script_path = pl.Path(__file__).resolve().parent
-        self._path_to_dependent_variable_calculations = main_script_path.parent / DEFAULT_RELATIVE_PATH
+        script_path = pl.Path(__file__).resolve().parent
+        self._path_to_dependent_variable_calculations = script_path / DEFAULT_RELATIVE_PATH
 
         if config.path_to_dependent_variable_calculations is not None:
             temp_path = pl.Path(config.path_to_dependent_variable_calculations)

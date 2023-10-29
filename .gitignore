@@ -4,9 +4,13 @@
 *.vscode
 *.ipynb
 *.xlsx
-*outputs
+.pytest_cache
+poetry.lock
+
+outputs
 .idea/
 *__pycache__*
-*wandb/
-*.pytest_cache
-*poetry.lock
+wandb/
+runs/
+logs/
+venv

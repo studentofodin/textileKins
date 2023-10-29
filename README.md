@@ -20,8 +20,10 @@ The project is set to contribute to ongoing research in production process optim
 ## Installation
 
 ### Prerequisites:
-- Python 3.10
-- [Poetry](https://python-poetry.org/docs/) is already preinstalled
+- Python 3.10.4 or higher
+- (optional) a fresh virtual environment
+- [Poetry](https://python-poetry.org/docs/) is already preinstalled. 
+Under Windows you might need to use pip to install poetry if the command from the website doesn't work.
 - CUDA 11.7 (Optional but highly recommended for better performance)
 
 ### Steps:
@@ -38,16 +40,20 @@ The project is set to contribute to ongoing research in production process optim
    ```bash
    poetry install
    
+4. Note: The Poetry command will install the project in editable mode. If you want to install the project as a regular, package, use the following command afterwards (specifying the version number):
+   ```bash
+   pip install .\dist\adanowo_simulator-x.x.x.tar.gz
 
 ## Usage
-
 Once you've installed all prerequisites and dependencies, you're ready to run the project.
-This project uses Hydra for configuration management. This project also uses [Weights and Biases](https://wandb.ai/site) for logging and visualization.
+
+### Logging with WandB
+ This project also uses [Weights and Biases](https://wandb.ai/site) for logging and visualization.
 Make sure you have setup an account before so you can enter your credentials on the first run. 
 Alternatively, you can disable logging or use a different logger by writing your own simple logger module.
 
 ### Configuration with Hydra
-Configuration files can be found in the `config` folder. 
+This project uses Hydra for configuration management. Configuration files can be found in the `config` folder. 
 You can customize the run by modifying these configuration files or by passing parameters through the command line. 
 For more information on how to use Hydra, refer to their [documentation](https://hydra.cc/docs/intro/).
 The config folder will not be installed by poetry, its is meant to be used by the calling script. 

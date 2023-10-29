@@ -6,7 +6,7 @@ authors = ["Ruben Kins <ruben.kins@rwth-aachen.de>"]
 packages = [{include = "adanowo_simulator"}]
 
 [tool.poetry.dependencies]
-python = ">=3.10.8,<3.11"
+python = ">=3.10.4,<3.11"
 numpy = "^1.24.2"
 tables = "^3.1.0"
 PyYAML = "^6.0"
@@ -15,10 +15,8 @@ wandb = "^0.13.10"
 pandas = "^1.5.3"
 scikit-learn = "1.2.0"
 gymnasium = ">=0.27.1"
-dill = "^0.3.6"
 matplotlib = "^3.7.0"
 scipy = "^1.10.1"
-Kivy = "^2.1.0"
 torch = { url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-win_amd64.whl"}
 gpytorch = ">=1.9.1"
 stable-baselines3 = ">=2.0.0a1"

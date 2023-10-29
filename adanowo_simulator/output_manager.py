@@ -16,7 +16,7 @@ from adanowo_simulator import model_adapter
 logger = logging.getLogger(__name__)
 RECEIVE = 0
 SEND = 1
-DEFAULT_RELATIVE_PATH = "./output_models"
+DEFAULT_RELATIVE_PATH = "output_models"
 
 
 def model_loader(model_name: str, path_to_output_models: pl.Path) -> AbstractModelAdapter:
@@ -76,7 +76,7 @@ class SequentialOutputManager(AbstractOutputManager):
     def __init__(self, config: DictConfig):
         # use default path
         main_script_path = pl.Path(__file__).resolve().parent
-        self._path_to_output_models = main_script_path.parent / DEFAULT_RELATIVE_PATH
+        self._path_to_output_models = main_script_path / DEFAULT_RELATIVE_PATH
 
         if config.path_to_output_models is not None:
             temp_path = pl.Path(config.path_to_models)

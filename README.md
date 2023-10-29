@@ -1,6 +1,7 @@
 # adanowo_simulator: A Python Library for Simulating Nonwoven Production Environments 
 This project is meant for testing and validationg smart production planning agents in a simulated nonwoven production environment.
 
+<img src="Logo.png" alt="Project Logo" width="500"/>
 
 ## Description
 

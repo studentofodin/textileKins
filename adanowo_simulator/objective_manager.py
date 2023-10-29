@@ -59,16 +59,12 @@ class ObjectiveManager(AbstractObjectiveManager):
 
     def _output_constraints_met(self, outputs: dict[str, float]) -> dict[str, bool]:
         output_constraints_met = dict()
-        for output_name, bounds in self._config.output_bounds.items():
-            if "lower" in bounds.keys():
-                if outputs[output_name] < bounds.lower:
-                    output_constraints_met[f"{output_name}.lower"] = False
-                else:
-                    output_constraints_met[f"{output_name}.lower"] = True
-            if "upper" in bounds.keys():
-                if outputs[output_name] > bounds.upper:
-                    output_constraints_met[f"{output_name}.upper"] = False
-                else:
-                    output_constraints_met[f"{output_name}.upper"] = True
+        for output_name, boundaries in self._config.output_bounds.items():
+            for boundary_type in ["lower", "upper"]:
+                boundary_value = boundaries.get(boundary_type)
+                if boundary_value is not None:
+                    comparison = outputs[output_name] < boundary_value if boundary_type == "lower" else (
+                            outputs[output_name] > boundary_value)
+                    output_constraints_met[f"{output_name}.{boundary_type}"] = not comparison
 
         return output_constraints_met

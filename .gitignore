@@ -1,16 +1,23 @@
+# file extensions to ignore
 *.pdf
 *.DS_Store
 *.pyc
 *.vscode
 *.ipynb
 *.xlsx
+*.csv
+*.pyo
+*.pyd
+
+# specific files to ignore
 .pytest_cache
 poetry.lock
 
-outputs
+# directories to ignore
+outputs/
 .idea/
 *__pycache__*
 wandb/
 runs/
 logs/
-venv
+venv/

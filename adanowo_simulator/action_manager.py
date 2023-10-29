@@ -97,16 +97,13 @@ class ActionManager(AbstractActionManager):
         def check_constraints(boundaries_to_check: DictConfig, actual_vars: dict[str, float]):
             constraints_met = dict()
             for ctrl_name, boundaries in boundaries_to_check.items():
-                if "lower" in boundaries.keys():
-                    if actual_vars[ctrl_name] < boundaries.lower:
-                        constraints_met[f"{ctrl_name}.lower"] = False
-                    else:
-                        constraints_met[f"{ctrl_name}.lower"] = True
-                if "upper" in boundaries.keys():
-                    if actual_vars[ctrl_name] > boundaries.upper:
-                        constraints_met[f"{ctrl_name}.upper"] = False
-                    else:
-                        constraints_met[f"{ctrl_name}.upper"] = True
+                for boundary_type in ["lower", "upper"]:
+                    boundary_value = boundaries.get(boundary_type)
+                    if boundary_value is not None:
+                        comparison = actual_vars[ctrl_name] < boundary_value if boundary_type == "lower" else \
+                            actual_vars[ctrl_name] > boundary_value
+                        constraints_met[f"{ctrl_name}.{boundary_type}"] = not comparison
+
             return constraints_met
 
         setpoint_constraints_met = check_constraints(self._config.setpoint_bounds, setpoints)

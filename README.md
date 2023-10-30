@@ -13,6 +13,7 @@ Designed to overcome the challenges of incomplete optimization problem formulati
 - **Data-Driven**: Utilizes machine learning models trained on industrial data, alongside physically motivated models, for accurate simulation.
 - **Modular and Adaptable**: Built using Python 3.10, the project is highly modular and allows for comprehensive and reproducible testing of different optimization approaches.
 - **Economical & Technical**: Captures both the economic and technical aspects of production, thereby offering a 'simulation-first' approach for cheap testing before physical trials.
+- **No Dynamics**: The simulator assumes a stationary process after all dynamic effects have alread decayed.
 
 By integrating advanced data-driven methods, this simulation tool aims to reduce waste, increase profitability, and alleviate the workload of staff in the textile industry. 
 The project is set to contribute to ongoing research in production process optimization.
@@ -64,6 +65,44 @@ Use the existing configuration as a template for your own tests.
 A detailed example can be found in `./examples/example.py`. 
 The example script demonstrates how to use the `EnvironmentFactory` and `GymWrapper` to initialize and step through an environment.
 A simple random agent is used in the example. For adapting the code to arbitrary agents, you need to write your own wrapper file.
+
+
+## Explanantion of the Environment class
+
+The Environment class handles all top-level interactions in this project. 
+It is meant to be wrapped by another class to ensure compatibility with all kinds of agent architectures.
+From an outside point of view, an environment receives **actions** from an **agent**, processes them, 
+and returns **observations** as well as an **objective value**. This is called a **step**.
+
+### Naming scheme
+
+- **Disturbances**: Variables that cannot be manipulated.
+- **Setpoints**: Variables that can be manipulated to maximize the objective value. 
+They are calculated from the actions either in an absolute or relative manner.
+  - Absolute manner: setpoints(t) = actions(t)
+  - Relative manner: setpoints(t) = setpoints(t-1) + actions(t)
+- **Dependent variables**: Important variables calculated from the setpoints and disturbances.
+- **State**: Combination of disturbances, setpoints, and dependent variables.
+- **Outputs**: Variables that exhibit probabilistic behavior and are calculated from the state using models.
+
+> **Note**: Assume variable \`y\` depends on a variable \`x\`. We use the term **calculation** if a value for \`y\` is directly returned given \`x\`.
+
+### Members of the class
+
+- \`disturbance_manager\`: Gets the disturbances and returns them.
+- \`action_manager\`: Checks whether the setpoint and dependent variable constraints are satisfied.
+- \`output_manager\`: Gets the outputs using the models and returns the outputs.
+- \`objective_manager\`: Checks if the output bounds are satisfied and returns the value of the objective function.
+- \`scenario_manager\`: Implements a scenario by changing the configuration of other members.
+- \`experiment_tracker\`: Tracks the results from a sequence of steps.
+
+### API Methods
+
+- \`step\`: Updates the environment with actions, returning observations and an objective value.
+- \`reset\`: Resets the environment to initial variable values.
+- \`close\`: Closes the environment, shutting down any background processes.
+
+> **Note**: The API mainly works with dictionaries, specifically \`dict[str, float]\`, whose keys represent names of numerical variables.
 
 
 ## Modifications

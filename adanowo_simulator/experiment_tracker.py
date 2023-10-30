@@ -40,7 +40,6 @@ class WandBTracker(AbstractExperimentTracker):
             tracked_config_container = OmegaConf.to_container(self._tracked_config)
             self._run = wb.init(config=tracked_config_container, **self._tracker_config)
             self._ready = True
-            self.step(initial_log_variables, 0)
         except Exception as e:
             self.close()
             raise e

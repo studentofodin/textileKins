@@ -48,12 +48,11 @@ class ScenarioManager(AbstractScenarioManager):
         if self._config.output_bounds is None:
             return
         for output_name, scenarios in self._config.output_bounds.items():
-            if "lower" in scenarios.keys():
-                scenario = scenarios.lower
-                self._update_target(step_index, output_bounds_config[output_name], "lower", scenario)
-            if "upper" in scenarios.keys():
-                scenario = scenarios.upper
-                self._update_target(step_index, output_bounds_config[output_name], "upper", scenario)
+            for boundary_type in ["lower", "upper"]:
+                scenario_value = scenarios.get(boundary_type)
+                if scenario_value is None:
+                    continue
+                self._update_target(step_index, output_bounds_config[output_name], boundary_type, scenario_value)
 
     def _update_disturbances(self, step_index: int, disturbance_config: DictConfig) -> None:
         if self._config.disturbances is None:
@@ -63,17 +62,12 @@ class ScenarioManager(AbstractScenarioManager):
 
     @staticmethod
     def _update_target(step_index: int, target_config: DictConfig, target_field: str,
-                       scenario: ListConfig | DictConfig) -> bool:
-        did_update = False
-        # deterministic scenario
-        if isinstance(scenario, ListConfig):
+                       scenario: ListConfig | DictConfig) -> None:
+        if isinstance(scenario, ListConfig):  # deterministic scenario
             if scenario and scenario[0][0] == step_index:
                 target_config[target_field] = scenario[0][1]
                 scenario.pop(0)
-                did_update = True
-        # random scenario
-        else:
+        else:  # random scenario
             if (step_index-1) % scenario.trigger_interval == 0:
                 target_config[target_field] = np.random.normal(scenario.mean, scenario.std)
-                did_update = True
-        return did_update
+        return

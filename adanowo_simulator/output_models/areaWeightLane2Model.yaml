@@ -1,6 +1,5 @@
 name: areaWeightLane2Model
 model_class: Python_script
-data_source: None
 inputs:
   - CardDeliveryWeightPerArea
   - Cross-lapperLayersCount

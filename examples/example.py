@@ -18,9 +18,8 @@ def main(config: DictConfig):
 
     gym_wrapper.reset()
     for _ in range(config.num_experiment_steps):
-        _, _, _, _, _ = gym_wrapper.step(np.random.uniform(
+        observations, reward, _, _, _ = gym_wrapper.step(np.random.uniform(
             low=-0.25, high=0.5, size=len(config.env_setup.used_setpoints)))
-    gym_wrapper.reset()
     gym_wrapper.close()
 
 

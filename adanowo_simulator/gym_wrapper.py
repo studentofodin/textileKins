@@ -48,13 +48,15 @@ class GymWrapper(Env):
 
     def step(self, actions_array: np.array) -> tuple[np.array, float, bool, bool, dict]:
         action = self._array_to_dict(actions_array, OmegaConf.to_container(self._action_config.used_setpoints))
-        observation, reward = self._environment.step(action)
-        return observation, reward, False, False, dict()
+        reward, state, outputs = self._environment.step(action)
+        observations = state | outputs
+        return np.array(list(observations.values())), reward, False, False, dict()
 
     def reset(self, seed=None, options=None) -> tuple[np.array, dict]:
         super().reset(seed=seed)
-        observation, _ = self._environment.reset()
-        return observation, dict()
+        reward, state, outputs = self._environment.reset()
+        observations = state | outputs
+        return np.array(list(observations.values())), dict()
 
     def render(self) -> RenderFrame | list[RenderFrame] | None:
         pass
@@ -70,6 +72,15 @@ class GymWrapper(Env):
         for index, key in enumerate(keys):
             dictionary[key] = array[index]
         return dictionary
+    
+    @staticmethod
+    def _dict_to_array(dictionary: dict[str, float], keys: list[str]) -> np.array:
+        if len(dictionary) != len(keys):
+            raise Exception("Length of dictionary and keys are not the same.")
+        array = np.zeros(len(dictionary))
+        for index, key in enumerate(keys):
+            array[index] = dictionary[key]
+        return array
 
 
 register(

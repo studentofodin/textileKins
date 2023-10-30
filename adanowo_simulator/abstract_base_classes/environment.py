@@ -146,14 +146,16 @@ class AbstractEnvironment(ABC):
         pass
 
     @abstractmethod
-    def step(self, actions: dict) -> Tuple[np.array, float]:
-        """Updates the environment with actions returning observations and an objective value."""
+    def step(self, actions: dict) -> tuple[float, dict[str, float], dict[str, float]]:
+        """Updates the environment with actions returning an objective value,
+        the current state as well as process outputs.
+        """
         pass
 
     @abstractmethod
-    def reset(self) -> Tuple[np.array, float]:
-        """Resets the environment to initial process variable values returning initial observations and objective value.
-        Required before a sequence of steps.
+    def reset(self) -> tuple[float, dict[str, float], dict[str, float]]:
+        """Resets the environment to initial process variable values returning an objective value,
+        the current state as well as process outputs. Required before a sequence of steps.
         """
         pass
 

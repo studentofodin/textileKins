@@ -1,6 +1,5 @@
 name: tensileStrengthMDModel
 model_class: Gpytorch
-data_source: BNP
 inputs:
   - Cross-lapperLayersCount
   - CardDeliveryWeightPerArea

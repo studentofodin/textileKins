@@ -53,18 +53,18 @@ class ActionManager(AbstractActionManager):
         if self._ready:
             potential_setpoints = self._calculate_potential_setpoints(actions)
             potential_dependent_variables = \
-                self._calculate_potential_dependent_variables(potential_setpoints | disturbances)
-            setpoint_constraints_met, dependent_variable_constraints_met = \
-                self._constraints_met(potential_setpoints, potential_dependent_variables)
+                self._calculate_dependent_variables(potential_setpoints | disturbances)
+            setpoints_okay, dependent_variables_okay = \
+                self._constraints_satisfied(potential_setpoints, potential_dependent_variables)
 
-            if all((setpoint_constraints_met | dependent_variable_constraints_met).values()):
+            if all((setpoints_okay | dependent_variables_okay).values()):
                 self._setpoints = potential_setpoints
             dependent_variables = \
-                self._calculate_potential_dependent_variables(self._setpoints | disturbances)
+                self._calculate_dependent_variables(self._setpoints | disturbances)
         else:
             raise Exception("Cannot call step() before calling reset().")
 
-        return self._setpoints, dependent_variables, setpoint_constraints_met, dependent_variable_constraints_met
+        return self._setpoints, dependent_variables, setpoints_okay, dependent_variables_okay
 
     def reset(self, initial_disturbances: dict[str, float]) -> \
             tuple[dict[str, float], dict[str, float],  dict[str, bool], dict[str, bool]]:
@@ -74,16 +74,16 @@ class ActionManager(AbstractActionManager):
         if not self._dependent_variable_calculations:
             self._allocate_dependent_variable_calculations()
         potential_dependent_variables = \
-            self._calculate_potential_dependent_variables(potential_setpoints | initial_disturbances)
+            self._calculate_dependent_variables(potential_setpoints | initial_disturbances)
         setpoint_constraints_met, dependent_variable_constraints_met = \
-            self._constraints_met(potential_setpoints, potential_dependent_variables)
+            self._constraints_satisfied(potential_setpoints, potential_dependent_variables)
 
         if not all((setpoint_constraints_met | dependent_variable_constraints_met).values()):
             raise AssertionError("The initial setpoints and dependent variables do not meet constraints. "
                                  "Aborting Experiment.")
         self._setpoints = potential_setpoints
         dependent_variables = \
-            self._calculate_potential_dependent_variables(self._setpoints | initial_disturbances)
+            self._calculate_dependent_variables(self._setpoints | initial_disturbances)
         self._ready = True
 
         return self._setpoints, dependent_variables, setpoint_constraints_met, dependent_variable_constraints_met
@@ -91,26 +91,24 @@ class ActionManager(AbstractActionManager):
     def close(self) -> None:
         self._ready = False
 
-    def _constraints_met(self, setpoints: dict[str, float], dependent_variables: dict[str, float]) -> \
+    def _constraints_satisfied(self, setpoints: dict[str, float], dependent_variables: dict[str, float]) -> \
             tuple[dict[str, bool], dict[str, bool]]:
-
         def check_constraints(boundaries_to_check: DictConfig, actual_vars: dict[str, float]):
-            constraints_met = dict()
+            constraints_satisfied = dict()
             for ctrl_name, boundaries in boundaries_to_check.items():
                 for boundary_type in ["lower", "upper"]:
                     boundary_value = boundaries.get(boundary_type)
                     if boundary_value is not None:
                         comparison = actual_vars[ctrl_name] < boundary_value if boundary_type == "lower" else \
                             actual_vars[ctrl_name] > boundary_value
-                        constraints_met[f"{ctrl_name}.{boundary_type}"] = not comparison
+                        constraints_satisfied[f"{ctrl_name}.{boundary_type}"] = not comparison
+            return constraints_satisfied
 
-            return constraints_met
-
-        setpoint_constraints_met = check_constraints(self._config.setpoint_bounds, setpoints)
-        dependent_variable_constraints_met = check_constraints(self._config.dependent_variable_bounds,
+        setpoint_constraints_satisfied = check_constraints(self._config.setpoint_bounds, setpoints)
+        dependent_variable_constraints_satisfied = check_constraints(self._config.dependent_variable_bounds,
                                                                dependent_variables)
 
-        return setpoint_constraints_met, dependent_variable_constraints_met
+        return setpoint_constraints_satisfied, dependent_variable_constraints_satisfied
 
     def _allocate_dependent_variable_calculations(self) -> None:
         for dependent_variable_name, calculation in self._config.dependent_variable_calculations.items():
@@ -121,6 +119,8 @@ class ActionManager(AbstractActionManager):
 
     def _calculate_potential_setpoints(self, actions: dict[str, float]) -> dict[str, float]:
         # relative actions.
+        assert set(actions.keys()) == set(self._setpoints.keys()), "The actions names do not match the setpoints."
+
         if self._config.actions_are_relative:
             potential_setpoints = dict()
             for setpoint_name in self._config.initial_setpoints.keys():
@@ -131,9 +131,8 @@ class ActionManager(AbstractActionManager):
 
         return potential_setpoints
 
-    def _calculate_potential_dependent_variables(self, X: dict[str, float]) -> dict[str, float]:
+    def _calculate_dependent_variables(self, X: dict[str, float]) -> dict[str, float]:
         potential_dependent_variables = dict()
         for dependent_variable_name, calculation in self._dependent_variable_calculations.items():
             potential_dependent_variables[dependent_variable_name] = calculation.calculate(X).item()
         return potential_dependent_variables
-

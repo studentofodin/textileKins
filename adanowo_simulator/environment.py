@@ -1,7 +1,6 @@
-import numpy as np
-from omegaconf import DictConfig
-import logging
 import sys
+import logging
+from omegaconf import DictConfig
 
 from adanowo_simulator.abstract_base_classes.environment import AbstractEnvironment
 from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
@@ -70,27 +69,27 @@ class Environment(AbstractEnvironment):
     def step_index(self):
         return self._step_index
 
-    def step(self, actions: dict) -> tuple[np.array, float]:
+    def step(self, actions: dict) -> tuple[float, dict[str, float], dict[str, float]]:
         if self._ready:
             try:
                 if self._step_index == 1:
                     logger.info("Experiment is running.")
                 disturbances = self._disturbance_manager.step()
-                setpoints, dependent_variables, setpoint_constraints_met, dependent_variable_constraints_met = \
+                setpoints, dependent_variables, setpoints_okay, dependent_variables_okay = \
                     self._action_manager.step(actions, disturbances)
                 state = disturbances | setpoints | dependent_variables
                 outputs = self._output_manager.step(state)
                 objective_value, output_constraints_met = self._objective_manager.step(
-                    state, outputs, setpoint_constraints_met, dependent_variable_constraints_met)
+                    state, outputs, setpoints_okay, dependent_variables_okay)
                 log_variables = {
                     "Performance-Metrics": {
                         "Objective-Value": objective_value,
-                        "Setpoint-Constraints-Met": int(all(setpoint_constraints_met.values())),
-                        "Dependent-Variable-Constraints-Met": int(all(dependent_variable_constraints_met.values())),
+                        "Setpoint-Constraints-Met": int(all(setpoints_okay.values())),
+                        "Dependent-Variable-Constraints-Met": int(all(dependent_variables_okay.values())),
                         "Output-Constraints-Met": int(all(output_constraints_met.values()))},
-                    "Setpoint-Constraints-Met": {key: int(value) for key, value in setpoint_constraints_met.items()},
+                    "Setpoint-Constraints-Met": {key: int(value) for key, value in setpoints_okay.items()},
                     "Dependent-Variable-Constraints-Met":
-                        {key: int(value) for key, value in dependent_variable_constraints_met.items()},
+                        {key: int(value) for key, value in dependent_variables_okay.items()},
                     "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
                     "Actions": actions,
                     "Setpoints": setpoints,
@@ -104,7 +103,6 @@ class Environment(AbstractEnvironment):
                                             self._objective_manager)
                 disturbances = self._disturbance_manager.step()
                 state = disturbances | setpoints | dependent_variables
-                observations = self._collect_observations(state, outputs)
 
             except Exception as e:
                 self.close()
@@ -113,9 +111,9 @@ class Environment(AbstractEnvironment):
         else:
             raise Exception("Cannot call step() before calling reset().")
 
-        return observations, objective_value
+        return objective_value, state, outputs
 
-    def reset(self) -> tuple[np.array, float]:
+    def reset(self) -> tuple[float, dict[str, float], dict[str, float]]:
         logger.info("Resetting environment...")
         try:
             # step 0.
@@ -151,7 +149,6 @@ class Environment(AbstractEnvironment):
                                         self._objective_manager)
             disturbances = self._disturbance_manager.step()
             state = disturbances | setpoints | dependent_variables
-            observations = self._collect_observations(state, outputs)
 
         except Exception as e:
             self.close()
@@ -160,7 +157,7 @@ class Environment(AbstractEnvironment):
         self._ready = True
         logger.info("...environment has been reset.")
 
-        return observations, objective_value
+        return objective_value, state, outputs
 
     def close(self) -> None:
         logger.info("Closing environment...")
@@ -194,32 +191,3 @@ class Environment(AbstractEnvironment):
         if exceptions:
             raise Exception(exceptions)
         logger.info("...environment has been closed.")
-
-    def _collect_observations(self, state: dict[str, float], outputs: dict[str, float]) -> np.array:
-        observations = list()
-        for component_name in self._config.observations:
-            if component_name == "disturbances":
-                for disturbance_name in self._config.used_disturbances:
-                    observations.append(state[disturbance_name])
-            elif component_name == "setpoints":
-                for setpoint_name in self._config.used_setpoints:
-                    observations.append(state[setpoint_name])
-            elif component_name == "dependent_variables":
-                for dependent_variable_name in self._config.used_dependent_variables:
-                    observations.append(state[dependent_variable_name])
-            elif component_name == "outputs":
-                for output_name in self._config.used_outputs:
-                    observations.append(outputs[output_name])
-            else:
-                raise Exception(f"{component_name} in observation config is not known!")
-        observations = np.array(observations)
-        return observations
-
-    @staticmethod
-    def _dict_to_array(dictionary: dict[str, float], keys: list[str]) -> np.array:
-        if len(dictionary) != len(keys):
-            raise Exception("Length of dictionary and keys are not the same.")
-        array = np.zeros(len(dictionary))
-        for index, key in enumerate(keys):
-            array[index] = dictionary[key]
-        return array

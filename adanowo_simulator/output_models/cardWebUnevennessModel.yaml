@@ -1,6 +1,5 @@
 name: cardWebUnevennessModel
 model_class: Gpytorch
-data_source: EasyVlies
 inputs:
   - CardDeliveryWeightPerArea
   - MassThroughput

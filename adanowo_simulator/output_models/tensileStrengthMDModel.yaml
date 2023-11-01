@@ -5,21 +5,21 @@ inputs:
   - CardDeliveryWeightPerArea
   - Needleloom1FeedPerStroke
   - Needleloom1DraftRatio
-  - Needleloom2NeedlepunchDepth
   - DrawFrameDraftRatio
-  - ProductB
-  - Needleloom2DraftRatio
+  - CalenderTemperature
+  - FibreA
+  - FibreD
 output: TensileStrengthMD
 training_inputs:
   - CL01_LayersCalculatorLayers
   - M_031_K_AbliefGew_g_m2
   - M_015_NM1_Vorschub_mm_H
   - M_007_NM1_AuszVerzug_Proznt
-  - M_017_NM2_Einsttiefe_mm
   - D_018_SW_Gesamtverzug_Perc
-  - Product_B
-  - M_010_NM2_AuszVerzug_Proz
+  - D_006_KL_OberwTempI_oC
+  - Fibre_A
+  - Fibre_D
 training_target: Fmax_MD
 y_is_scaled: True
-X_is_scaled: False
+X_is_scaled: True
 pca_on_inputs: False

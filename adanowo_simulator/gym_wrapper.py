@@ -17,22 +17,22 @@ class GymWrapper(Env):
         self._action_space: spaces.Box = spaces.Box(low=0, high=0)
         self._observation_space: spaces.Box = spaces.Box(low=0, high=0)
 
-        action_space_low = []
-        action_space_high = []
-        for action_name in self._environment.config.used_setpoints:
-            action_space_low.append(self._config.action_space[action_name]["low"])
-            action_space_high.append(self._config.action_space[action_name]["high"])
-        self._action_space = spaces.Box(low=np.array(action_space_low, dtype=np.float32),
-                                        high=np.array(action_space_high, dtype=np.float32))
-
-        observation_space_low = []
-        observation_space_high = []
-        for group in self._environment.config.observations:
-            for observation_name in self._environment.config["used_"+group]:
-                observation_space_low.append(self._config.observation_space[observation_name]["low"])
-                observation_space_high.append(self._config.observation_space[observation_name]["high"])
-        self._observation_space = spaces.Box(low=np.array(observation_space_low, dtype=np.float32),
-                                             high=np.array(observation_space_high, dtype=np.float32))
+        # action_space_low = []
+        # action_space_high = []
+        # for action_name in self._environment.config.used_setpoints:
+        #     action_space_low.append(self._config.action_space[action_name]["low"])
+        #     action_space_high.append(self._config.action_space[action_name]["high"])
+        # self._action_space = spaces.Box(low=np.array(action_space_low, dtype=np.float32),
+        #                                 high=np.array(action_space_high, dtype=np.float32))
+        #
+        # observation_space_low = []
+        # observation_space_high = []
+        # for group in self._environment.config.observations:
+        #     for observation_name in self._environment.config["used_"+group]:
+        #         observation_space_low.append(self._config.observation_space[observation_name]["low"])
+        #         observation_space_high.append(self._config.observation_space[observation_name]["high"])
+        # self._observation_space = spaces.Box(low=np.array(observation_space_low, dtype=np.float32),
+        #                                     high=np.array(observation_space_high, dtype=np.float32))
 
     @property
     def environment(self) -> AbstractEnvironment:

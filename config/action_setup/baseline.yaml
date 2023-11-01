@@ -1,15 +1,14 @@
-actions_are_relative: True
+actions_are_relative: False
 initial_setpoints:
-  CardDeliveryWeightPerArea: 63.7 # g per sqm
-  Cross-lapperLayersCount: 12.0 # -
+  CardDeliveryWeightPerArea: 63.0 # g per sqm
+  Cross-lapperLayersCount: 8 # -
   Needleloom1DraftRatio: 43.0 # percent
-  Cross-lapperProfiling: 0.0 # percent
   DrawFrameDraftRatio: 44.7 # percent
-  ProductionSpeedSetpoint: 10.0 # m per min
+  Cross-lapperProfiling: 0.0 # percent
   Needleloom1FeedPerStroke: 10.5 # mm per stroke
-  Needleloom2NeedlepunchDepth: 10.8 # mm
+  ProductionSpeedSetpoint: 14.26 # m per min
   v_PreRoll: 215.0 # m per min
-  v_MainCylinder: 805.0 # m per min
+  v_MainCylinder: 804.0 # m per min
   v_WorkerMain: 40.3 # m per min
   v_StripperMain: 160.0 # m per min
   v_WorkerPre: 18.0 # m per min
@@ -19,48 +18,45 @@ dependent_variable_calculations:
   MassThroughput: massThroughputCalculation # kg per h
 setpoint_bounds:
   CardDeliveryWeightPerArea:
-    lower: 45
-    upper: 85
+    lower: 41.0
+    upper: 77.28
   Cross-lapperLayersCount:
-    lower: 4.0
-    upper: 26.0
+    lower: 4
+    upper: 18
   Needleloom1DraftRatio:
-    lower: 25
-    upper: 65
+    lower: 27.0
+    upper: 51.0
   Cross-lapperProfiling:
-    lower: 0
-    upper: 40
+    lower: 0.0
+    upper: 15.0
   DrawFrameDraftRatio:
-    lower: 20
-    upper: 90
+    lower: 25.9
+    upper: 80.6
   Needleloom1FeedPerStroke:
-    lower: 9
-    upper: 15
+    lower: 9.55
+    upper: 12.26
   ProductionSpeedSetpoint:
-    lower: 3.0
-    upper: 15.5
-  Needleloom2NeedlepunchDepth:
-    lower: 9
-    upper: 14
+    lower: 7.0
+    upper: 14.72
   v_PreRoll:
-    lower: 180
-    upper: 400
+    lower: 165.0
+    upper: 400.0
   v_MainCylinder:
-    lower: 400
-    upper: 1400
+    lower: 264.0
+    upper: 1300.0
   v_WorkerMain:
-    lower: 20
-    upper: 130
+    lower: 13.0
+    upper: 120.0
   v_StripperMain:
-    lower: 45
-    upper: 250
+    lower: 30.0
+    upper: 200.0
   v_WorkerPre:
-    lower: 15
-    upper: 27
+    lower: 10.0
+    upper: 22.4
   v_StripperPre:
-    lower: 40
-    upper: 85
+    lower: 45.0
+    upper: 85.0
 dependent_variable_bounds:
   MassThroughput:
-    lower: 350
-    upper: 1150
+    lower: 396.0
+    upper: 1201.0

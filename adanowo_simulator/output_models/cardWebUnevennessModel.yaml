@@ -2,7 +2,7 @@ name: cardWebUnevennessModel
 model_class: Gpytorch
 inputs:
   - CardDeliveryWeightPerArea
-  - MassThroughput
+  - CardMassThroughputSetpoint
   - v_PreRoll
   - v_MainCylinder
   - v_WorkerMain

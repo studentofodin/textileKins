@@ -15,7 +15,6 @@ def calculate(X: dict) -> np.array:
     weight_per_area_theoretical = \
         X["CardDeliveryWeightPerArea"] * \
         X["Cross-lapperLayersCount"].round() / \
-        prcnt_to_mult(X["Needleloom2DraftRatio"]) / \
         prcnt_to_mult(X["Needleloom1DraftRatioIntake"]) / \
         prcnt_to_mult(X["Needleloom1DraftRatio"]) / \
         prcnt_to_mult(X["DrawFrameDraftRatio"])
@@ -26,5 +25,5 @@ def calculate(X: dict) -> np.array:
         X["ProductWidth"] * \
         G_MIN_TO_KG_H
 
-    mass_throughput = np.array(mass_throughput)
+    mass_throughput = np.array(mass_throughput).reshape(-1, 1)
     return mass_throughput

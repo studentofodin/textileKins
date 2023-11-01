@@ -10,5 +10,5 @@ class CalculationAdapter(AbstractCalculationAdapter):
         self._calculate: MethodType = calculation_module.calculate
 
     def calculate(self, X: dict[str, float]) -> np.array:
-        c = self._calculate(X)
+        c = np.array(self._calculate(X)).reshape(-1, 1)
         return c

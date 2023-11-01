@@ -44,7 +44,7 @@ class ExactGPModel(gpytorch.models.ExactGP):
            PolynomialKernel(power=1, ard_num_dims=1, active_dims=(0,)) *
            RBFKernel(ard_num_dims=1, active_dims=(0,))
         ) + \
-            ScaleKernel(RBFKernel(ard_num_dims=3, lengthscale_constraint=GreaterThan(0.4)))
+            ScaleKernel(RBFKernel(ard_num_dims=3, lengthscale_constraint=GreaterThan(1.0)))
 
         self.mean_module = gpytorch.means.ConstantMean()
         self.covar_module = kernel

@@ -20,10 +20,8 @@ def unpack_dict(X: dict, training_inputs: list[str]) -> np.array:
             X_unpacked.append(X["Needleloom1DraftRatio"])
         elif f == "D_018_SW_Gesamtverzug_Perc":
             X_unpacked.append(X["DrawFrameDraftRatio"])
-        elif f == "Product_B":
-            X_unpacked.append(np.ones_like(X["ProductB"]))
-        elif f == "M_010_NM2_AuszVerzug_Proz":
-            X_unpacked.append(X["Needleloom2DraftRatio"])
+        elif f == "Fibre_A":
+            X_unpacked.append(np.ones_like(X["FibreA"]))
     return np.concatenate(X_unpacked, axis=1)
 
 
@@ -35,13 +33,12 @@ class ExactGPModel(gpytorch.models.ExactGP):
         super(ExactGPModel, self).__init__(train_x, train_y, likelihood_mdl)
 
         kernel = ScaleKernel(
-                    PolynomialKernel(power=1, active_dims=(0,), offset_constraint=Interval(0, 1)) *
-                    PolynomialKernel(power=1, active_dims=(1,), offset_constraint=Interval(0, 3)) *
-                    RBFKernel(ard_num_dims=1, active_dims=(2,), lengthscale_constraint=GreaterThan(5.0)) *
-                    RBFKernel(ard_num_dims=1, active_dims=(3,), lengthscale_constraint=GreaterThan(5.0)) *
-                    RBFKernel(ard_num_dims=1, active_dims=(4,), lengthscale_constraint=GreaterThan(5.0)) *
-                    RBFKernel(ard_num_dims=1, active_dims=(5,), lengthscale_constraint=GreaterThan(5.0)) *
-                    RBFKernel(ard_num_dims=1, active_dims=(6,), lengthscale_constraint=GreaterThan(5.0))
+            RBFKernel(ard_num_dims=1, active_dims=(0,), lengthscale_constraint=GreaterThan(3.0)) *
+            RBFKernel(ard_num_dims=1, active_dims=(1,), lengthscale_constraint=GreaterThan(7.0)) *
+            RBFKernel(ard_num_dims=1, active_dims=(2,), lengthscale_constraint=GreaterThan(0.5)) *
+            RBFKernel(ard_num_dims=1, active_dims=(3,), lengthscale_constraint=GreaterThan(3.0)) *
+            RBFKernel(ard_num_dims=1, active_dims=(4,), lengthscale_constraint=GreaterThan(0.5)) *
+            RBFKernel(ard_num_dims=1, active_dims=(5,), lengthscale_constraint=GreaterThan(0.0))
         )
 
         self.mean_module = gpytorch.means.ConstantMean()

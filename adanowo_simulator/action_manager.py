@@ -106,7 +106,7 @@ class ActionManager(AbstractActionManager):
 
         setpoint_constraints_satisfied = check_constraints(self._config.setpoint_bounds, setpoints)
         dependent_variable_constraints_satisfied = check_constraints(self._config.dependent_variable_bounds,
-                                                               dependent_variables)
+                                                                     dependent_variables)
 
         return setpoint_constraints_satisfied, dependent_variable_constraints_satisfied
 
@@ -134,5 +134,5 @@ class ActionManager(AbstractActionManager):
     def _calculate_dependent_variables(self, X: dict[str, float]) -> dict[str, float]:
         potential_dependent_variables = dict()
         for dependent_variable_name, calculation in self._dependent_variable_calculations.items():
-            potential_dependent_variables[dependent_variable_name] = calculation.calculate(X).item()
+            potential_dependent_variables[dependent_variable_name] = float(calculation.calculate(X)[0])
         return potential_dependent_variables

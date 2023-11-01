@@ -6,8 +6,9 @@ inputs:
   - Needleloom1FeedPerStroke
   - Needleloom1DraftRatio
   - DrawFrameDraftRatio
-  - ProductB
-  - Needleloom2DraftRatio
+  - CalenderTemperature
+  - FibreA
+  - FibreD
 output: TensileStrengthCD
 training_inputs:
   - CL01_LayersCalculatorLayers
@@ -15,9 +16,8 @@ training_inputs:
   - M_015_NM1_Vorschub_mm_H
   - M_007_NM1_AuszVerzug_Proznt
   - D_018_SW_Gesamtverzug_Perc
-  - Product_B
-  - M_010_NM2_AuszVerzug_Proz
+  - Fibre_A
 training_target: Fmax_CD
 y_is_scaled: True
-X_is_scaled: False
+X_is_scaled: True
 pca_on_inputs: False

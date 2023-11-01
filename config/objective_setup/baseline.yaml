@@ -14,8 +14,6 @@ output_bounds:
     lower: 200.0
     upper: 500.0
   TensileStrengthCD:
-    lower: 650.0
+    lower: 600.0
   TensileStrengthMD:
-    lower: 400.0
-
-
+    lower: 100.0

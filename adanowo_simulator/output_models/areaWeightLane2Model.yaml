@@ -3,8 +3,9 @@ model_class: Python_script
 inputs:
   - CardDeliveryWeightPerArea
   - Cross-lapperLayersCount
-  - Needleloom2DraftRatio
   - Needleloom1DraftRatioIntake
   - Needleloom1DraftRatio
   - DrawFrameDraftRatio
+  - Cross-lapperProfiling
+  - SmileEffectStrength
 output: AreaWeightLane2

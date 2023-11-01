@@ -1,8 +1,7 @@
 disturbances:
-  FeederDeliverySpeed: 9.6
-  ProductB: 0.0
-  ProductWidth: 4.8
-  SmileEffectStrength: 5.0
-  Needleloom2DraftRatio: 23.0
-  Needleloom1DraftRatioIntake: 10.0
-  Needleloom2FeedPerStroke: 11.25
+  Needleloom1DraftRatioIntake: 10.0 # can be (5.0, 15.0)
+  SmileEffectStrength: 10.0 # can be e(0, 20.0)
+  CalenderTemperature: 174.0 # can be e(167.0, 233.0)
+  FibreA: 0 # can be e(0, 1)
+  FibreD: 0 # can be e(0, 1)
+  ProductWidth: 2.81 # can be e(3.32, 6.00)

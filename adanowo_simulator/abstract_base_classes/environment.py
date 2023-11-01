@@ -146,16 +146,16 @@ class AbstractEnvironment(ABC):
         pass
 
     @abstractmethod
-    def step(self, actions: dict) -> tuple[float, dict[str, float], dict[str, float]]:
+    def step(self, actions: dict) -> tuple[float, dict[str, float], dict[str, float], DictConfig]:
         """Updates the environment with actions returning an objective value,
-        the current state as well as process outputs.
+        the current state as well as process outputs and quality bounds.
         """
         pass
 
     @abstractmethod
-    def reset(self) -> tuple[float, dict[str, float], dict[str, float]]:
+    def reset(self) -> tuple[float, dict[str, float], dict[str, float], DictConfig]:
         """Resets the environment to initial process variable values returning an objective value,
-        the current state as well as process outputs. Required before a sequence of steps.
+        the current state as well as process outputs and quality bounds. Required before a sequence of steps.
         """
         pass
 

@@ -86,7 +86,7 @@ state. Probabilistic realizations of important economic and technical production
 objective function is evaluated. The objective is mostly economically motivated, but is also checked against output 
 bounds to ensure all quality constraints are satisfied. If they are violated, a penalty is returned instead of the 
 objective value. This simulates qualit rejects that the customer will not accept. The objective value is returned to the 
-agent, along with the new process state and other context.
+agent, along with the new process state and other context (process outputs, quality bounds).
 
 
 ### Naming scheme

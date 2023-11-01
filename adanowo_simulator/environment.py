@@ -69,7 +69,7 @@ class Environment(AbstractEnvironment):
     def step_index(self):
         return self._step_index
 
-    def step(self, actions: dict) -> tuple[float, dict[str, float], dict[str, float]]:
+    def step(self, actions: dict) -> tuple[float, dict[str, float], dict[str, float], DictConfig]:
         if self._ready:
             try:
                 if self._step_index == 1:
@@ -86,23 +86,28 @@ class Environment(AbstractEnvironment):
                         "Objective-Value": objective_value,
                         "Setpoint-Constraints-Met": int(all(setpoints_okay.values())),
                         "Dependent-Variable-Constraints-Met": int(all(dependent_variables_okay.values())),
-                        "Output-Constraints-Met": int(all(output_constraints_met.values()))},
+                        "Output-Constraints-Met": int(all(output_constraints_met.values()))
+                    },
+                    "Actions": actions,
+                    "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
+                    "Outputs": outputs,
                     "Setpoint-Constraints-Met": {key: int(value) for key, value in setpoints_okay.items()},
+                    "Setpoints": setpoints,
                     "Dependent-Variable-Constraints-Met":
                         {key: int(value) for key, value in dependent_variables_okay.items()},
-                    "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
-                    "Actions": actions,
-                    "Setpoints": setpoints,
-                    "Disturbances": disturbances,
-                    "Outputs": outputs}
+                    "Dependent-Variables": dependent_variables,
+                    "Disturbances": disturbances
+                }
                 self._experiment_tracker.step(log_variables, self._step_index)
 
-                # prepare next step.
+                # Prepare next step.
+                # Execute scenario for the next step so the agent is already informed about production context changes.
                 self._step_index += 1
                 self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
                                             self._objective_manager)
                 disturbances = self._disturbance_manager.step()
                 state = disturbances | setpoints | dependent_variables
+                quality_bounds = self._objective_manager.config.output_bounds
 
             except Exception as e:
                 self.close()
@@ -111,9 +116,9 @@ class Environment(AbstractEnvironment):
         else:
             raise Exception("Cannot call step() before calling reset().")
 
-        return objective_value, state, outputs
+        return objective_value, state, outputs, quality_bounds
 
-    def reset(self) -> tuple[float, dict[str, float], dict[str, float]]:
+    def reset(self) -> tuple[float, dict[str, float], dict[str, float], DictConfig]:
         logger.info("Resetting environment...")
         try:
             # step 0.
@@ -132,15 +137,18 @@ class Environment(AbstractEnvironment):
                     "Objective-Value": objective_value,
                     "Setpoint-Constraints-Met": int(all(setpoint_constraints_met.values())),
                     "Dependent-Variable-Constraints-Met": int(all(dependent_variable_constraints_met.values())),
-                    "Output-Constraints-Met": int(all(output_constraints_met.values()))},
+                    "Output-Constraints-Met": int(all(output_constraints_met.values()))
+                },
+                "Actions": {},
+                "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
+                "Outputs": outputs,
                 "Setpoint-Constraints-Met": {key: int(value) for key, value in setpoint_constraints_met.items()},
+                "Setpoints": setpoints,
                 "Dependent-Variable-Constraints-Met":
                     {key: int(value) for key, value in dependent_variable_constraints_met.items()},
-                "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
-                "Actions": {},
-                "Setpoints": setpoints,
-                "Disturbances": disturbances,
-                "Outputs": outputs}
+                "Dependent-Variables": dependent_variables,
+                "Disturbances": disturbances
+            }
             self._experiment_tracker.reset(log_variables)
 
             # prepare step 1.
@@ -149,6 +157,7 @@ class Environment(AbstractEnvironment):
                                         self._objective_manager)
             disturbances = self._disturbance_manager.step()
             state = disturbances | setpoints | dependent_variables
+            quality_bounds = self._objective_manager.config.output_bounds
 
         except Exception as e:
             self.close()
@@ -157,7 +166,7 @@ class Environment(AbstractEnvironment):
         self._ready = True
         logger.info("...environment has been reset.")
 
-        return objective_value, state, outputs
+        return objective_value, state, outputs, quality_bounds
 
     def close(self) -> None:
         logger.info("Closing environment...")

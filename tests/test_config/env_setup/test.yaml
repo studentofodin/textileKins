@@ -1,0 +1,35 @@
+used_setpoints:
+  - CardDeliveryWeightPerArea # g per sqm
+  - Cross-lapperLayersCount
+  - Needleloom1DraftRatio # percent
+  - DrawFrameDraftRatio # percent
+  - Cross-lapperProfiling # percent
+  - Needleloom1FeedPerStroke # mm per stroke
+  - ProductionSpeedSetpoint # kg per h
+  - v_PreRoll # m per min
+  - v_MainCylinder # m per min
+  - v_WorkerMain # m per min
+  - v_StripperMain # m per min
+  - v_WorkerPre # m per min
+  - v_StripperPre # m per min
+used_dependent_variable_setpoints:
+  - MassThroughput # m per min
+used_disturbances:
+  - Needleloom1DraftRatioIntake # percent
+  - SmileEffectStrength # g per sqm
+  - CalenderTemperature # degC
+  - FibreA # bool
+  - FibreD # bool
+  - ProductWidth # m
+used_outputs:
+  - AreaWeightLane1 # g per sqm
+  - AreaWeightLane2 # g per sqm
+  - AreaWeightLane3 # g per sqm
+  - LinePowerConsumption # W
+  - TensileStrengthCD # N
+  - TensileStrengthMD # N
+  - CardWebUnevenness # -
+observations:
+  - disturbances
+  - setpoints
+  - outputs

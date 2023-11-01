@@ -14,5 +14,5 @@ disturbances:
   Needleloom2DraftRatio:
     trigger_interval: 10
     mean: 23.0
-    std: 0.1
+    range: 0.1
   FeederDeliverySpeed: [[1, 9.0]]

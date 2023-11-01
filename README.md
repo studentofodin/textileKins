@@ -42,7 +42,8 @@ Under Windows you might need to use pip to install poetry if the command from th
    ```bash
    poetry install
    
-4. Note: The Poetry command will install the project in editable mode. If you want to install the project as a regular, package, use the following command afterwards (specifying the version number):
+4. Note: The Poetry command will install the project in editable mode. If you want to install the project as a regular, 
+package, use the following command afterwards (specifying the version number):
    ```bash
    pip install .\dist\adanowo_simulator-x.x.x.tar.gz
 
@@ -63,16 +64,30 @@ Use the existing configuration as a template for your own tests.
 
 ### Example Usage
 A detailed example can be found in `./examples/example.py`. 
-The example script demonstrates how to use the `EnvironmentFactory` and `GymWrapper` to initialize and step through an environment.
-A simple random agent is used in the example. For adapting the code to arbitrary agents, you need to write your own wrapper file.
+The example script demonstrates how to use the `EnvironmentFactory` and `GymWrapper` to initialize and step through an 
+environment.
+A simple random agent is used in the example. For adapting the code to arbitrary agents, 
+you need to write your own wrapper file.
 
 
 ## Explanantion of the Environment class
 
 The Environment class handles all top-level interactions in this project. 
-It is meant to be wrapped by another class to ensure compatibility with all kinds of agent architectures.
+It is meant to be wrapped by another class to ensure compatibility with all kinds of different agent architectures.
 From an outside point of view, an environment receives **actions** from an **agent**, processes them, 
-and returns **observations** as well as an **objective value**. This is called a **step**.
+and returns **observations** as well as an **objective/reward value**. This is called a **step**.
+
+
+After receiving an action with the same length as the setpoints, the environment checks wether stationary, a priori 
+known actor constraints or other dependent variables have been violated. If so, the action is not performed and a 
+penalty is returned. Next, all the relevant states (setpoints, disturbances, dependent variables) are updated and passed 
+to the probabilistic process simulation models. The models simulate the process output behavior based on the process 
+state. Probabilistic realizations of important economic and technical production outcomes are now available. Next, the 
+objective function is evaluated. The objective is mostly economically motivated, but is also checked against output 
+bounds to ensure all quality constraints are satisfied. If they are violated, a penalty is returned instead of the 
+objective value. This simulates qualit rejects that the customer will not accept. The objective value is returned to the 
+agent, along with the new process state and other context.
+
 
 ### Naming scheme
 
@@ -81,11 +96,18 @@ and returns **observations** as well as an **objective value**. This is called a
 They are calculated from the actions either in an absolute or relative manner.
   - Absolute manner: setpoints(t) = actions(t)
   - Relative manner: setpoints(t) = setpoints(t-1) + actions(t)
-- **Dependent variables**: Important variables calculated from the setpoints and disturbances.
+- **Dependent variables**: Important variables calculated from the setpoints and disturbances. 
+They might be calulated for checking constraints or simply as helper functions with outputs used elsewhere.
 - **State**: Combination of disturbances, setpoints, and dependent variables.
 - **Outputs**: Variables that exhibit probabilistic behavior and are calculated from the state using models.
+- **Objective/reward value**: A value that is calculated from the outputs and state and is to be maximized.
+- **Output bounds**: Bounds that the outputs must not exceed, or a penalty is returned. This simulates the quality 
+characteristics of the produced nonwoven that the customer demands.
+- **Scenario**: Changes the environment behavior in a deterministic or random manner. This can be used to simulate changing
+quality requirements, disturbances or process behaviors.
 
-> **Note**: Assume variable \`y\` depends on a variable \`x\`. We use the term **calculation** if a value for \`y\` is directly returned given \`x\`.
+> **Note**: Assume variable \`y\` depends on a variable \`x\`. We use the term **calculation** if a value for 
+> \`y\` is directly returned given \`x\`.
 
 ### Members of the class
 
@@ -102,7 +124,8 @@ They are calculated from the actions either in an absolute or relative manner.
 - \`reset\`: Resets the environment to initial variable values.
 - \`close\`: Closes the environment, shutting down any background processes.
 
-> **Note**: The API mainly works with dictionaries, specifically \`dict[str, float]\`, whose keys represent names of numerical variables.
+> **Note**: The API mainly works with dictionaries, specifically \`dict[str, float]\`, 
+> whose keys represent names of numerical variables.
 
 
 ## Modifications

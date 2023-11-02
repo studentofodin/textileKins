@@ -48,13 +48,13 @@ class GymWrapper(Env):
 
     def step(self, actions_array: np.array) -> tuple[np.array, float, bool, bool, dict]:
         action = self._array_to_dict(actions_array, OmegaConf.to_container(self._action_config.used_setpoints))
-        reward, state, outputs = self._environment.step(action)
+        reward, state, outputs, quality_bounds = self._environment.step(action)
         observations = state | outputs
         return np.array(list(observations.values())), reward, False, False, dict()
 
     def reset(self, seed=None, options=None) -> tuple[np.array, dict]:
         super().reset(seed=seed)
-        reward, state, outputs = self._environment.reset()
+        reward, state, outputs, quality_bounds = self._environment.reset()
         observations = state | outputs
         return np.array(list(observations.values())), dict()
 

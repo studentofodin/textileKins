@@ -1,15 +1,14 @@
 defaults:
-  - env_setup: baseline
-  - disturbance_setup: baseline
-  - action_setup: baseline
-  - output_setup: baseline
-  - objective_setup: baseline
-  - scenario_setup: baseline
-  - gym_setup: baseline
+  - env_setup: test
+  - disturbance_setup: test
+  - action_setup: test
+  - output_setup: test
+  - objective_setup: test
+  - scenario_setup: test
   - _self_
-tracking_enabled: true
+tracking_enabled: false
 wandb_settings:
   project: adanowo-simulator
-  mode: online
+  mode: offline
 parallel_execution: true
 num_experiment_steps: 100

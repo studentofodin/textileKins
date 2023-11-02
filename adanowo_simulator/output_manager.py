@@ -158,7 +158,8 @@ class SequentialOutputManager(AbstractOutputManager):
             -> dict[str, float]:
         outputs = dict()
         for output_name in self._config.output_models.keys():
-            outputs[output_name] = float(np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name]))[0])
+            outputs[output_name] = float(np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name])).
+                                         flatten()[0])
         return outputs
 
     def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:

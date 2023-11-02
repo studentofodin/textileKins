@@ -25,5 +25,5 @@ def calculate(X: dict) -> np.array:
         X["ProductWidth"] * \
         G_MIN_TO_KG_H
 
-    mass_throughput = np.array(mass_throughput).reshape(-1, 1)
+    mass_throughput = np.array(mass_throughput).flatten()
     return mass_throughput

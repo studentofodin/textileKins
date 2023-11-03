@@ -82,22 +82,6 @@ def test_state_values(test_env, reference_values, step_values):
     assert reward > 0
 
 
-def test_step_parallel_processing(test_env, reference_values, step_values, config):
-    config.parallel_execution = True
-    factory = EnvironmentFactory(config)
-    environment = factory.create_environment()
-    environment.reset()
-
-    unit_step = step_values["unit_step"]
-    reference_setpoints = reference_values["reference_setpoints"]
-    reward, state, _, _ = test_env.step(unit_step)
-
-    for key, value in reference_setpoints.items():
-        assert pytest.approx(value + UNIT_STEP) == state[key], (f"Key '{key}' has wrong value after unit step "
-                                                                f"(Parallel execution).")
-    environment.close()
-
-
 def test_step(test_env, reference_values, step_values):
     unit_step = step_values["unit_step"]
     reference_setpoints = reference_values["reference_setpoints"]
@@ -130,9 +114,13 @@ def test_dependent_violation_prevented(test_env, reference_values, step_values):
     assert reward < 0
 
 
-def test_scenarios(test_env, reference_values, step_values):
+def test_scenarios(test_env, reference_values, step_values, config):
     zero_step = step_values["zero_step"]
-    reference_disturbances = reference_values["reference_disturbances"]
+    intial_calender_temperature = reference_values["reference_disturbances"]["CalenderTemperature"]
+    initial_area_weight_2_lower_bound = config.objective_setup.output_bounds["AreaWeightLane2"]["lower"]
+    area_weight_2_lower_10 = config.scenario_setup.output_bounds["AreaWeightLane2"]["lower"][0][1]
+    calender_temperature_10 = config.scenario_setup.disturbances["CalenderTemperature"][0][1]
+
     _, state_2, _, quality_bounds_2 = test_env.step(zero_step)
     assert test_env._step_index == 2
     for _ in range(3):  # index should be 5
@@ -149,22 +137,32 @@ def test_scenarios(test_env, reference_values, step_values):
                 quality_bounds_10["AreaWeightLane1"]["upper"]), "No random output bound change after 10 time steps"
 
     # test deterministic output bound change after 10 steps
-    assert pytest.approx(quality_bounds_2["AreaWeightLane2"]["lower"]) == 100.0
-    assert pytest.approx(quality_bounds_10["AreaWeightLane2"]["lower"]) == 350.0, ("No deterministic output "
-                                                                                   "bound change after 10 time steps")
+    assert pytest.approx(quality_bounds_2["AreaWeightLane2"]["lower"]) == initial_area_weight_2_lower_bound
+    assert pytest.approx(quality_bounds_10["AreaWeightLane2"]["lower"]) == area_weight_2_lower_10, \
+        "No deterministic outputbound change after 10 time steps"
 
     # test deterministic disturbance change after 10 steps
-    assert pytest.approx(state_2["CalenderTemperature"]) == 174.0
-    assert pytest.approx(state_10["CalenderTemperature"]) == 160.0, ("No deterministic disturbance change after "
-                                                                     "10 time steps")
+    assert pytest.approx(state_2["CalenderTemperature"]) == intial_calender_temperature
+    assert pytest.approx(state_10["CalenderTemperature"]) == calender_temperature_10, \
+        "No deterministic disturbance change after 10 time steps"
 
-# test cases for model input values
 
 # Test set 2: Test correctness of model transformations
 
+def test_model_unevenness_transformation(test_env, step_values, reference_values):
+    training_features = ["FG_soll", "mean_mass_cylinders", "Diff_ArbeiterZuWender"]
+    zero_step = step_values["zero_step"]
+    _, test_state, _, _ = test_env.step(zero_step)
+    unpack_dict = test_env.output_manager._output_models["CardWebUnevenness"]._unpack_func
+    transformed_state = unpack_dict(test_state, training_features)
 
-def test_model_unevenness_transformation():
-    pass
+    assert pytest.approx(transformed_state[0][0]) == test_state["CardDeliveryWeightPerArea"] * 0.160, \
+        "FG_soll transformation is wrong."
+
+    assert pytest.approx(transformed_state[0][1], abs=0.001) == 0.3917, "mean_mass_cylinders transformation is wrong."
+
+    assert pytest.approx(transformed_state[0][2]) == test_state["v_WorkerMain"] - test_state["v_StripperMain"], \
+        "Diff_ArbeiterZuWender transformation is wrong."
 
 
 # Test set 3: Test correctness of model outputs
@@ -179,5 +177,17 @@ def test_reset_successful():
     pass
 
 
-def test_parall_elexecution_results():
-    pass
+def test_step_parallel_processing(test_env, reference_values, step_values, config):
+    config.parallel_execution = True
+    factory = EnvironmentFactory(config)
+    environment = factory.create_environment()
+    environment.reset()
+
+    unit_step = step_values["unit_step"]
+    reference_setpoints = reference_values["reference_setpoints"]
+    reward, state, _, _ = test_env.step(unit_step)
+
+    for key, value in reference_setpoints.items():
+        assert pytest.approx(value + UNIT_STEP) == state[key], (f"Key '{key}' has wrong value after unit step "
+                                                                f"(Parallel execution).")
+    environment.close()

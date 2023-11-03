@@ -1,9 +1,9 @@
 import gpytorch
 import numpy as np
 from gpytorch.constraints import GreaterThan
-from gpytorch.kernels import RBFKernel, ScaleKernel, PolynomialKernel
+from gpytorch.kernels import RBFKernel, ScaleKernel
 
-CARD_DELIVERY_WIDTH = 3  # m
+
 KG_H_TO_G_MIN = 100/6
 
 

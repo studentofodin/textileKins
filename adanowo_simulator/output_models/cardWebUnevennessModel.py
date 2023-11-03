@@ -3,8 +3,8 @@ import numpy as np
 from gpytorch.constraints import GreaterThan
 from gpytorch.kernels import PolynomialKernel, RBFKernel, ScaleKernel
 
-SCALE_AREA_WEIGHT = 0.158
-SCALE_THROUGHPUT = 0.030
+SCALE_AREA_WEIGHT = 0.160
+SCALE_THROUGHPUT = 0.022
 
 
 def unpack_dict(X: dict, training_features: list[str]) -> np.array:

@@ -10,5 +10,5 @@ tracking_enabled: false
 wandb_settings:
   project: adanowo-simulator
   mode: offline
-parallel_execution: true
+parallel_execution: false
 num_experiment_steps: 100

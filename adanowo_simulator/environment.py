@@ -1,5 +1,6 @@
 import sys
 import logging
+from copy import deepcopy
 from omegaconf import DictConfig
 
 from adanowo_simulator.abstract_base_classes.environment import AbstractEnvironment
@@ -107,7 +108,7 @@ class Environment(AbstractEnvironment):
                                             self._objective_manager)
                 disturbances = self._disturbance_manager.step()
                 state = disturbances | setpoints | dependent_variables
-                quality_bounds = self._objective_manager.config.output_bounds
+                quality_bounds = deepcopy(self._objective_manager.config.output_bounds)
 
             except Exception as e:
                 self.close()
@@ -157,7 +158,7 @@ class Environment(AbstractEnvironment):
                                         self._objective_manager)
             disturbances = self._disturbance_manager.step()
             state = disturbances | setpoints | dependent_variables
-            quality_bounds = self._objective_manager.config.output_bounds
+            quality_bounds = deepcopy(self._objective_manager.config.output_bounds)
 
         except Exception as e:
             self.close()

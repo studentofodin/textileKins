@@ -4,4 +4,4 @@ disturbances:
   CalenderTemperature: 174.0 # can be e(167.0, 233.0)
   FibreA: 0 # can be e(0, 1)
   FibreD: 0 # can be e(0, 1)
-  ProductWidth: 2.81 # can be e(3.32, 6.00)
+  ProductWidth: 5.62 # can be e(4.76, 6.00)

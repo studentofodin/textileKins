@@ -1,16 +1,14 @@
 output_models:
   # [[step_index_1, model_name_1], [step_index_2, model_name_2],...]
 output_bounds:
-  # output_name:
-  #   lower: [[step_index_1, value_1], [step_index_2, value_2],...]
-  #
-  # or
-  #
-  # output_name:
-  #  upper:
-  #    trigger_interval: 10
-  #    mean: 500.0
-  #    range: 1.0
-disturbances:
-  # same scheme as for output_bounds
+  AreaWeightLane1:
+    upper:
+     trigger_interval: 5
+     mean: 500.0
+     range: 100.0
+  AreaWeightLane2:
+    lower: [[10, 350.0]]
 
+disturbances:
+  CalenderTemperature:
+    [[10, 160.0]]

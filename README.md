@@ -71,6 +71,11 @@ you need to write your own wrapper file.
 
 
 ## Explanantion of the Environment class
+The environment class simulates the reaction of a physical nonwovens production process to different setpoint values. 
+The goal is to maximize the objective value, which is calculated from the process contribution margin while not 
+violating any product quality or actor constraints. Domain randomization via scenarios ensures the agent can train on 
+different production contexts and is robust to changes in the process behavior and product requirements.
+
 
 The Environment class handles all top-level interactions in this project. 
 It is meant to be wrapped by another class to ensure compatibility with all kinds of different agent architectures.
@@ -115,7 +120,8 @@ quality requirements, disturbances or process behaviors.
 - \`action_manager\`: Checks whether the setpoint and dependent variable constraints are satisfied.
 - \`output_manager\`: Gets the outputs using the models and returns the outputs.
 - \`objective_manager\`: Checks if the output bounds are satisfied and returns the value of the objective function.
-- \`scenario_manager\`: Implements a scenario by changing the configuration of other members.
+- \`scenario_manager\`: Implements domain randomization by changing the configuration of other members (constraints, 
+disturbances or quality bounds).
 - \`experiment_tracker\`: Tracks the results from a sequence of steps.
 
 ### API Methods

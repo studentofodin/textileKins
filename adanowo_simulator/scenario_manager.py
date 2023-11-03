@@ -68,7 +68,7 @@ class ScenarioManager(AbstractScenarioManager):
                 target_config[target_field] = scenario[0][1]
                 scenario.pop(0)
         else:  # random scenario
-            if (step_index-1) % scenario.trigger_interval == 0:
+            if step_index % scenario.trigger_interval == 0:
                 target_config[target_field] = np.random.uniform(
                     scenario.mean - scenario.range,
                     scenario.mean + scenario.range

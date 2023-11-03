@@ -6,7 +6,7 @@ initial_setpoints:
   DrawFrameDraftRatio: 44.7 # percent
   Cross-lapperProfiling: 1.0 # percent
   Needleloom1FeedPerStroke: 10.5 # mm per stroke
-  ProductionSpeedSetpoint: 14.26 # m per min
+  ProductionSpeedSetpoint: 13.26 # m per min
   v_PreRoll: 215.0 # m per min
   v_MainCylinder: 804.0 # m per min
   v_WorkerMain: 40.3 # m per min

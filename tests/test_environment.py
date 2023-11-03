@@ -167,14 +167,54 @@ def test_model_unevenness_transformation(test_env, step_values, reference_values
 
 # Test set 3: Test correctness of model outputs
 
-def test_model_unevenness_output():
-    pass
+def test_model_unevenness_output(test_env, reference_values):
+    reference_values = reference_values["reference_state_without_dependent"]
+    model = test_env.output_manager._output_models["CardWebUnevenness"]
+    reference_values["MassThroughput"] = 900
+
+    # test low prediction
+    reference_values["CardDeliveryWeightPerArea"] = 41.0
+    mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
+    assert mean_pred.flatten()[0] <= 0.0, "Mean prediction too high."
+    # test high prediction
+    reference_values["CardDeliveryWeightPerArea"] = 77.0
+    mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
+    assert mean_pred.flatten()[0] >= 0.0, "Mean prediction too low."
+
+
+def test_model_power_consumption(test_env, reference_values):
+    reference_values = reference_values["reference_state_without_dependent"]
+    model = test_env.output_manager._output_models["LinePowerConsumption"]
+
+    # test low prediction
+    reference_values["MassThroughput"] = 600
+    reference_values["Needleloom1FeedPerStroke"] = 11.0
+    mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
+    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 315.0, "Low prediction is wrong."
+    # test high prediction
+    reference_values["MassThroughput"] = 1200
+    reference_values["Needleloom1FeedPerStroke"] = 10.0
+    mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
+    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 345.0, "High prediction is wrong."
+
+
+def test_model_tensile_strength_CD(test_env, reference_values):
+    reference_values = reference_values["reference_state_without_dependent"]
+    model = test_env.output_manager._output_models["TensileStrengthCD"]
+
+    # test low prediction
+    reference_values["Cross-lapperLayersCount"] = 4.0
+    reference_values["Needleloom1FeedPerStroke"] = 12.0
+    mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
+    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 190.0, "Low prediction is wrong."
+    # test high prediction
+    reference_values["Cross-lapperLayersCount"] = 18.0
+    reference_values["Needleloom1FeedPerStroke"] = 10.0
+    mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
+    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 1280.0, "High prediction is wrong."
+
 
 # Test set 4: Test correctness of env setup
-
-
-def test_reset_successful():
-    pass
 
 
 def test_step_parallel_processing(test_env, reference_values, step_values, config):

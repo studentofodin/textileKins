@@ -40,11 +40,7 @@ class ExactGPModel(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood_mdl):
         super(ExactGPModel, self).__init__(train_x, train_y, likelihood_mdl)
 
-        kernel = ScaleKernel(
-           PolynomialKernel(power=1, ard_num_dims=1, active_dims=(0,)) *
-           RBFKernel(ard_num_dims=1, active_dims=(0,))
-        ) + \
-            ScaleKernel(RBFKernel(ard_num_dims=3, lengthscale_constraint=GreaterThan(1.0)))
+        kernel = ScaleKernel(RBFKernel(ard_num_dims=3, lengthscale_constraint=GreaterThan(3.0)))
 
         self.mean_module = gpytorch.means.ConstantMean()
         self.covar_module = kernel

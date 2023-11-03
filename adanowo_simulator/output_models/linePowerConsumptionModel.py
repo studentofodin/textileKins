@@ -3,7 +3,6 @@ import numpy as np
 from gpytorch.constraints import GreaterThan
 from gpytorch.kernels import RBFKernel, ScaleKernel
 
-
 KG_H_TO_G_MIN = 100/6
 
 

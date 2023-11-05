@@ -19,7 +19,7 @@ def config():
 
 
 @pytest.fixture(scope="function")
-def test_env(config):
+def get_env(config):
     factory = EnvironmentFactory(config)
     environment = factory.create_environment()
     environment.reset()
@@ -54,81 +54,81 @@ def step_values(reference_values):
 
 
 # Test set 1: Test correctness of model inputs
-def test_state_data_types(test_env, step_values):
+def test_state_data_types(get_env, step_values):
     zero_step = step_values["zero_step"]
 
-    _, state, _, _ = test_env.step(zero_step)
+    _, state, _, _ = get_env.step(zero_step)
     for key, value in state.items():
         assert isinstance(key, str), f"Key '{key}' is not a string."
         assert isinstance(value, float) or isinstance(value, int), f"value '{key}' is not int or float"
 
 
-def test_state_keys(test_env, reference_values, step_values):
+def test_state_keys(get_env, reference_values, step_values):
     zero_step = step_values["zero_step"]
     reference_state_without_dependent = reference_values["reference_state_without_dependent"]
-    _, state, _, _ = test_env.step(zero_step)
+    _, state, _, _ = get_env.step(zero_step)
 
     for key in reference_state_without_dependent.keys():
         assert key in state.keys(), f"Key '{key}' from reference not found in the state."
 
 
-def test_state_values(test_env, reference_values, step_values):
+def test_state_values(get_env, reference_values, step_values):
     zero_step = step_values["zero_step"]
     reference_state_without_dependent = reference_values["reference_state_without_dependent"]
-    reward, state, _, _ = test_env.step(zero_step)
+    reward, state, _, _ = get_env.step(zero_step)
 
     for key, value in reference_state_without_dependent.items():
         assert pytest.approx(value) == state[key], f"Key '{key}' initiated with wrong value."
     assert reward > 0
 
 
-def test_step(test_env, reference_values, step_values):
+def test_step(get_env, reference_values, step_values):
     unit_step = step_values["unit_step"]
     reference_setpoints = reference_values["reference_setpoints"]
-    reward, state, _, _ = test_env.step(unit_step)
+    reward, state, _, _ = get_env.step(unit_step)
 
     for key, value in reference_setpoints.items():
         assert pytest.approx(value + UNIT_STEP) == state[key], f"Key '{key}' has wrong value after unit step."
 
 
-def test_setpoint_violation_prevented(test_env, reference_values, step_values):
+def test_setpoint_violation_prevented(get_env, reference_values, step_values):
     zero_step = step_values["zero_step"]
     huge_step = {key: value + 1000 for key, value in zero_step.items()}
     reference_state_without_dependent = reference_values["reference_state_without_dependent"]
-    reward, state, _, _ = test_env.step(huge_step)
+    reward, state, _, _ = get_env.step(huge_step)
 
     for key, value in reference_state_without_dependent.items():
         assert pytest.approx(value) == state[key], f"Key '{key}' has has changed after setpoint constraint violation."
     assert reward < 0
 
 
-def test_dependent_violation_prevented(test_env, reference_values, step_values):
+def test_dependent_violation_prevented(get_env, reference_values, step_values):
     zero_step = step_values["zero_step"]
     zero_step["Cross-lapperLayersCount"] = 17
     zero_step["CardDeliveryWeightPerArea"] = 77
     reference_state_without_dependent = reference_values["reference_state_without_dependent"]
-    reward, state, _, _ = test_env.step(zero_step)
+    reward, state, _, _ = get_env.step(zero_step)
 
     for key, value in reference_state_without_dependent.items():
         assert pytest.approx(value) == state[key], f"Key '{key}' has has changed after dependent constraint violation."
     assert reward < 0
 
 
-def test_scenarios(test_env, reference_values, step_values, config):
+def test_scenarios(get_env, reference_values, step_values, config):
     zero_step = step_values["zero_step"]
     intial_calender_temperature = reference_values["reference_disturbances"]["CalenderTemperature"]
     initial_area_weight_2_lower_bound = config.objective_setup.output_bounds["AreaWeightLane2"]["lower"]
     area_weight_2_lower_10 = config.scenario_setup.output_bounds["AreaWeightLane2"]["lower"][0][1]
     calender_temperature_10 = config.scenario_setup.disturbances["CalenderTemperature"][0][1]
 
-    _, state_2, _, quality_bounds_2 = test_env.step(zero_step)
-    assert test_env._step_index == 2
+    _, state_2, _, quality_bounds_2 = get_env.step(zero_step)
+    assert get_env._step_index == 2
     for _ in range(3):  # index should be 5
-        _, _, _, quality_bounds_5 = test_env.step(zero_step)
-    assert test_env._step_index == 5
+        _, _, _, quality_bounds_5 = get_env.step(zero_step)
+    assert get_env._step_index == 5
     for _ in range(5):  # index should be 10
-        _, state_10, _, quality_bounds_10 = test_env.step(zero_step)
-    assert test_env._step_index == 10
+        _, state_10, _, quality_bounds_10 = get_env.step(zero_step)
+    assert get_env._step_index == 10
 
     # test random output bound setting that changes every 5 steps
     assert not (pytest.approx(quality_bounds_2["AreaWeightLane1"]["upper"]) ==
@@ -149,11 +149,11 @@ def test_scenarios(test_env, reference_values, step_values, config):
 
 # Test set 2: Test correctness of model transformations
 
-def test_model_unevenness_transformation(test_env, step_values, reference_values):
+def test_model_unevenness_transformation(get_env, step_values, reference_values):
     training_features = ["FG_soll", "mean_mass_cylinders", "Diff_ArbeiterZuWender"]
     zero_step = step_values["zero_step"]
-    _, test_state, _, _ = test_env.step(zero_step)
-    unpack_dict = test_env.output_manager._output_models["CardWebUnevenness"]._unpack_func
+    _, test_state, _, _ = get_env.step(zero_step)
+    unpack_dict = get_env.output_manager._output_models["CardWebUnevenness"]._unpack_func
     transformed_state = unpack_dict(test_state, training_features)
 
     assert pytest.approx(transformed_state[0][0]) == test_state["CardDeliveryWeightPerArea"] * 0.160, \
@@ -167,9 +167,9 @@ def test_model_unevenness_transformation(test_env, step_values, reference_values
 
 # Test set 3: Test correctness of model outputs
 
-def test_model_unevenness_output(test_env, reference_values):
+def test_model_unevenness_output(get_env, reference_values):
     reference_values = reference_values["reference_state_without_dependent"]
-    model = test_env.output_manager._output_models["CardWebUnevenness"]
+    model = get_env.output_manager._output_models["CardWebUnevenness"]
     reference_values["MassThroughput"] = 900
 
     # test low prediction
@@ -182,9 +182,9 @@ def test_model_unevenness_output(test_env, reference_values):
     assert mean_pred.flatten()[0] >= 0.0, "Mean prediction too low."
 
 
-def test_model_power_consumption(test_env, reference_values):
+def test_model_power_consumption(get_env, reference_values):
     reference_values = reference_values["reference_state_without_dependent"]
-    model = test_env.output_manager._output_models["LinePowerConsumption"]
+    model = get_env.output_manager._output_models["LinePowerConsumption"]
 
     # test low prediction
     reference_values["MassThroughput"] = 600
@@ -198,9 +198,9 @@ def test_model_power_consumption(test_env, reference_values):
     assert pytest.approx(mean_pred.flatten()[0], abs=5) == 345.0, "High prediction is wrong."
 
 
-def test_model_tensile_strength_CD(test_env, reference_values):
+def test_model_tensile_strength_CD(get_env, reference_values):
     reference_values = reference_values["reference_state_without_dependent"]
-    model = test_env.output_manager._output_models["TensileStrengthCD"]
+    model = get_env.output_manager._output_models["TensileStrengthCD"]
 
     # test low prediction
     reference_values["Cross-lapperLayersCount"] = 4.0
@@ -212,12 +212,50 @@ def test_model_tensile_strength_CD(test_env, reference_values):
     reference_values["Needleloom1FeedPerStroke"] = 10.0
     mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
     assert pytest.approx(mean_pred.flatten()[0], abs=5) == 1280.0, "High prediction is wrong."
+    # test different fibre mixture
+    reference_values["FibreA"] = 1.0
+    mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
+    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 1315.0, "FibreA prediction is wrong."
 
 
-# Test set 4: Test correctness of env setup
+def test_model_tensile_strength_MD(get_env, reference_values):
+    reference_values = reference_values["reference_state_without_dependent"]
+    model = get_env.output_manager._output_models["TensileStrengthMD"]
+
+    # test low prediction
+    reference_values["Cross-lapperLayersCount"] = 4.0
+    reference_values["Needleloom1FeedPerStroke"] = 12.0
+    mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
+    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 150.0, "Low prediction is wrong."
+    # test high prediction
+    reference_values["Cross-lapperLayersCount"] = 18.0
+    reference_values["Needleloom1FeedPerStroke"] = 10.0
+    mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
+    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 705.0, "High prediction is wrong."
+    # test different fibre mixture
+    reference_values["FibreA"] = 1.0
+    mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
+    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 975.0, "High prediction is wrong."
 
 
-def test_step_parallel_processing(test_env, reference_values, step_values, config):
+# Test set 4: Test correctness of reward calculation
+def test_reward_without_violations(get_env, reference_values, step_values):
+    unit_step = step_values["unit_step"]
+    reward, state, _, _ = get_env.step(unit_step)
+    assert pytest.approx(reward, abs=50) == 10494.0, "Reward is not correct."
+
+
+def test_reward_with_violations(get_env, reference_values, step_values):
+    zero_step = step_values["zero_step"]
+    zero_step["Cross-lapperLayersCount"] = 4.0
+    zero_step["Needleloom1FeedPerStroke"] = 12.0
+    get_env._objective_manager._config.output_bounds["TensileStrengthCD"]["lower"] = 1000
+    reward, _, _, _ = get_env.step(zero_step)
+    assert reward < 0, "Penalty has not been set."
+
+
+# Test set 5: Test correctness of env setup with parallel execution
+def test_step_parallel_processing(get_env, reference_values, step_values, config):
     config.parallel_execution = True
     factory = EnvironmentFactory(config)
     environment = factory.create_environment()
@@ -225,7 +263,7 @@ def test_step_parallel_processing(test_env, reference_values, step_values, confi
 
     unit_step = step_values["unit_step"]
     reference_setpoints = reference_values["reference_setpoints"]
-    reward, state, _, _ = test_env.step(unit_step)
+    reward, state, _, _ = get_env.step(unit_step)
 
     for key, value in reference_setpoints.items():
         assert pytest.approx(value + UNIT_STEP) == state[key], (f"Key '{key}' has wrong value after unit step "

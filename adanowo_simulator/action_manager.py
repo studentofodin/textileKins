@@ -99,8 +99,8 @@ class ActionManager(AbstractActionManager):
                 for boundary_type in ["lower", "upper"]:
                     boundary_value = boundaries.get(boundary_type)
                     if boundary_value is not None:
-                        comparison = actual_vars[ctrl_name] <= boundary_value if boundary_type == "lower" else \
-                            actual_vars[ctrl_name] >= boundary_value
+                        comparison = actual_vars[ctrl_name] == boundary_value if boundary_type == "lower" else \
+                            actual_vars[ctrl_name] == boundary_value
                         constraints_satisfied[f"{ctrl_name}.{boundary_type}"] = not comparison
             return constraints_satisfied
 

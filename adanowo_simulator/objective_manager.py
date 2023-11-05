@@ -61,8 +61,8 @@ class ObjectiveManager(AbstractObjectiveManager):
                 boundary_value = boundaries.get(boundary_type)
                 if boundary_value is None:
                     continue
-                comparison = outputs[output_name] <= boundary_value if boundary_type == "lower" else (
-                        outputs[output_name] >= boundary_value)
+                comparison = outputs[output_name] == boundary_value if boundary_type == "lower" else (
+                        outputs[output_name] == boundary_value)
                 output_constraints_met[f"{output_name}.{boundary_type}"] = not comparison
 
         return output_constraints_met

@@ -100,10 +100,11 @@ class ActionManager(AbstractActionManager):
             for ctrl_name, boundaries in boundaries_to_check.items():
                 for boundary_type in ["lower", "upper"]:
                     boundary_value = boundaries.get(boundary_type)
-                    if boundary_value is not None:
-                        comparison = actual_vars[ctrl_name] < boundary_value if boundary_type == "lower" else \
-                            actual_vars[ctrl_name] > boundary_value
-                        constraints_satisfied[f"{ctrl_name}.{boundary_type}"] = not comparison
+                    if boundary_value is None:
+                        continue
+                    comparison = actual_vars[ctrl_name] < boundary_value if boundary_type == "lower" else \
+                        actual_vars[ctrl_name] > boundary_value
+                    constraints_satisfied[f"{ctrl_name}.{boundary_type}"] = not comparison
             return constraints_satisfied
 
         setpoint_constraints_satisfied = check_constraints(self._config.setpoint_bounds, setpoints)

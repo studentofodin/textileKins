@@ -86,7 +86,6 @@ def test_step(get_env, reference_values, step_values):
     unit_step = step_values["unit_step"]
     reference_setpoints = reference_values["reference_setpoints"]
     reward, state, _, _ = get_env.step(unit_step)
-
     for key, value in reference_setpoints.items():
         assert pytest.approx(value + UNIT_STEP) == state[key], f"Key '{key}' has wrong value after unit step."
 
@@ -104,7 +103,7 @@ def test_setpoint_violation_prevented(get_env, reference_values, step_values):
 
 def test_dependent_violation_prevented(get_env, reference_values, step_values):
     zero_step = step_values["zero_step"]
-    zero_step["Cross-lapperLayersCount"] = 17
+    zero_step["Cross-lapperLayersCount"] = 8
     zero_step["CardDeliveryWeightPerArea"] = 77
     reference_state_without_dependent = reference_values["reference_state_without_dependent"]
     reward, state, _, _ = get_env.step(zero_step)
@@ -159,7 +158,7 @@ def test_model_unevenness_transformation(get_env, step_values, reference_values)
     assert pytest.approx(transformed_state[0][0]) == test_state["CardDeliveryWeightPerArea"] * 0.160, \
         "FG_soll transformation is wrong."
 
-    assert pytest.approx(transformed_state[0][1], abs=0.001) == 0.3917, "mean_mass_cylinders transformation is wrong."
+    assert pytest.approx(transformed_state[0][1], abs=0.001) == 0.2938, "mean_mass_cylinders transformation is wrong."
 
     assert pytest.approx(transformed_state[0][2]) == test_state["v_WorkerMain"] - test_state["v_StripperMain"], \
         "Diff_ArbeiterZuWender transformation is wrong."
@@ -203,12 +202,12 @@ def test_model_tensile_strength_CD(get_env, reference_values):
     model = get_env.output_manager._output_models["TensileStrengthCD"]
 
     # test low prediction
-    reference_values["Cross-lapperLayersCount"] = 4.0
+    reference_values["Cross-lapperLayersCount"] = 2.0
     reference_values["Needleloom1FeedPerStroke"] = 12.0
     mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
     assert pytest.approx(mean_pred.flatten()[0], abs=5) == 190.0, "Low prediction is wrong."
     # test high prediction
-    reference_values["Cross-lapperLayersCount"] = 18.0
+    reference_values["Cross-lapperLayersCount"] = 9.0
     reference_values["Needleloom1FeedPerStroke"] = 10.0
     mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
     assert pytest.approx(mean_pred.flatten()[0], abs=5) == 1280.0, "High prediction is wrong."
@@ -223,12 +222,12 @@ def test_model_tensile_strength_MD(get_env, reference_values):
     model = get_env.output_manager._output_models["TensileStrengthMD"]
 
     # test low prediction
-    reference_values["Cross-lapperLayersCount"] = 4.0
+    reference_values["Cross-lapperLayersCount"] = 2.0
     reference_values["Needleloom1FeedPerStroke"] = 12.0
     mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
     assert pytest.approx(mean_pred.flatten()[0], abs=5) == 150.0, "Low prediction is wrong."
     # test high prediction
-    reference_values["Cross-lapperLayersCount"] = 18.0
+    reference_values["Cross-lapperLayersCount"] = 9.0
     reference_values["Needleloom1FeedPerStroke"] = 10.0
     mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
     assert pytest.approx(mean_pred.flatten()[0], abs=5) == 705.0, "High prediction is wrong."
@@ -242,12 +241,12 @@ def test_model_tensile_strength_MD(get_env, reference_values):
 def test_reward_without_violations(get_env, reference_values, step_values):
     unit_step = step_values["unit_step"]
     reward, state, _, _ = get_env.step(unit_step)
-    assert pytest.approx(reward, abs=50) == 10494.0, "Reward is not correct."
+    assert pytest.approx(reward, abs=50) == 10676.0, "Reward is not correct."
 
 
 def test_reward_with_violations(get_env, reference_values, step_values):
     zero_step = step_values["zero_step"]
-    zero_step["Cross-lapperLayersCount"] = 4.0
+    zero_step["Cross-lapperLayersCount"] = 2.0
     zero_step["Needleloom1FeedPerStroke"] = 12.0
     get_env._objective_manager._config.output_bounds["TensileStrengthCD"]["lower"] = 1000
     reward, _, _, _ = get_env.step(zero_step)

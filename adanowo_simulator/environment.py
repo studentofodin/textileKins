@@ -28,6 +28,7 @@ class Environment(AbstractEnvironment):
         self._scenario_manager: AbstractScenarioManager = scenario_manager
         self._experiment_tracker: AbstractExperimentTracker = experiment_tracker
 
+        self.log_vars = None
         self._initial_config: DictConfig = config.copy()
         self._config: DictConfig = self._initial_config.copy()
         self._step_index: int = -1
@@ -100,6 +101,7 @@ class Environment(AbstractEnvironment):
                     "Disturbances": disturbances
                 }
                 self._experiment_tracker.step(log_variables, self._step_index)
+                self.log_vars = deepcopy(log_variables)
 
                 # Prepare next step.
                 # Execute scenario for the next step so the agent is already informed about production context changes.

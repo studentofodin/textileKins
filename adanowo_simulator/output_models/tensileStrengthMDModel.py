@@ -11,7 +11,7 @@ def unpack_dict(X: dict, training_inputs: list[str]) -> np.array:
     X_unpacked = []
     for f in training_inputs:
         if f == "CL01_LayersCalculatorLayers":
-            X_unpacked.append(X["Cross-lapperLayersCount"].round()/2.0)  # in data set double layers are counted
+            X_unpacked.append(X["Cross-lapperLayersCount"].round())  # in data set double layers are counted
         elif f == "M_031_K_AbliefGew_g_m2":
             X_unpacked.append(X["CardDeliveryWeightPerArea"])
         elif f == "M_015_NM1_Vorschub_mm_H":

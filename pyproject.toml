@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "adanowo_simulator"
-version = "1.0"
+version = "1.1"
 description = "Simulation environment for the project AdaNowo"
 authors = ["Ruben Kins <ruben.kins@rwth-aachen.de>"]
 packages = [{include = "adanowo_simulator"}]

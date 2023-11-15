@@ -4,6 +4,8 @@ from hydra import initialize, compose
 from omegaconf import OmegaConf
 
 from adanowo_simulator.environment_factory import EnvironmentFactory
+from adanowo_simulator.gym_wrapper import GymWrapper
+import adanowo_simulator.transformations as transformations
 
 UNIT_STEP = 1
 CONFIG_DIR_RELATIVE = "test_config"
@@ -79,7 +81,6 @@ def test_state_values(get_env, reference_values, step_values):
 
     for key, value in reference_state_without_dependent.items():
         assert pytest.approx(value) == state[key], f"Key '{key}' initiated with wrong value."
-    assert reward > 0
 
 
 def test_step(get_env, reference_values, step_values):
@@ -268,3 +269,55 @@ def test_step_parallel_processing(get_env, reference_values, step_values, config
         assert pytest.approx(value + UNIT_STEP) == state[key], (f"Key '{key}' has wrong value after unit step "
                                                                 f"(Parallel execution).")
     environment.close()
+
+
+# Test set 6: Test correctness of gym wrapper with action scaling
+
+def test_gym_wrapper_action_transformation(get_env, reference_values, step_values, config):
+    get_env._action_manager._config.dependent_variable_bounds["MassThroughput"]["upper"] = 10000
+    gym_wrapper = GymWrapper(get_env, config.gym_setup, config.action_setup)
+    zero_step = step_values["zero_step"]
+    reference_setpoints = reference_values["reference_setpoints"]
+
+    keys = list(config.action_setup.initial_setpoints.keys())
+    bounds = OmegaConf.to_container(config.action_setup.setpoint_bounds)
+    step_as_array = transformations.dict_to_array(zero_step, keys, bounds, mode="inverse_tanh")
+    observations, reward, _, _, _ = gym_wrapper.step(step_as_array)
+    assert abs(reward) < 1, "Reward has not been scaled."
+
+    for index, (key, value) in enumerate(reference_setpoints.items()):
+        assert pytest.approx(value) == observations[index], (f"Key '{key}' has wrong value after zero step using "
+                                                             f"gymwrapper ")
+
+    far_away_step = step_as_array + 1000
+    observations, reward, _, _, _ = gym_wrapper.step(far_away_step)
+    for index, (key, value) in enumerate(config.action_setup.setpoint_bounds.items()):
+        assert pytest.approx(value.upper, rel=0.05) == observations[index], (f"Key '{key}' has wrong value after far "
+                                                                             f"away step using gymwrapper ")
+    gym_wrapper.close()
+
+
+def test_gym_wrapper_state_transformation(get_env, reference_values, step_values, config):
+    get_env._action_manager._config.dependent_variable_bounds["MassThroughput"]["upper"] = 10000
+    get_env._action_manager._config.dependent_variable_bounds["MassThroughput"]["lower"] = 0
+    config.gym_setup.scale_observations = True
+    gym_wrapper = GymWrapper(get_env, config.gym_setup, config.action_setup)
+
+    zero_step = step_values["zero_step"]
+    keys = list(config.action_setup.initial_setpoints.keys())
+    bounds = OmegaConf.to_container(config.action_setup.setpoint_bounds)
+    step_as_array = transformations.dict_to_array(zero_step, keys, bounds)
+
+    very_low_step = step_as_array - 1000
+
+    observations, reward, _, _, _ = gym_wrapper.step(very_low_step)
+    for index, value in enumerate(keys):
+        assert pytest.approx(-1, abs=0.01) == observations[index], (f"Observation number '{index}' has wrong value "
+                                                                    f"after very low step using gymwrapper ")
+
+    far_away_step = step_as_array + 1000
+    observations, reward, _, _, _ = gym_wrapper.step(far_away_step)
+    for index, value in enumerate(keys):
+        assert pytest.approx(1, abs=0.01) == observations[index], (f"Observation number '{index}' has wrong value"
+                                                                   f" after far away step using gymwrapper")
+    gym_wrapper.close()

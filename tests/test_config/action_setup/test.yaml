@@ -26,12 +26,12 @@ setpoint_bounds:
   Needleloom1DraftRatio:
     lower: 27.0
     upper: 51.0
-  Cross-lapperProfiling:
-    lower: 0.0
-    upper: 15.0
   DrawFrameDraftRatio:
     lower: 25.9
     upper: 80.6
+  Cross-lapperProfiling:
+    lower: 0.0
+    upper: 15.0
   Needleloom1FeedPerStroke:
     lower: 9.55
     upper: 12.26

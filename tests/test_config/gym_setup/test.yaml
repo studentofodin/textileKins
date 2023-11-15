@@ -1,5 +1,5 @@
-return_process_outputs: true
+return_process_outputs: false
 scale_and_constrain_actions: true
+scale_observations: false
 scale_rewards: true
-scale_observations: true
 max_reward: 15000

@@ -11,7 +11,7 @@ def unpack_dict(X: dict, training_inputs: list[str]) -> np.array:
     X_unpacked = []
     for f in training_inputs:
         if f == "CL01_LayersCalculatorLayers":
-            X_unpacked.append(X["Cross-lapperLayersCount"].round())  # in data set double layers are counted
+            X_unpacked.append(X["Cross-lapperLayersCount"].round())
         elif f == "M_031_K_AbliefGew_g_m2":
             X_unpacked.append(X["CardDeliveryWeightPerArea"])
         elif f == "M_015_NM1_Vorschub_mm_H":
@@ -37,10 +37,12 @@ class ExactGPModel(gpytorch.models.ExactGP):
         super(ExactGPModel, self).__init__(train_x, train_y, likelihood_mdl)
 
         kernel = ScaleKernel(
-            RBFKernel(ard_num_dims=1, active_dims=(0,), lengthscale_constraint=GreaterThan(3.0)) *
-            RBFKernel(ard_num_dims=1, active_dims=(1,), lengthscale_constraint=GreaterThan(3.0)) *
+            PolynomialKernel(power=2, active_dims=(0,)) *
+            PolynomialKernel(power=2, active_dims=(1,)) *
+            # RBFKernel(ard_num_dims=1, active_dims=(0,), lengthscale_constraint=GreaterThan(3.0)) *
+            # RBFKernel(ard_num_dims=1, active_dims=(1,), lengthscale_constraint=GreaterThan(3.0)) *
             RBFKernel(ard_num_dims=1, active_dims=(2,), lengthscale_constraint=GreaterThan(0.5)) *
-            RBFKernel(ard_num_dims=1, active_dims=(3,), lengthscale_constraint=GreaterThan(0.2)) *
+            RBFKernel(ard_num_dims=1, active_dims=(3,), lengthscale_constraint=GreaterThan(0.5)) *
             RBFKernel(ard_num_dims=1, active_dims=(4,), lengthscale_constraint=GreaterThan(0.5)) *
             RBFKernel(ard_num_dims=1, active_dims=(5,), lengthscale_constraint=GreaterThan(0.5)) *
             RBFKernel(ard_num_dims=1, active_dims=(6,), lengthscale_constraint=GreaterThan(0.0)) *

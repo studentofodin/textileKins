@@ -205,16 +205,16 @@ def test_model_tensile_strength_CD(get_env, reference_values):
     reference_values["Cross-lapperLayersCount"] = 2.0
     reference_values["Needleloom1FeedPerStroke"] = 12.0
     mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
-    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 190.0, "Low prediction is wrong."
+    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 182.0, "Low prediction is wrong."
     # test high prediction
-    reference_values["Cross-lapperLayersCount"] = 9.0
+    reference_values["Cross-lapperLayersCount"] = 8.0
     reference_values["Needleloom1FeedPerStroke"] = 10.0
     mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
-    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 1280.0, "High prediction is wrong."
+    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 955.0, "High prediction is wrong."
     # test different fibre mixture
     reference_values["FibreA"] = 1.0
     mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
-    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 1315.0, "FibreA prediction is wrong."
+    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 1226.0, "FibreA prediction is wrong."
 
 
 def test_model_tensile_strength_MD(get_env, reference_values):
@@ -225,12 +225,12 @@ def test_model_tensile_strength_MD(get_env, reference_values):
     reference_values["Cross-lapperLayersCount"] = 2.0
     reference_values["Needleloom1FeedPerStroke"] = 12.0
     mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
-    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 150.0, "Low prediction is wrong."
+    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 154.0, "Low prediction is wrong."
     # test high prediction
-    reference_values["Cross-lapperLayersCount"] = 9.0
+    reference_values["Cross-lapperLayersCount"] = 8.0
     reference_values["Needleloom1FeedPerStroke"] = 10.0
     mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)
-    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 705.0, "High prediction is wrong."
+    assert pytest.approx(mean_pred.flatten()[0], abs=5) == 710.0, "High prediction is wrong."
     # test different fibre mixture
     reference_values["FibreA"] = 1.0
     mean_pred, _ = model.predict_y(reference_values, observation_noise_only=True)

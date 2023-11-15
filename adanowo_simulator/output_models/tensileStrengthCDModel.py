@@ -33,11 +33,13 @@ class ExactGPModel(gpytorch.models.ExactGP):
         super(ExactGPModel, self).__init__(train_x, train_y, likelihood_mdl)
 
         kernel = ScaleKernel(
-            RBFKernel(ard_num_dims=1, active_dims=(0,), lengthscale_constraint=GreaterThan(3.0)) *
-            RBFKernel(ard_num_dims=1, active_dims=(1,), lengthscale_constraint=GreaterThan(7.0)) *
-            RBFKernel(ard_num_dims=1, active_dims=(2,), lengthscale_constraint=GreaterThan(0.5)) *
-            RBFKernel(ard_num_dims=1, active_dims=(3,), lengthscale_constraint=GreaterThan(3.0)) *
-            RBFKernel(ard_num_dims=1, active_dims=(4,), lengthscale_constraint=GreaterThan(0.5)) *
+            PolynomialKernel(power=2, active_dims=(0,)) *
+            PolynomialKernel(power=2, active_dims=(1,)) *
+            # RBFKernel(ard_num_dims=1, active_dims=(0,), lengthscale_constraint=GreaterThan(3.0)) *
+            # RBFKernel(ard_num_dims=1, active_dims=(1,), lengthscale_constraint=GreaterThan(7.0)) *
+            RBFKernel(ard_num_dims=1, active_dims=(2,), lengthscale_constraint=GreaterThan(1.0)) *
+            RBFKernel(ard_num_dims=1, active_dims=(3,), lengthscale_constraint=GreaterThan(1.0)) *
+            RBFKernel(ard_num_dims=1, active_dims=(4,), lengthscale_constraint=GreaterThan(1.0)) *
             RBFKernel(ard_num_dims=1, active_dims=(5,), lengthscale_constraint=GreaterThan(0.0))
         )
 

@@ -22,7 +22,7 @@ setpoint_bounds:
     upper: 77.28
   Cross-lapperLayersCount:
     lower: 2
-    upper: 9
+    upper: 8
   Needleloom1DraftRatio:
     lower: 27.0
     upper: 51.0

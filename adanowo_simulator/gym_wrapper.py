@@ -14,11 +14,11 @@ from adanowo_simulator import transformations
 class GymWrapper(Env):
 
     def __init__(self, environment: AbstractEnvironment, config: DictConfig, action_config: DictConfig,
-                 output_config: DictConfig | None = None):
+                 env_config: DictConfig | None = None):
         self._environment: AbstractEnvironment = environment
         self._config: DictConfig = config.copy()
         self._action_config = action_config.copy()
-        self._output_config = output_config
+        self._env_config = env_config
         self._action_space: spaces.Box = spaces.Box(low=0, high=0)
         self._observation_space: spaces.Box = spaces.Box(low=0, high=0)
 
@@ -73,9 +73,9 @@ class GymWrapper(Env):
         else:
             observations = transformations.dict_to_array(relevant_states, setpoint_list)
         if self._config.return_process_outputs:
-            if self._output_config is None:
+            if self._env_config is None:
                 raise Exception("Output config needs to be set if process outputs are part of the observations.")
-            keys = list(self._output_config.output_models.keys())
+            keys = list(self._env_config.used_outputs)
             if self._config.scale_observations:
                 raise NotImplementedError("The output bounds need to be updated in the config.")
                 # bounds = self._config.process_output_bounds

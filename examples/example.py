@@ -12,15 +12,15 @@ os.environ["WANDB_SILENT"] = "true"
 
 @hydra.main(version_base=None, config_path="../config", config_name="main")
 def main(config: DictConfig):
-    config.action_setup.actions_are_relative = True
+    config.action_setup.actions_are_relative = False
     factory = EnvironmentFactory(config)
     environment = factory.create_environment()
-    gym_wrapper = GymWrapper(environment, config.gym_setup, config.env_setup)
+    gym_wrapper = GymWrapper(environment, config.gym_setup, config.action_setup, config.env_setup)
 
     gym_wrapper.reset()
     for _ in range(config.num_experiment_steps):
         observations, reward, _, _, _ = gym_wrapper.step(np.random.uniform(
-            low=-0.25, high=0.35, size=len(config.env_setup.used_setpoints)))
+            low=-2, high=2, size=len(config.env_setup.used_setpoints)))
     gym_wrapper.close()
 
 

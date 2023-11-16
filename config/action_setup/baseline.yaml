@@ -1,7 +1,7 @@
 actions_are_relative: False
 initial_setpoints:
   CardDeliveryWeightPerArea: 63.0 # g per sqm
-  Cross-lapperLayersCount: 8 # -
+  Cross-lapperLayersCount: 4 # -
   Needleloom1DraftRatio: 43.0 # percent
   DrawFrameDraftRatio: 44.7 # percent
   Cross-lapperProfiling: 1.0 # percent
@@ -21,17 +21,17 @@ setpoint_bounds:
     lower: 41.0
     upper: 77.28
   Cross-lapperLayersCount:
-    lower: 4
-    upper: 18
+    lower: 2
+    upper: 8
   Needleloom1DraftRatio:
     lower: 27.0
     upper: 51.0
+  DrawFrameDraftRatio:
+    lower: 25.9
+    upper: 60.0
   Cross-lapperProfiling:
     lower: 0.0
     upper: 15.0
-  DrawFrameDraftRatio:
-    lower: 25.9
-    upper: 80.6
   Needleloom1FeedPerStroke:
     lower: 9.55
     upper: 12.26
@@ -58,5 +58,5 @@ setpoint_bounds:
     upper: 85.0
 dependent_variable_bounds:
   MassThroughput:
-    lower: 396.0
+    lower: 300.0
     upper: 1201.0

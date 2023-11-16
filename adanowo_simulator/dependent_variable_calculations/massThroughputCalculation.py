@@ -14,7 +14,7 @@ def calculate(X: dict) -> np.array:
 
     weight_per_area_theoretical = \
         X["CardDeliveryWeightPerArea"] * \
-        X["Cross-lapperLayersCount"].round() / \
+        X["Cross-lapperLayersCount"].round() * 2 / \
         prcnt_to_mult(X["Needleloom1DraftRatioIntake"]) / \
         prcnt_to_mult(X["Needleloom1DraftRatio"]) / \
         prcnt_to_mult(X["DrawFrameDraftRatio"])

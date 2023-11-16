@@ -5,6 +5,7 @@ defaults:
   - output_setup: test
   - objective_setup: test
   - scenario_setup: test
+  - gym_setup: test
   - _self_
 tracking_enabled: false
 wandb_settings:

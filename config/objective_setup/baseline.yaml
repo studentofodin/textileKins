@@ -5,15 +5,15 @@ reward_parameters:
   floor_quality_weight: 50.0
 output_bounds:
   AreaWeightLane1:
-    lower: 190.0
+    lower: 180.0
     upper: 500.0
   AreaWeightLane2:
-    lower: 190.0
+    lower: 180.0
     upper: 500.0
   AreaWeightLane3:
-    lower: 190.0
+    lower: 180.0
     upper: 500.0
   TensileStrengthCD:
-    lower: 350.0
+    lower: 320.0
   TensileStrengthMD:
-    lower: 300.0
+    lower: 280.0

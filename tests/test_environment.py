@@ -275,7 +275,7 @@ def test_step_parallel_processing(get_env, reference_values, step_values, config
 
 def test_gym_wrapper_action_transformation(get_env, reference_values, step_values, config):
     get_env._action_manager._config.dependent_variable_bounds["MassThroughput"]["upper"] = 10000
-    gym_wrapper = GymWrapper(get_env, config.gym_setup, config.action_setup)
+    gym_wrapper = GymWrapper(get_env, config.gym_setup, config.action_setup, config.env_setup)
     zero_step = step_values["zero_step"]
     reference_setpoints = reference_values["reference_setpoints"]
 
@@ -301,7 +301,7 @@ def test_gym_wrapper_state_transformation(get_env, reference_values, step_values
     get_env._action_manager._config.dependent_variable_bounds["MassThroughput"]["upper"] = 10000
     get_env._action_manager._config.dependent_variable_bounds["MassThroughput"]["lower"] = 0
     config.gym_setup.scale_observations = True
-    gym_wrapper = GymWrapper(get_env, config.gym_setup, config.action_setup)
+    gym_wrapper = GymWrapper(get_env, config.gym_setup, config.action_setup, config.env_setup)
 
     zero_step = step_values["zero_step"]
     keys = list(config.action_setup.initial_setpoints.keys())

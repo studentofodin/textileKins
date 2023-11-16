@@ -1,4 +1,3 @@
-
 import numpy as np
 
 
@@ -40,7 +39,7 @@ def dict_to_array(dictionary: dict[str, float], keys: list[str],
             scaled_value = inverse_tanh_scale(dictionary[key], lower_bound, upper_bound)
         else:
             raise ValueError("Unknown mode.")
-        array[index] = float(scaled_value)
+        array[index] = scaled_value
     return array
 
 

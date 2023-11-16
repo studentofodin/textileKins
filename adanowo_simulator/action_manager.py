@@ -3,6 +3,7 @@ import importlib
 import pathlib as pl
 import logging
 import sys
+from copy import copy
 
 from adanowo_simulator.abstract_base_classes.action_manager import AbstractActionManager
 from adanowo_simulator.calculation_adapter import CalculationAdapter
@@ -51,6 +52,7 @@ class ActionManager(AbstractActionManager):
     def step(self, actions: dict[str, float], disturbances: dict[str, float]) -> \
             tuple[dict[str, float], dict[str, float],  dict[str, bool], dict[str, bool]]:
         if self._ready:
+            actions = copy(actions)
             potential_setpoints = self._calculate_potential_setpoints(actions)
             potential_dependent_variables = \
                 self._calculate_dependent_variables(potential_setpoints | disturbances)
@@ -98,10 +100,11 @@ class ActionManager(AbstractActionManager):
             for ctrl_name, boundaries in boundaries_to_check.items():
                 for boundary_type in ["lower", "upper"]:
                     boundary_value = boundaries.get(boundary_type)
-                    if boundary_value is not None:
-                        comparison = actual_vars[ctrl_name] <= boundary_value if boundary_type == "lower" else \
-                            actual_vars[ctrl_name] >= boundary_value
-                        constraints_satisfied[f"{ctrl_name}.{boundary_type}"] = not comparison
+                    if boundary_value is None:
+                        continue
+                    comparison = actual_vars[ctrl_name] < boundary_value if boundary_type == "lower" else \
+                        actual_vars[ctrl_name] > boundary_value
+                    constraints_satisfied[f"{ctrl_name}.{boundary_type}"] = not comparison
             return constraints_satisfied
 
         setpoint_constraints_satisfied = check_constraints(self._config.setpoint_bounds, setpoints)

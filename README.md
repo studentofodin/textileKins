@@ -45,6 +45,7 @@ Under Windows you might need to use pip to install poetry if the command from th
 4. Note: The Poetry command will install the project in editable mode. If you want to install the project as a regular, 
 package, use the following command afterwards (specifying the version number):
    ```bash
+   poetry build
    pip install .\dist\adanowo_simulator-x.x.x.tar.gz
 
 ## Usage

@@ -28,6 +28,7 @@ class Environment(AbstractEnvironment):
         self._scenario_manager: AbstractScenarioManager = scenario_manager
         self._experiment_tracker: AbstractExperimentTracker = experiment_tracker
 
+        self.log_vars = None
         self._initial_config: DictConfig = config.copy()
         self._config: DictConfig = self._initial_config.copy()
         self._step_index: int = -1
@@ -71,51 +72,51 @@ class Environment(AbstractEnvironment):
         return self._step_index
 
     def step(self, actions: dict) -> tuple[float, dict[str, float], dict[str, float], DictConfig]:
-        if self._ready:
-            try:
-                if self._step_index == 1:
-                    logger.info("Experiment is running.")
-                disturbances = self._disturbance_manager.step()
-                setpoints, dependent_variables, setpoints_okay, dependent_variables_okay = \
-                    self._action_manager.step(actions, disturbances)
-                state = disturbances | setpoints | dependent_variables
-                outputs = self._output_manager.step(state)
-                objective_value, output_constraints_met = self._objective_manager.step(
-                    state, outputs, setpoints_okay, dependent_variables_okay)
-                log_variables = {
-                    "Performance-Metrics": {
-                        "Objective-Value": objective_value,
-                        "Setpoint-Constraints-Met": int(all(setpoints_okay.values())),
-                        "Dependent-Variable-Constraints-Met": int(all(dependent_variables_okay.values())),
-                        "Output-Constraints-Met": int(all(output_constraints_met.values()))
-                    },
-                    "Actions": actions,
-                    "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
-                    "Outputs": outputs,
-                    "Setpoint-Constraints-Met": {key: int(value) for key, value in setpoints_okay.items()},
-                    "Setpoints": setpoints,
-                    "Dependent-Variable-Constraints-Met":
-                        {key: int(value) for key, value in dependent_variables_okay.items()},
-                    "Dependent-Variables": dependent_variables,
-                    "Disturbances": disturbances
-                }
-                self._experiment_tracker.step(log_variables, self._step_index)
-
-                # Prepare next step.
-                # Execute scenario for the next step so the agent is already informed about production context changes.
-                self._step_index += 1
-                self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
-                                            self._objective_manager)
-                disturbances = self._disturbance_manager.step()
-                state = disturbances | setpoints | dependent_variables
-                quality_bounds = deepcopy(self._objective_manager.config.output_bounds)
-
-            except Exception as e:
-                self.close()
-                raise e
-
-        else:
+        if not self._ready:
             raise Exception("Cannot call step() before calling reset().")
+        try:
+            if self._step_index == 1:
+                logger.info("Experiment is running.")
+            assert set(actions.keys()) == set(self._config.used_setpoints), "Action dict does not match used setpoints."
+            disturbances = self._disturbance_manager.step()
+            setpoints, dependent_variables, setpoints_okay, dependent_variables_okay = \
+                self._action_manager.step(actions, disturbances)
+            state = disturbances | setpoints | dependent_variables
+            outputs = self._output_manager.step(state)
+            objective_value, output_constraints_met = self._objective_manager.step(
+                state, outputs, setpoints_okay, dependent_variables_okay)
+            log_variables = {
+                "Performance-Metrics": {
+                    "Objective-Value": objective_value,
+                    "Setpoint-Constraints-Met": int(all(setpoints_okay.values())),
+                    "Dependent-Variable-Constraints-Met": int(all(dependent_variables_okay.values())),
+                    "Output-Constraints-Met": int(all(output_constraints_met.values()))
+                },
+                "Actions": actions,
+                "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
+                "Outputs": outputs,
+                "Setpoint-Constraints-Met": {key: int(value) for key, value in setpoints_okay.items()},
+                "Setpoints": setpoints,
+                "Dependent-Variable-Constraints-Met":
+                    {key: int(value) for key, value in dependent_variables_okay.items()},
+                "Dependent-Variables": dependent_variables,
+                "Disturbances": disturbances
+            }
+            self._experiment_tracker.step(log_variables, self._step_index)
+            self.log_vars = deepcopy(log_variables)
+
+            # Prepare next step.
+            # Execute scenario for the next step so the agent is already informed about production context changes.
+            self._step_index += 1
+            self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
+                                        self._objective_manager)
+            disturbances = self._disturbance_manager.step()
+            state = disturbances | setpoints | dependent_variables
+            quality_bounds = deepcopy(self._objective_manager.config.output_bounds)
+
+        except Exception as e:
+            self.close()
+            raise e
 
         return objective_value, state, outputs, quality_bounds
 

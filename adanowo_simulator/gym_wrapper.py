@@ -37,7 +37,7 @@ class GymWrapper(Env):
         return self._observation_space
 
     def step(self, actions_array: np.array) -> tuple[np.array, float, bool, bool, dict]:
-        keys = list(OmegaConf.to_container(self._action_config.initial_setpoints).keys())
+        keys = list(self._env_config.used_setpoints)
         if self._config.scale_and_constrain_actions:
             if self._action_config.actions_are_relative:
                 raise NotImplementedError("Scaling is not supported for relative actions.")
@@ -65,7 +65,7 @@ class GymWrapper(Env):
         self._environment.close()
 
     def _compile_observations(self, state, outputs):
-        setpoint_list = list(self._action_config.initial_setpoints.keys())
+        setpoint_list = list(self._env_config.used_setpoints)
         relevant_states = {key: state[key] for key in setpoint_list}
         if self._config.scale_observations:
             bounds = OmegaConf.to_container(self._action_config.setpoint_bounds)

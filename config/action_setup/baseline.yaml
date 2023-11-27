@@ -28,7 +28,7 @@ setpoint_bounds:
     upper: 51.0
   DrawFrameDraftRatio:
     lower: 25.9
-    upper: 60.0
+    upper: 70.1
   Cross-lapperProfiling:
     lower: 0.0
     upper: 15.0

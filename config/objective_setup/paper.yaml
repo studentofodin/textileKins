@@ -1,0 +1,19 @@
+reward_parameters:
+  fibre_costs: 1.20 # € per kg
+  energy_costs: 0.28 # € per kWh
+  selling_price: 2.10 # € per sqm
+  floor_quality_weight: 0.0
+output_bounds:
+  AreaWeightLane1:
+    lower: 0.0
+    upper: 1000.0
+  AreaWeightLane2:
+    lower: 180.0
+    upper: 1000.0
+  AreaWeightLane3:
+    lower: 180.0
+    upper: 1000.0
+  TensileStrengthCD:
+    lower: 0.0
+  TensileStrengthMD:
+    lower: 0.0

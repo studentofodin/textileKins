@@ -2,7 +2,7 @@ import numpy as np
 
 
 def array_to_dict(array: np.array, keys: list[str],
-                  scales: dict[str, dict[str, float]] | None = None) -> dict[str, float]:
+                  bounds_for_scaling: dict[str, dict[str, float]] | None = None) -> dict[str, float]:
     """
     This method should be used to convert an action array to a dictionary. This avoids mixups in the order of the
     values. The keys are used to assign the values to the correct keys.
@@ -12,27 +12,27 @@ def array_to_dict(array: np.array, keys: list[str],
         raise Exception("Length of array and keys are not the same.")
     dictionary = dict()
     for index, key in enumerate(keys):
-        if scales is None:
+        if bounds_for_scaling is None:
             dictionary[key] = float(array[index].flatten()[0])
             continue
-        upper_bound = scales[key]["upper"]
-        lower_bound = scales[key]["lower"]
+        upper_bound = bounds_for_scaling[key]["upper"]
+        lower_bound = bounds_for_scaling[key]["lower"]
         scaled_value = tanh_scale(array[index], lower_bound, upper_bound)
         dictionary[key] = float(scaled_value.flatten()[0])
     return dictionary
 
 
 def dict_to_array(dictionary: dict[str, float], keys: list[str],
-                  scales: dict[str, dict[str, float]] | None = None, mode="min_max") -> np.array:
+                  bounds_for_scaling: dict[str, dict[str, float]] | None = None, mode="min_max") -> np.array:
     if len(dictionary) != len(keys):
         raise Exception("Length of dictionary and keys are not the same.")
     array = np.zeros(len(dictionary))
     for index, key in enumerate(keys):
-        if scales is None:
+        if bounds_for_scaling is None:
             array[index] = dictionary[key]
             continue
-        upper_bound = scales[key]["upper"]
-        lower_bound = scales[key]["lower"]
+        upper_bound = bounds_for_scaling[key]["upper"]
+        lower_bound = bounds_for_scaling[key]["lower"]
         if mode == "min_max":
             scaled_value = min_max_normalization(dictionary[key], lower_bound, upper_bound)
         elif mode == "inverse_tanh":

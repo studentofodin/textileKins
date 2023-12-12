@@ -37,16 +37,22 @@ class GymWrapper(Env):
         return self._observation_space
 
     def step(self, actions_array: np.array) -> tuple[np.array, float, bool, bool, dict]:
-        keys = list(self._env_config.used_setpoints)
+        if self._config.scale_and_constrain_actions and self._action_config.actions_are_relative:
+            raise NotImplementedError("Scaling is not supported for relative actions.")
+
+        # transform actions
+        setpoint_keys = list(self._env_config.used_setpoints)
         if self._config.scale_and_constrain_actions:
-            if self._action_config.actions_are_relative:
-                raise NotImplementedError("Scaling is not supported for relative actions.")
             scales = OmegaConf.to_container(self._action_config.setpoint_bounds)
-            action = transformations.array_to_dict(actions_array, keys, scales)
+            action = transformations.array_to_dict(actions_array, setpoint_keys, bounds_for_scaling=scales)
         else:
-            action = transformations.array_to_dict(actions_array, keys)
+            action = transformations.array_to_dict(actions_array, setpoint_keys)
+
+        # perform step
         reward, state, outputs, quality_bounds = self._environment.step(action)
         # TODO: Implement quality bounds as optional part of observations
+
+        # post-processing of env returns
         observations = self._compile_observations(state, outputs)
         if self._config.scale_rewards:
             reward = reward / self._config.max_reward
@@ -65,27 +71,32 @@ class GymWrapper(Env):
         self._environment.close()
 
     def _compile_observations(self, state, outputs):
+        # tranform state variables
         setpoint_list = list(self._env_config.used_setpoints)
-        relevant_states = {key: state[key] for key in setpoint_list}
+        setpoint_states = {key: state[key] for key in setpoint_list}
         if self._config.scale_observations:
             bounds = OmegaConf.to_container(self._action_config.setpoint_bounds)
-            observations = transformations.dict_to_array(relevant_states, setpoint_list, bounds)
+            observations = transformations.dict_to_array(setpoint_states, setpoint_list, bounds_for_scaling=bounds)
         else:
-            observations = transformations.dict_to_array(relevant_states, setpoint_list)
-        if self._config.return_process_outputs:
-            keys = list(self._env_config.used_outputs)
-            if self._config.scale_observations:
-                raise NotImplementedError("The output bounds need to be updated in the config.")
-                # bounds = self._config.process_output_bounds
-                # observations_outputs = transformations.dict_to_array(outputs, keys, bounds)
-            else:
-                observations_outputs = transformations.dict_to_array(outputs, keys)
-            observations = np.concatenate(
-                (
-                    observations,
-                    observations_outputs
-                )
+            observations = transformations.dict_to_array(setpoint_states, setpoint_list)
+
+        if not self._config.return_process_outputs:  # do not concatenate process outputs
+            return observations
+
+        # concatenate process outputs
+        output_keys = list(self._env_config.used_outputs) + list(self._env_config.used_dependent_variable_setpoints)
+        if self._config.scale_observations:
+            raise NotImplementedError("The output bounds need to be updated in the config.")
+            # bounds = self._config.process_output_bounds
+            # observations_outputs = transformations.dict_to_array(outputs, keys, bounds)
+        else:
+            observations_outputs = transformations.dict_to_array(outputs, output_keys)
+        observations = np.concatenate(
+            (
+                observations,
+                observations_outputs
             )
+        )
         return observations
 
 

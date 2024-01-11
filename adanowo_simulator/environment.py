@@ -1,6 +1,6 @@
 import sys
 import logging
-from copy import deepcopy
+from copy import copy
 from omegaconf import DictConfig
 
 from adanowo_simulator.abstract_base_classes.environment import AbstractEnvironment
@@ -13,6 +13,36 @@ from adanowo_simulator.abstract_base_classes.scenario_manager import AbstractSce
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def compile_log_variables(
+    objective_value,
+    setpoints_okay,
+    dependent_variables_okay,
+    output_constraints_met,
+    actions,
+    outputs,
+    setpoints,
+    dependent_variables,
+    disturbances
+) -> dict:
+    log_dict = {
+        "Performance-Metrics": {
+            "Objective-Value": objective_value,
+            "Setpoint-Constraints-Met": int(all(setpoints_okay.values())),
+            "Dependent-Variable-Constraints-Met": int(all(dependent_variables_okay.values())),
+            "Output-Constraints-Met": int(all(output_constraints_met.values()))
+        },
+        "Actions": actions,
+        "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
+        "Outputs": outputs,
+        "Setpoint-Constraints-Met": {key: int(value) for key, value in setpoints_okay.items()},
+        "Setpoints": setpoints,
+        "Dependent-Variable-Constraints-Met": {key: int(value) for key, value in dependent_variables_okay.items()},
+        "Dependent-Variables": dependent_variables,
+        "Disturbances": disturbances
+    }
+    return log_dict
 
 
 class Environment(AbstractEnvironment):
@@ -85,40 +115,30 @@ class Environment(AbstractEnvironment):
             outputs = self._output_manager.step(state)
             objective_value, output_constraints_met = self._objective_manager.step(
                 state, outputs, setpoints_okay, dependent_variables_okay)
-            log_variables = {
-                "Performance-Metrics": {
-                    "Objective-Value": objective_value,
-                    "Setpoint-Constraints-Met": int(all(setpoints_okay.values())),
-                    "Dependent-Variable-Constraints-Met": int(all(dependent_variables_okay.values())),
-                    "Output-Constraints-Met": int(all(output_constraints_met.values()))
-                },
-                "Actions": actions,
-                "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
-                "Outputs": outputs,
-                "Setpoint-Constraints-Met": {key: int(value) for key, value in setpoints_okay.items()},
-                "Setpoints": setpoints,
-                "Dependent-Variable-Constraints-Met":
-                    {key: int(value) for key, value in dependent_variables_okay.items()},
-                "Dependent-Variables": dependent_variables,
-                "Disturbances": disturbances
-            }
+            log_variables = compile_log_variables(
+                objective_value,
+                setpoints_okay,
+                dependent_variables_okay,
+                output_constraints_met,
+                actions,
+                outputs,
+                setpoints,
+                dependent_variables,
+                disturbances
+            )
             self._experiment_tracker.step(log_variables, self._step_index)
-            self.log_vars = deepcopy(log_variables)
+            self.log_vars = copy(log_variables)
 
-            # Prepare next step.
             # Execute scenario for the next step so the agent is already informed about production context changes.
             self._step_index += 1
-            self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
-                                        self._objective_manager)
-            disturbances = self._disturbance_manager.step()
-            state = disturbances | setpoints | dependent_variables
-            quality_bounds = deepcopy(self._objective_manager.config.output_bounds)
+            # Prepare next step.
+            state_with_new_context, quality_bounds_next = self._prepare_next_step(setpoints, dependent_variables)
 
         except Exception as e:
             self.close()
             raise e
 
-        return objective_value, state, outputs, quality_bounds
+        return objective_value, state_with_new_context, outputs, quality_bounds_next
 
     def reset(self) -> tuple[float, dict[str, float], dict[str, float], DictConfig]:
         logger.info("Resetting environment...")
@@ -128,38 +148,29 @@ class Environment(AbstractEnvironment):
             self._config = self._initial_config.copy()
             self._scenario_manager.reset()
             disturbances = self._disturbance_manager.reset()
-            setpoints, dependent_variables, setpoint_constraints_met, dependent_variable_constraints_met = \
+            setpoints, dependent_variables, setpoints_okay, dependent_variables_okay = \
                 self._action_manager.reset(disturbances)
             state = disturbances | setpoints | dependent_variables
             outputs = self._output_manager.reset(state)
             objective_value, output_constraints_met = self._objective_manager.reset(
-                state, outputs, setpoint_constraints_met, dependent_variable_constraints_met)
-            log_variables = {
-                "Performance-Metrics": {
-                    "Objective-Value": objective_value,
-                    "Setpoint-Constraints-Met": int(all(setpoint_constraints_met.values())),
-                    "Dependent-Variable-Constraints-Met": int(all(dependent_variable_constraints_met.values())),
-                    "Output-Constraints-Met": int(all(output_constraints_met.values()))
-                },
-                "Actions": {},
-                "Output-Constraints-Met": {key: int(value) for key, value in output_constraints_met.items()},
-                "Outputs": outputs,
-                "Setpoint-Constraints-Met": {key: int(value) for key, value in setpoint_constraints_met.items()},
-                "Setpoints": setpoints,
-                "Dependent-Variable-Constraints-Met":
-                    {key: int(value) for key, value in dependent_variable_constraints_met.items()},
-                "Dependent-Variables": dependent_variables,
-                "Disturbances": disturbances
-            }
+                state, outputs, setpoints_okay, dependent_variables_okay)
+            log_variables = compile_log_variables(
+                objective_value,
+                setpoints_okay,
+                dependent_variables_okay,
+                output_constraints_met,
+                {},
+                outputs,
+                setpoints,
+                dependent_variables,
+                disturbances
+            )
             self._experiment_tracker.reset(log_variables)
+            self.log_vars = copy(log_variables)
 
-            # prepare step 1.
             self._step_index = 1
-            self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
-                                        self._objective_manager)
-            disturbances = self._disturbance_manager.step()
-            state = disturbances | setpoints | dependent_variables
-            quality_bounds = deepcopy(self._objective_manager.config.output_bounds)
+            # prepare step 1.
+            state_with_new_context, quality_bounds_next = self._prepare_next_step(setpoints, dependent_variables)
 
         except Exception as e:
             self.close()
@@ -168,7 +179,7 @@ class Environment(AbstractEnvironment):
         self._ready = True
         logger.info("...environment has been reset.")
 
-        return objective_value, state, outputs, quality_bounds
+        return objective_value, state_with_new_context, outputs, quality_bounds_next
 
     def close(self) -> None:
         logger.info("Closing environment...")
@@ -202,3 +213,11 @@ class Environment(AbstractEnvironment):
         if exceptions:
             raise Exception(exceptions)
         logger.info("...environment has been closed.")
+
+    def _prepare_next_step(self, setpoints, dependent_variables):
+        self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
+                                    self._objective_manager)
+        disturbances = self._disturbance_manager.step()
+        state_with_new_context = disturbances | setpoints | dependent_variables
+        quality_bounds_next = copy(self._objective_manager.config.output_bounds)
+        return state_with_new_context, quality_bounds_next

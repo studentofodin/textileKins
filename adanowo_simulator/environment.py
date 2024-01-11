@@ -130,8 +130,6 @@ class Environment(AbstractEnvironment):
             self.log_vars = copy(log_variables)
 
             # Execute scenario for the next step so the agent is already informed about production context changes.
-            self._step_index += 1
-            # Prepare next step.
             state_with_new_context, quality_bounds_next = self._prepare_next_step(setpoints, dependent_variables)
 
         except Exception as e:
@@ -168,7 +166,6 @@ class Environment(AbstractEnvironment):
             self._experiment_tracker.reset(log_variables)
             self.log_vars = copy(log_variables)
 
-            self._step_index = 1
             # prepare step 1.
             state_with_new_context, quality_bounds_next = self._prepare_next_step(setpoints, dependent_variables)
 
@@ -215,6 +212,7 @@ class Environment(AbstractEnvironment):
         logger.info("...environment has been closed.")
 
     def _prepare_next_step(self, setpoints, dependent_variables):
+        self._step_index += 1
         self._scenario_manager.step(self._step_index, self._disturbance_manager, self._output_manager,
                                     self._objective_manager)
         disturbances = self._disturbance_manager.step()

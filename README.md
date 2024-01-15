@@ -22,7 +22,7 @@ The project is set to contribute to ongoing research in production process optim
 ## Installation
 
 ### Prerequisites:
-- Python 3.10.4 or higher
+- Python 3.10.4 or higher, lower than 3.11
 - (optional) a fresh virtual environment
 - [Poetry](https://python-poetry.org/docs/) is already preinstalled. 
 Under Windows you might need to use pip to install poetry if the command from the website doesn't work.

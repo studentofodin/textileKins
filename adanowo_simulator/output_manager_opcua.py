@@ -1,100 +1,44 @@
-import importlib
-import pathlib as pl
 import logging
-import sys
-from multiprocessing import Process, Pipe
-import yaml
-from omegaconf import DictConfig, OmegaConf
-import numpy as np
-import pandas as pd
-import torch
+from enum import Enum
+import functools
+import time
 
-from adanowo_simulator.abstract_base_classes.model_adapter import AbstractModelAdapter
+from omegaconf import DictConfig, OmegaConf
+from asyncua.sync import Client, ua, SyncNode, ThreadLoop
+from asyncua.client.ua_client import UASocketProtocol
+
 from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
-from adanowo_simulator import model_adapter
 
 logger = logging.getLogger(__name__)
-RECEIVE = 0
-SEND = 1
-DEFAULT_RELATIVE_PATH = "output_models"
+
+# TODO: implement automatic reconnecting wherever necessary
+#  https://github.com/FreeOpcUa/opcua-asyncio/blob/master/examples/client-reconnect.py
 
 
-def model_loader(model_name: str, path_to_output_models: pl.Path) -> AbstractModelAdapter:
-    with open(path_to_output_models / (model_name + '.yaml'), 'r') as stream:
-        properties = yaml.safe_load(stream)
-
-    model_class = properties["model_class"]
-
-    if model_class == "Gpytorch":
-        if "keep_y_scaled" in properties:
-            rescale_y_temp = not bool(properties["keep_y_scaled"])
-        else:
-            rescale_y_temp = True
-        data_load = pd.read_hdf(
-           path_to_output_models / (model_name + ".hdf5")
-        )
-        if torch.cuda.is_available():
-            map_location = None
-        else:
-            map_location = torch.device('cpu')
-            logger.warning(f"No Cuda GPU found for model {model_name}. Step execution will be much slower.")
-        model_state = torch.load(
-            path_to_output_models / (model_name + ".pth"), map_location=map_location
-        )
-        importlib.import_module(model_name)
-        model_module = sys.modules[model_name]
-
-        mdl = model_adapter.AdapterGpytorch(model_module, data_load, model_state, properties,
-                                            rescale_y=rescale_y_temp)
-    elif model_class == "Python_script":
-        importlib.import_module(model_name)
-        model_module = sys.modules[model_name]
-        mdl = model_adapter.AdapterPyScript(model_module)
-
-    else:
-        raise (TypeError(f"The model class {model_class} is not yet supported"))
-
-    return mdl
+class AgentControlState(Enum):
+    INVALID = ua.uatypes.Int32(0)  # TODO: replace with actual messages and correct data types
+    ACCEPTED = ua.uatypes.Int32(1)
+    REJECTED = ua.uatypes.Int32(2)
 
 
-def model_executor(mdl: AbstractModelAdapter, input_pipe: Pipe, output_pipe: Pipe, latent_uncertainty_only: bool):
-    while True:
-        if input_pipe.poll():
-            input_recv = input_pipe.recv()
-            if input_recv is None:
-                mdl.close()
-                break
-            if latent_uncertainty_only:
-                mean_pred, var_pred = mdl.predict_f(input_recv)
-            else:
-                mean_pred, var_pred = mdl.predict_y(input_recv, observation_noise_only=True)
-            output_pipe.send((mean_pred, var_pred))
+class OpcuaOutputManager(AbstractOutputManager):
+    """
+    OutputManager that uses OPC UA to communicate with the physical environment instead of simulated models.
 
-
-class SequentialOutputManager(AbstractOutputManager):
+    Note: This implementation is designed to only use blocking, synchronous operations. This is because the environment
+    is slow and the nature of the communication is linear.
+    This does not require any concurrency, so we can stay in our happy synchronous world.
+    """
 
     def __init__(self, config: DictConfig):
-        # use default path
-        main_script_path = pl.Path(__file__).resolve().parent
-        self._path_to_output_models = main_script_path / DEFAULT_RELATIVE_PATH
-
-        if config.path_to_output_models is not None:
-            temp_path = pl.Path(config.path_to_models)
-            if self._path_to_output_models.is_dir():
-                logger.info(f"Using custom output model path {self._path_to_output_models}.")
-                self._path_to_output_models = temp_path
-            else:
-                raise Exception(
-                    f"Custom output model path {self._path_to_output_models} is not valid.")
-
-        # Add model path to sys.path so that the models can be imported.
-        sys.path.append(str(self._path_to_output_models))
-
+        # basic config
         self._initial_config: DictConfig = config.copy()
         self._config: DictConfig = self._initial_config.copy()
-        self._output_models: dict[str, AbstractModelAdapter] = dict()
-        self._model_config: DictConfig = OmegaConf.create()
         self._ready = False
+        # network config
+        self._thread_loop = ThreadLoop()
+        self._client: Client | None = None
+        self._agentControlState: SyncNode | None = None
 
     @property
     def config(self) -> DictConfig:
@@ -105,122 +49,89 @@ class SequentialOutputManager(AbstractOutputManager):
         self._config = c
 
     def step(self, state: dict[str, float]) -> dict[str, float]:
-        if self._ready:
-            self._update_model_allocation()
-            try:
-                mean_pred, var_pred = self._call_models(state)
-                outputs = self._sample_output_distribution(mean_pred, var_pred)
-            except Exception as e:
-                self.close()
-                raise e
-        else:
+        if not self._ready:
             raise Exception("Cannot call step() before calling reset().")
+        try:
+            pass
+
+        except Exception as e:
+            self.close()
+            raise e
+        outputs = {}
         return outputs
 
     def reset(self, state: dict[str, float]) -> dict[str, float]:
         self.close()
+
         self._config = self._initial_config.copy()
-        self._model_config = self._config.output_models.copy()
-        for output_name, model_name in self._config.output_models.items():
-            try:
-                self._allocate_model_to_output(output_name, model_name)
-            except Exception as e:
-                self.close()
-                raise e
+        self._thread_loop.start()
+        self._client = Client(self._config.server_url, tloop=self._thread_loop)
+
+        self._agentControlState = self._get_node_autoconnect(self._config.control_state_node_id)
+        # TODO: Define agent input and output nodes
+
+        try:
+            self._write_node_autoconnect(self._agentControlState, AgentControlState.INVALID.value,
+                                         ua.VariantType.Double)
+        except Exception as e:
+            self.close()
+            raise e
         self._ready = True
-        outputs = self.step(state)
+        #outputs = self.step(state)
+        outputs = {}
         return outputs
 
     def close(self) -> None:
+        if self._client is not None:
+            # check if connection is established
+            if (self._client.aio_obj.uaclient.protocol and
+                    not self._client.aio_obj.uaclient.state == UASocketProtocol.CLOSED):
+                self._client.disconnect()
+        if self._thread_loop.is_alive():
+            self._thread_loop.stop()
+        self._client = None
         self._ready = False
 
-    def _update_model_allocation(self) -> None:
-        for output_name, model_name in self._config.output_models.items():
-            if self._model_config[output_name] != model_name:
-                self._model_config[output_name] = model_name
-                self._allocate_model_to_output(output_name, model_name)
-
-    def _call_models(self, X: dict[str, float]) -> (dict[str, np.array], dict[str, np.array]):
-        mean_pred = dict()
-        var_pred = dict()
-        model_uncertainty_only = False
-
-        for output_name, mdl in self._output_models.items():
-            if model_uncertainty_only:
-                mean_pred[output_name], var_pred[output_name] = mdl.predict_f(X)
-            else:
-                mean_pred[output_name], var_pred[output_name] = mdl.predict_y(
-                    X, observation_noise_only=True)
-
-        return mean_pred, var_pred
-
-    def _sample_output_distribution(self, mean_pred: dict[str, np.array], var_pred: dict[str, np.array]) \
-            -> dict[str, float]:
-        outputs = dict()
-        for output_name in self._config.output_models.keys():
-            outputs[output_name] = float(np.random.normal(mean_pred[output_name], np.sqrt(var_pred[output_name])).
-                                         flatten()[0])
-        return outputs
-
-    def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
-        # load model properties dict from .yaml file
-        mdl = model_loader(model_name, self._path_to_output_models)
-
-        self._output_models[output_name] = mdl
-        logger.info(f"Allocated model {model_name} to output {output_name}.")
-
-
-class ParallelOutputManager(SequentialOutputManager):
-
-    def __init__(self, config: DictConfig):
-        super().__init__(config)
-        self._model_processes: dict[str, Process] = dict()
-        self._input_pipes: dict[str, Pipe] = dict()
-        self._output_pipes: dict[str, Pipe] = dict()
-
-    def close(self) -> None:
-        if self._model_processes:
-            for output_name in self._model_processes.keys():
-                if self._model_processes[output_name].is_alive():
-                    self._input_pipes[output_name][SEND].send(None)
-                    self._model_processes[output_name].join()
-                    self._input_pipes[output_name][SEND].close()
-            self._model_processes = dict()
-            self._input_pipes = dict()
-            self._output_pipes = dict()
-            self._ready = False
-
-    def _update_model_allocation(self) -> None:
-        for output_name, model_name in self._config.output_models.items():
-            if self._model_config[output_name] != model_name:
+    @staticmethod
+    def _ensure_connection(func):
+        @functools.wraps(func)
+        def wrapper_ensure_connection(self, *args, **kwargs):
+            connection_attempts = 0
+            while True:
                 try:
-                    self._input_pipes[output_name][SEND].send(None)
-                    self._model_processes[output_name].join()
-                    self._input_pipes[output_name][SEND].close()
-                    self._model_config[output_name] = model_name
-                    self._allocate_model_to_output(output_name, model_name)
-                except Exception as e:
-                    self.close()
-                    raise e
+                    with self._client:
+                        return func(self, *args, **kwargs)
+                except (ConnectionError, ua.UaError):
+                    time.sleep(config.polling_interval*2)
+                    connection_attempts += 1
+                    logger.warning(f"Connection error. Trying to reconnect... [{connection_attempts}]")
+        return wrapper_ensure_connection
 
-    def _call_models(self, X: dict[str, float]) -> (dict[str, np.array], dict[str, np.array]):
-        mean_pred = dict()
-        var_pred = dict()
+    @_ensure_connection
+    def _get_node_autoconnect(self, node_id: dict[str, int]) -> SyncNode:
+        return self._client.get_node(ua.NodeId(
+            ua.uatypes.Int32(node_id["identifier"]),
+            ua.uatypes.Int16(node_id["namespace_index"])
+        ))
 
-        for output_name in self._model_processes.keys():
-            self._input_pipes[output_name][SEND].send(X)
-        for output_name in self._model_processes.keys():
-            mean_pred[output_name], var_pred[output_name] = self._output_pipes[output_name][RECEIVE].recv()
-        return mean_pred, var_pred
+    @_ensure_connection
+    def _write_node_autoconnect(self, node: SyncNode, value: any,
+                                datatype: ua.uatypes.VariantType) -> None:
+        node.write_value(
+            ua.Variant(
+                value,
+                datatype
+            )
+        )
 
-    def _allocate_model_to_output(self, output_name: str, model_name: str) -> None:
-        mdl = model_loader(model_name, self._path_to_output_models)
+    @_ensure_connection
+    def read_node_autoconnect(self, node: SyncNode) -> ua.VariantType.Variant:
+        return node.read_value()
 
-        new_input_pipe = Pipe()
-        new_output_pipe = Pipe()
-        self._input_pipes[output_name] = new_input_pipe
-        self._output_pipes[output_name] = new_output_pipe
-        self._model_processes[output_name] = \
-            Process(target=model_executor, args=(mdl, new_input_pipe[RECEIVE], new_output_pipe[SEND], False))
-        self._model_processes[output_name].start()
-        logger.info(f"Allocated model {model_name} to output {output_name}.")
+
+if __name__ == "__main__":
+    config = OmegaConf.load("../config/output_setup/opcua_conn.yaml")
+    output_manager = OpcuaOutputManager(config)
+    output_manager.reset({})
+    #output_manager.step({})
+    output_manager.close()

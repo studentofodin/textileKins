@@ -105,16 +105,15 @@ class SequentialOutputManager(AbstractOutputManager):
         self._config = c
 
     def step(self, state: dict[str, float]) -> dict[str, float]:
-        if self._ready:
-            self._update_model_allocation()
-            try:
-                mean_pred, var_pred = self._call_models(state)
-                outputs = self._sample_output_distribution(mean_pred, var_pred)
-            except Exception as e:
-                self.close()
-                raise e
-        else:
+        if not self._ready:
             raise Exception("Cannot call step() before calling reset().")
+        self._update_model_allocation()
+        try:
+            mean_pred, var_pred = self._call_models(state)
+            outputs = self._sample_output_distribution(mean_pred, var_pred)
+        except Exception as e:
+            self.close()
+            raise e
         return outputs
 
     def reset(self, state: dict[str, float]) -> dict[str, float]:

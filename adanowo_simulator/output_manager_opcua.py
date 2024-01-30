@@ -11,12 +11,9 @@ from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutpu
 
 logger = logging.getLogger(__name__)
 
-# TODO: implement automatic reconnecting wherever necessary
-#  https://github.com/FreeOpcUa/opcua-asyncio/blob/master/examples/client-reconnect.py
-
 
 class AgentControlState(Enum):
-    INVALID = ua.uatypes.Int32(0)  # TODO: replace with actual messages and correct data types
+    INVALID = ua.uatypes.Int32(0)  # Remember: replace with actual messages and correct data types
     ACCEPTED = ua.uatypes.Int32(1)
     REJECTED = ua.uatypes.Int32(2)
 

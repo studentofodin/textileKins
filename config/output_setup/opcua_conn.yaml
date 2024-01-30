@@ -3,6 +3,10 @@ parent_node_id: test # Parent node of the output and state values at server
 control_state_node_id: # Node id of the control state
   namespace_index: 2
   identifier: 31
+agent_state_values:
+  invalid: 0
+  accepted: 1
+  rejected: 2
 polling_interval: 2 # Polling interval in seconds
 output_models:
   AreaWeightLane1: areaWeightLane1Model

@@ -1,5 +1,6 @@
 import logging
 from enum import Enum
+from typing import Type
 import functools
 import time
 
@@ -10,12 +11,6 @@ from asyncua.client.ua_client import UASocketProtocol
 from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
 
 logger = logging.getLogger(__name__)
-
-
-class AgentControlState(Enum):
-    INVALID = ua.uatypes.Int32(0)  # Remember: replace with actual messages and correct data types
-    ACCEPTED = ua.uatypes.Int32(1)
-    REJECTED = ua.uatypes.Int32(2)
 
 
 class OpcuaOutputManager(AbstractOutputManager):
@@ -36,6 +31,7 @@ class OpcuaOutputManager(AbstractOutputManager):
         self._thread_loop = ThreadLoop()
         self._client: Client | None = None
         self._agentControlState: SyncNode | None = None
+        self._agentControlStates = self._create_agent_control_state_enum()
 
     @property
     def config(self) -> DictConfig:
@@ -44,6 +40,17 @@ class OpcuaOutputManager(AbstractOutputManager):
     @config.setter
     def config(self, c):
         self._config = c
+
+    def _create_agent_control_state_enum(self) -> Type[Enum]:
+        state_enum = Enum(
+            value="AgentControlState",
+            names=[
+                ("INVALID", ua.uatypes.Int32(self._config.agent_state_values["invalid"])),
+                ("ACCEPTED", ua.uatypes.Int32(self._config.agent_state_values["accepted"])),
+                ("REJECTED", ua.uatypes.Int32(self._config.agent_state_values["rejected"]))
+            ]
+        )
+        return state_enum
 
     def step(self, state: dict[str, float]) -> dict[str, float]:
         if not self._ready:
@@ -68,13 +75,13 @@ class OpcuaOutputManager(AbstractOutputManager):
         # TODO: Define agent input and output nodes
 
         try:
-            self._write_node_autoconnect(self._agentControlState, AgentControlState.INVALID.value,
+            self._write_node_autoconnect(self._agentControlState, self._agentControlStates.INVALID.value,
                                          ua.VariantType.Double)
         except Exception as e:
             self.close()
             raise e
         self._ready = True
-        #outputs = self.step(state)
+        # outputs = self.step(state) # TODO: uncomment once step method is implemented
         outputs = {}
         return outputs
 
@@ -130,5 +137,5 @@ if __name__ == "__main__":
     config = OmegaConf.load("../config/output_setup/opcua_conn.yaml")
     output_manager = OpcuaOutputManager(config)
     output_manager.reset({})
-    #output_manager.step({})
+    # output_manager.step({})
     output_manager.close()

@@ -5,8 +5,9 @@ control_state_node_id: # Node id of the control state
   identifier: 31
 agent_state_values:
   invalid: 0
-  accepted: 1
-  rejected: 2
+  valid: 1
+  accepted: 2
+  rejected: 3
 polling_interval: 2 # Polling interval in seconds
 output_models:
   AreaWeightLane1: areaWeightLane1Model

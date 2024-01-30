@@ -30,7 +30,7 @@ class OpcuaOutputManager(AbstractOutputManager):
         # network config
         self._thread_loop = ThreadLoop()
         self._client: Client | None = None
-        self._agentControlState: SyncNode | None = None
+        self._agent_control_state_node: SyncNode | None = None
         self._agentControlStates = self._create_agent_control_state_enum()
 
     @property
@@ -41,21 +41,23 @@ class OpcuaOutputManager(AbstractOutputManager):
     def config(self, c):
         self._config = c
 
-    def _create_agent_control_state_enum(self) -> Type[Enum]:
-        state_enum = Enum(
-            value="AgentControlState",
-            names=[
-                ("INVALID", ua.uatypes.Int32(self._config.agent_state_values["invalid"])),
-                ("ACCEPTED", ua.uatypes.Int32(self._config.agent_state_values["accepted"])),
-                ("REJECTED", ua.uatypes.Int32(self._config.agent_state_values["rejected"]))
-            ]
-        )
-        return state_enum
-
     def step(self, state: dict[str, float]) -> dict[str, float]:
         if not self._ready:
             raise Exception("Cannot call step() before calling reset().")
         try:
+            # TODO: Implement step method
+            # - write agent outputs and set state to valid
+            # - wait for state to be accepted or rejected (in architecture, move "await dead time" to GUI)
+            # - set state to invalid
+            # - read agent inputs (state)
+            # - check simple plausibility; if not: use old value
+            # - check if states match internal states; if not: update them by using the pointer
+            # if accepted
+            # - read agent inputs (state)
+            # - set new output "user preference" to 1
+            # if rejected
+            # - "user preference" to -1, all other outputs to None (make sure it gets handled properly)
+
             pass
 
         except Exception as e:
@@ -66,17 +68,11 @@ class OpcuaOutputManager(AbstractOutputManager):
 
     def reset(self, state: dict[str, float]) -> dict[str, float]:
         self.close()
-
         self._config = self._initial_config.copy()
-        self._thread_loop.start()
-        self._client = Client(self._config.server_url, tloop=self._thread_loop)
-
-        self._agentControlState = self._get_node_autoconnect(self._config.control_state_node_id)
-        # TODO: Define agent input and output nodes
+        self._setup_client()
 
         try:
-            self._write_node_autoconnect(self._agentControlState, self._agentControlStates.INVALID.value,
-                                         ua.VariantType.Double)
+            self._set_agent_control_state("INVALID")
         except Exception as e:
             self.close()
             raise e
@@ -96,6 +92,24 @@ class OpcuaOutputManager(AbstractOutputManager):
         self._client = None
         self._ready = False
 
+    def _setup_client(self) -> None:
+        self._thread_loop.start()
+        self._client = Client(self._config.server_url, tloop=self._thread_loop)
+        self._agent_control_state_node = self._get_node_autoconnect(self._config.control_state_node_id)
+        # TODO: Define agent input and output nodes
+
+    def _create_agent_control_state_enum(self) -> Type[Enum]:
+        state_enum = Enum(
+            value="AgentControlState",
+            names=[
+                ("INVALID", ua.uatypes.Double(self._config.agent_state_values["invalid"])),
+                ("VALID", ua.uatypes.Double(self._config.agent_state_values["valid"])),
+                ("ACCEPTED", ua.uatypes.Double(self._config.agent_state_values["accepted"])),
+                ("REJECTED", ua.uatypes.Double(self._config.agent_state_values["rejected"]))
+            ]
+        )
+        return state_enum
+
     @staticmethod
     def _ensure_connection(func):
         @functools.wraps(func)
@@ -106,7 +120,7 @@ class OpcuaOutputManager(AbstractOutputManager):
                     with self._client:
                         return func(self, *args, **kwargs)
                 except (ConnectionError, ua.UaError):
-                    time.sleep(config.polling_interval*2)
+                    time.sleep(test_config.polling_interval)
                     connection_attempts += 1
                     logger.warning(f"Connection error. Trying to reconnect... [{connection_attempts}]")
         return wrapper_ensure_connection
@@ -128,14 +142,18 @@ class OpcuaOutputManager(AbstractOutputManager):
             )
         )
 
+    def _set_agent_control_state(self, state: str) -> None:
+        self._write_node_autoconnect(self._agent_control_state_node, self._agentControlStates[state].value,
+                                     ua.VariantType.Double)
+
     @_ensure_connection
     def read_node_autoconnect(self, node: SyncNode) -> ua.VariantType.Variant:
         return node.read_value()
 
 
 if __name__ == "__main__":
-    config = OmegaConf.load("../config/output_setup/opcua_conn.yaml")
-    output_manager = OpcuaOutputManager(config)
+    test_config = OmegaConf.load("../config/output_setup/opcua_conn.yaml")
+    output_manager = OpcuaOutputManager(test_config)
     output_manager.reset({})
     # output_manager.step({})
     output_manager.close()

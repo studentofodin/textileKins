@@ -31,6 +31,8 @@ class OpcuaOutputManager(AbstractOutputManager):
         self._thread_loop = ThreadLoop()
         self._client: Client | None = None
         self._agent_control_state_node: SyncNode | None = None
+        self._output_nodes: list[SyncNode] | None = None
+        self._input_nodes: list[SyncNode] | None = None
         self._agentControlStates = self._create_agent_control_state_enum()
 
     @property
@@ -46,24 +48,25 @@ class OpcuaOutputManager(AbstractOutputManager):
             raise Exception("Cannot call step() before calling reset().")
         try:
             # TODO: Implement step method
-            # - write agent outputs and set state to valid
-            # - wait for state to be accepted or rejected (in architecture, move "await dead time" to GUI)
-            # - set state to invalid
-            # - read agent inputs (state)
-            # - check simple plausibility; if not: use old value
-            # - check if states match internal states; if not: update them by using the pointer
-            # if accepted
-            # - read agent inputs (state)
-            # - set new output "user preference" to 1
-            # if rejected
-            # - "user preference" to -1, all other outputs to None (make sure it gets handled properly)
+            self._write_recommendation_to_output_nodes(state)
+            self._set_agent_control_state("VALID")
+            user_decision = self._await_user_decision()  # in architecture, move "await dead time" to GUI
+            state_from_server = self._read_agent_inputs(state.keys())
+            self._set_agent_control_state("INVALID")
+            only_plausible_states = self._check_state_plausibility(state_from_server)
+            self._write_server_state_to_internal_state(state, only_plausible_states)  # TODO: throw warning when they differ
 
-            pass
+            outputs = self._set_outputs_to_initial_values()  # TODO: make sure None values get handled properly
+
+            if user_decision == "ACCEPTED":
+                process_outputs_from_server = self._read_agent_inputs(self._config.output_models) # TODO: translate from server to internal
+                only_plausible_process_outputs = self._check_state_plausibility(process_outputs_from_server)
+                outputs = self._compile_output_dict(only_plausible_process_outputs) # TODO: set new output "user preference" to 1
 
         except Exception as e:
             self.close()
             raise e
-        outputs = {}
+        logger.info("Full step execution successful.")
         return outputs
 
     def reset(self, state: dict[str, float]) -> dict[str, float]:
@@ -79,6 +82,7 @@ class OpcuaOutputManager(AbstractOutputManager):
         self._ready = True
         # outputs = self.step(state) # TODO: uncomment once step method is implemented
         outputs = {}
+        logger.debug("OPC UA connection set up successfully.")
         return outputs
 
     def close(self) -> None:
@@ -96,7 +100,10 @@ class OpcuaOutputManager(AbstractOutputManager):
         self._thread_loop.start()
         self._client = Client(self._config.server_url, tloop=self._thread_loop)
         self._agent_control_state_node = self._get_node_autoconnect(self._config.control_state_node_id)
-        # TODO: Define agent input and output nodes
+        output_parent_node = self._get_node_autoconnect(self._config.agent_output_node)
+        input_parent_node = self._get_node_autoconnect(self._config.agent_input_node)
+        self._output_nodes = self._get_node_references_autononnect(output_parent_node)
+        self._input_nodes = self._get_node_references_autononnect(input_parent_node)
 
     def _create_agent_control_state_enum(self) -> Type[Enum]:
         state_enum = Enum(
@@ -127,10 +134,20 @@ class OpcuaOutputManager(AbstractOutputManager):
 
     @_ensure_connection
     def _get_node_autoconnect(self, node_id: dict[str, int]) -> SyncNode:
-        return self._client.get_node(ua.NodeId(
-            ua.uatypes.Int32(node_id["identifier"]),
-            ua.uatypes.Int16(node_id["namespace_index"])
-        ))
+        ns = node_id["namespace_index"]
+        i = node_id["identifier"]
+        try:
+            node = self._client.get_node(
+                ua.NodeId(
+                    ua.uatypes.Int32(i),
+                    ua.uatypes.Int16(ns)
+                )
+            )
+            logger.debug(f"Node retrieval ({node.read_display_name()}) successful.")
+        except ua.UaError as e:
+            logger.error(f"Node retrieval (ns={ns}, i={i}) failed.")
+            raise e
+        return node
 
     @_ensure_connection
     def _write_node_autoconnect(self, node: SyncNode, value: any,
@@ -145,10 +162,44 @@ class OpcuaOutputManager(AbstractOutputManager):
     def _set_agent_control_state(self, state: str) -> None:
         self._write_node_autoconnect(self._agent_control_state_node, self._agentControlStates[state].value,
                                      ua.VariantType.Double)
+        logger.debug(f"Successfully set agent control state node to {state}.")
 
     @_ensure_connection
     def read_node_autoconnect(self, node: SyncNode) -> ua.VariantType.Variant:
-        return node.read_value()
+        val = node.read_value()
+        return val
+
+    @_ensure_connection
+    def _get_node_references_autononnect(self, node: SyncNode) -> list[SyncNode]:
+        nodes = node.get_referenced_nodes(
+            refs=ua.ObjectIds.HasComponent,
+            direction=ua.BrowseDirection.Forward,
+            nodeclassmask=ua.NodeClass.Variable,
+        )
+        return nodes
+
+    @_ensure_connection
+    def _write_recommendation_to_output_nodes(self, state: dict[str, float]) -> None:
+        for node in self._output_nodes:
+            node_display_name_str = str(node.read_display_name().Text)
+            if node_display_name_str in state.keys():
+                node.write_value(
+                    ua.Variant(
+                        state[node_display_name_str],
+                        ua.VariantType.Double
+                    )
+                )
+            else:
+                logger.warning(f"Server node {node_display_name_str} not found in state dict.")
+
+    def _await_user_decision(self) -> str:
+        while True:
+            user_decision_double = ua.uatypes.Double(self.read_node_autoconnect(self._agent_control_state_node))
+            for decision in ["ACCEPTED", "REJECTED"]:
+                if user_decision_double == self._agentControlStates[decision].value:
+                    logger.debug(f"Received user decision: {decision}")
+                    return decision
+            time.sleep(self._config.polling_interval)
 
 
 if __name__ == "__main__":

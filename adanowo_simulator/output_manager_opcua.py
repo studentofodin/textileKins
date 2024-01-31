@@ -120,7 +120,7 @@ class OpcuaOutputManager(AbstractOutputManager):
                     with self._client:
                         return func(self, *args, **kwargs)
                 except (ConnectionError, ua.UaError):
-                    time.sleep(test_config.polling_interval)
+                    time.sleep(self._config.polling_interval)
                     connection_attempts += 1
                     logger.warning(f"Connection error. Trying to reconnect... [{connection_attempts}]")
         return wrapper_ensure_connection

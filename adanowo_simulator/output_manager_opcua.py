@@ -196,7 +196,7 @@ class OpcuaOutputManager(AbstractOutputManager):
             if node_display_name_str not in state.keys():
                 logger.warning(f"Server node {node_display_name_str} not found in state dict.")
                 continue
-            # Hardcode some exceptions for some data types. TODO: Make all nodes use the same datatype.
+            # Hardcode some exceptions for some setpoints that need to be integers.
             if node_display_name_str == "Cross-lapperLayersCount":
                 node.write_value(
                     ua.Variant(

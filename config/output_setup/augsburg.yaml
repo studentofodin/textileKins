@@ -15,12 +15,15 @@ agent_state_values:
   rejected: 3
 polling_interval: 2 # Polling interval in seconds
 output_models:
-  - AreaWeight
+  - areaWeight
 #  - AreaWeightLane2
 #  - AreaWeightLane3
 #  - LinePowerConsumption
   - Energy
   - TensileStrengthCD
   - TensileStrengthMD
-  - CardWebUnevenness
-user_feedback_key: user_feedback
+  - cardWebUnevenness
+outputs_always_available:
+  - Energy
+  - cardWebUnevenness
+user_feedback_key: UserFeedback

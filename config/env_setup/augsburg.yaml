@@ -2,7 +2,6 @@ used_setpoints:
   - CardDeliveryWeightPerArea # g per sqm
   - Cross-lapperLayersCount
   - NeedleloomDraftRatio # percent
-  - DrawFrameDraftRatio # percent
   - Cross-lapperProfiling # percent
   - NeedleloomFeedPerStroke # mm per stroke
   - CardMassThroughputSetpoint # kg per h

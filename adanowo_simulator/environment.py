@@ -113,6 +113,7 @@ class Environment(AbstractEnvironment):
                 self._action_manager.step(actions, disturbances)
             state = disturbances | setpoints | dependent_variables
             outputs = self._output_manager.step(state)
+            self._update_setpoints(setpoints, state)
             objective_value, output_constraints_met = self._objective_manager.step(
                 state, outputs, setpoints_okay, dependent_variables_okay)
             log_variables = compile_log_variables(
@@ -219,3 +220,13 @@ class Environment(AbstractEnvironment):
         state_with_new_context = disturbances | setpoints | dependent_variables
         quality_bounds_next = copy(self._objective_manager.config.output_bounds)
         return state_with_new_context, quality_bounds_next
+
+    @staticmethod
+    def _update_setpoints(setpoints, state):
+        """
+        Update setpoints with the current state. When using the OPC UA Output manager, it updates the state.
+        Calling this function ensures the setpoints are in sync with the state.
+        """
+        for key in setpoints.keys():
+            setpoints[key] = state[key]
+

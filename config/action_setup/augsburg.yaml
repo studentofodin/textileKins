@@ -3,7 +3,6 @@ initial_setpoints:
   CardDeliveryWeightPerArea: 63.0 # g per sqm
   Cross-lapperLayersCount: 4 # -
   NeedleloomDraftRatio: 43.0 # percent
-  DrawFrameDraftRatio: 44.7 # percent
   Cross-lapperProfiling: 1.0 # percent
   NeedleloomFeedPerStroke: 10.5 # mm per stroke
   CardMassThroughputSetpoint: 100 # kg per h
@@ -25,9 +24,6 @@ setpoint_bounds:
   NeedleloomDraftRatio:
     lower: 34.0
     upper: 51.0
-  DrawFrameDraftRatio:
-    lower: 25.9
-    upper: 70.1
   Cross-lapperProfiling:
     lower: 0.0
     upper: 15.0

@@ -257,14 +257,18 @@ class OpcuaOutputManager(AbstractOutputManager):
         for key, value in server_states.items():
             if abs(state[key] - value) > DIFFERENCE_THRESHOLD:
                 logger.warning(f"Server state {key} differs from recommended state "
-                               f"by more than {DIFFERENCE_THRESHOLD}. Check: Was this intentional?")
+                               f"by more than {DIFFERENCE_THRESHOLD}. Check if this was intentional.")
             state[key] = value
 
     def _set_outputs_to_initial_values(self) -> dict[str, float | None]:
         outputs = {}
         for output in self._config.output_models:
-            outputs[output] = None
+            if output in self._config.outputs_always_available:
+                outputs[output] = float(0.0)
+            else:
+                outputs[output] = None
         outputs[self._config.user_feedback_key] = float(self._agentControlStates["REJECTED"].value)
+
         return outputs
 
     @staticmethod

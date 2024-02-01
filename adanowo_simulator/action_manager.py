@@ -27,7 +27,7 @@ class ActionManager(AbstractActionManager):
                             f"{self._path_to_dependent_variable_calculations}.")
                 self._path_to_dependent_variable_calculations = temp_path
             else:
-                raise Exception(
+                raise FileNotFoundError(
                     f"Custom dependent variable calculation path {self._path_to_dependent_variable_calculations}"
                     f" is not valid.")
 
@@ -64,7 +64,7 @@ class ActionManager(AbstractActionManager):
             dependent_variables = \
                 self._calculate_dependent_variables(self._setpoints | disturbances)
         else:
-            raise Exception("Cannot call step() before calling reset().")
+            raise RuntimeError("Cannot call step() before calling reset().")
 
         return self._setpoints, dependent_variables, setpoints_okay, dependent_variables_okay
 
@@ -114,6 +114,8 @@ class ActionManager(AbstractActionManager):
         return setpoint_constraints_satisfied, dependent_variable_constraints_satisfied
 
     def _allocate_dependent_variable_calculations(self) -> None:
+        if not self._config.dependent_variable_calculations:
+            return
         for dependent_variable_name, calculation in self._config.dependent_variable_calculations.items():
             importlib.import_module(calculation)
             calculation_module = sys.modules[calculation]

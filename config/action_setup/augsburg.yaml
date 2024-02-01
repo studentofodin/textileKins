@@ -1,0 +1,61 @@
+actions_are_relative: False
+initial_setpoints:
+  CardDeliveryWeightPerArea: 63.0 # g per sqm
+  Cross-lapperLayersCount: 4 # -
+  NeedleloomDraftRatio: 43.0 # percent
+  DrawFrameDraftRatio: 44.7 # percent
+  Cross-lapperProfiling: 1.0 # percent
+  NeedleloomFeedPerStroke: 10.5 # mm per stroke
+  CardMassThroughputSetpoint: 100 # kg per h
+  v_PreRoll: 215.0 # m per min
+  v_MainCylinder: 804.0 # m per min
+  v_WorkerMain: 40.3 # m per min
+  v_StripperMain: 160.0 # m per min
+  v_WorkerPre: 18.0 # m per min
+  v_StripperPre: 65.0 # m per min
+path_to_dependent_variable_calculations: # use default if not a valid path
+dependent_variable_calculations:
+setpoint_bounds:
+  CardDeliveryWeightPerArea:
+    lower: 41.0
+    upper: 77.28
+  Cross-lapperLayersCount:
+    lower: 2
+    upper: 8
+  NeedleloomDraftRatio:
+    lower: 34.0
+    upper: 51.0
+  DrawFrameDraftRatio:
+    lower: 25.9
+    upper: 70.1
+  Cross-lapperProfiling:
+    lower: 0.0
+    upper: 15.0
+  NeedleloomFeedPerStroke:
+    lower: 9.55
+    upper: 12.26
+  CardMassThroughputSetpoint:
+    lower: 50.0
+    upper: 200.0
+  v_PreRoll:
+    lower: 165.0
+    upper: 400.0
+  v_MainCylinder:
+    lower: 264.0
+    upper: 1300.0
+  v_WorkerMain:
+    lower: 13.0
+    upper: 120.0
+  v_StripperMain:
+    lower: 30.0
+    upper: 200.0
+  v_WorkerPre:
+    lower: 10.0
+    upper: 22.4
+  v_StripperPre:
+    lower: 45.0
+    upper: 85.0
+dependent_variable_bounds:
+  MassThroughput:
+    lower:
+    upper:

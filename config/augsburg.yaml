@@ -1,0 +1,16 @@
+defaults:
+  - env_setup: augsburg
+  - disturbance_setup: augsburg
+  - action_setup: augsburg
+  - output_setup: augsburg
+  - objective_setup: augsburg
+  - scenario_setup: augsburg
+  - gym_setup: augsburg
+  - _self_
+tracking_enabled: false # change later
+wandb_settings:
+  project: adanowo-simulator
+  mode: online
+physical_execution: true
+parallel_execution:
+num_experiment_steps: 100

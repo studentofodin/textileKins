@@ -23,14 +23,17 @@ class ObjectiveManager(AbstractObjectiveManager):
     def step(self, state: dict[str, float], outputs: dict[str, float | None], setpoints_okay: dict[str, bool],
              dependent_variables_okay: dict[str, bool]) -> tuple[float, dict[str, bool]]:
         if self._ready:
-            outputs_okay = self._output_constraints_satisfied(outputs)
+            try:
+                outputs_okay = self._output_constraints_satisfied(outputs)
+            except KeyError:
+                raise KeyError("There has been a mismatch between outputs and constraints. Please check the config.")
             if not (all(
                     (outputs_okay | setpoints_okay | dependent_variables_okay).values())):
                 reward = self._get_penalty(state, outputs)  # penalty
             else:
                 reward = self._get_reward(state, outputs)  # no penalty
         else:
-            raise Exception("Cannot call step() before calling reset().")
+            raise RuntimeError("Cannot call step() before calling reset().")
         return reward, outputs_okay
 
     def reset(self, initial_state: dict[str, float], initial_outputs: dict[str, float | None],

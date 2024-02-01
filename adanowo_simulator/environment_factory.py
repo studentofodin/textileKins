@@ -4,10 +4,12 @@ from adanowo_simulator.objective_manager import ObjectiveManager
 from adanowo_simulator.action_manager import ActionManager
 from adanowo_simulator.disturbance_manager import DisturbanceManager
 from adanowo_simulator.output_manager import ParallelOutputManager, SequentialOutputManager
+from adanowo_simulator.output_manager_opcua import OpcuaOutputManager
 from adanowo_simulator.scenario_manager import ScenarioManager
 from adanowo_simulator.experiment_tracker import WandBTracker, EmptyTracker
 from adanowo_simulator.environment import Environment
 from adanowo_simulator.objective_functions import baseline_objective, baseline_penalty
+import adanowo_simulator.objective_functions_augsburg as objective_functions_augsburg
 
 
 class EnvironmentFactory:
@@ -22,12 +24,18 @@ class EnvironmentFactory:
 
     def create_output_manager(self):
         # Decide whether to create a SequentialOutputManager or ParallelOutputManager
+        if self.config.physical_execution:
+            return OpcuaOutputManager(self.config.output_setup)
         if self.config.parallel_execution:
             return ParallelOutputManager(self.config.output_setup)
         else:
             return SequentialOutputManager(self.config.output_setup)
 
     def create_objective_manager(self):
+        if self.config.physical_execution:  # custom objective function for augsburg
+            return ObjectiveManager(objective_functions_augsburg.baseline_objective,
+                                    objective_functions_augsburg.baseline_penalty,
+                                    self.config.objective_setup)
         return ObjectiveManager(baseline_objective, baseline_penalty, self.config.objective_setup)
 
     def create_scenario_manager(self):

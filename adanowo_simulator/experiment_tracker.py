@@ -31,7 +31,7 @@ class WandBTracker(AbstractExperimentTracker):
                 self.close()
                 raise e
         else:
-            raise Exception("Cannot call step() before calling reset().")
+            raise RuntimeError("Cannot call step() before calling reset().")
 
     def reset(self, initial_log_variables: dict[str, dict[str, float]]) -> None:
         self.close()

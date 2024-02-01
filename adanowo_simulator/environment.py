@@ -103,7 +103,7 @@ class Environment(AbstractEnvironment):
 
     def step(self, actions: dict) -> tuple[float, dict[str, float], dict[str, float], DictConfig]:
         if not self._ready:
-            raise Exception("Cannot call step() before calling reset().")
+            raise RuntimeError("Cannot call step() before calling reset().")
         try:
             if self._step_index == 1:
                 logger.info("Experiment is running.")

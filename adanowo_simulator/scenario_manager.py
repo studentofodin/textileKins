@@ -29,7 +29,7 @@ class ScenarioManager(AbstractScenarioManager):
             self._update_output_bounds(step_index, objective_manager.config.output_bounds)
             self._update_output_model_allocation(step_index, output_manager.config.output_models)
         else:
-            raise Exception("Cannot call step() before calling reset().")
+            raise RuntimeError("Cannot call step() before calling reset().")
 
     def reset(self) -> None:
         self._config = self._initial_config.copy()

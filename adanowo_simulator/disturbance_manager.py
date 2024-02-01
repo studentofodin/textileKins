@@ -22,7 +22,7 @@ class DisturbanceManager(AbstractDisturbanceManager):
             disturbances = OmegaConf.to_container(self._config.disturbances)
             return disturbances
         else:
-            raise Exception("Cannot call step() before calling reset().")
+            raise RuntimeError("Cannot call step() before calling reset().")
 
     def reset(self) -> dict[str, float]:
         self._config = self._initial_config.copy()

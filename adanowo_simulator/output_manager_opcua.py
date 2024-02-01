@@ -48,7 +48,7 @@ class OpcuaOutputManager(AbstractOutputManager):
 
     def step(self, state: dict[str, float]) -> dict[str, float]:
         if not self._ready:
-            raise Exception("Cannot call step() before calling reset().")
+            raise RuntimeError("Cannot call step() before calling reset().")
         try:
             # each step begins with writing a recommendation to server. Can also be initial state at step 0.
             self._write_recommendation_to_output_nodes(state)
@@ -193,19 +193,28 @@ class OpcuaOutputManager(AbstractOutputManager):
     def _write_recommendation_to_output_nodes(self, state: dict[str, float]) -> None:
         for node in self._output_nodes:
             node_display_name_str = str(node.read_display_name().Text)
-            if node_display_name_str in state.keys():
+            if node_display_name_str not in state.keys():
+                logger.warning(f"Server node {node_display_name_str} not found in state dict.")
+                continue
+            # Hardcode some exceptions for some data types. TODO: Make all nodes use the same datatype.
+            if node_display_name_str == "Cross-lapperLayersCount":
                 node.write_value(
                     ua.Variant(
-                        state[node_display_name_str],
-                        ua.VariantType.Double
+                        int(round(state[node_display_name_str])),
+                        ua.VariantType.Int64
                     )
                 )
-            else:
-                logger.warning(f"Server node {node_display_name_str} not found in state dict.")
+                continue
+            node.write_value(
+                ua.Variant(
+                    state[node_display_name_str],
+                    ua.VariantType.Double
+                )
+            )
 
     def _await_user_decision(self) -> str:
-        logger.debug(f"Waiting for user decision")
         while True:
+            logger.info(f"Waiting for user decision")
             user_decision_double = ua.uatypes.Double(self.read_node_autoconnect(self._agent_control_state_node))
             for decision in ["ACCEPTED", "REJECTED"]:
                 if user_decision_double == self._agentControlStates[decision].value:
@@ -219,9 +228,10 @@ class OpcuaOutputManager(AbstractOutputManager):
         for node in self._input_nodes:
             node_display_name_str = str(node.read_display_name().Text)
             if node_display_name_str in input_names:
-                state_from_server[node_display_name_str] = node.read_value()  # TODO: check datatype correctness
-            else:
-                logger.warning(f"Server node {node_display_name_str} is not used. Please check config.")
+                state_from_server[node_display_name_str] = float(node.read_value())
+        if len(state_from_server) < len(input_names):
+            missing_states = set(input_names) - set(state_from_server.keys())
+            logger.warning(f"Server states missing: {missing_states}")
         return state_from_server
 
     @staticmethod
@@ -245,7 +255,7 @@ class OpcuaOutputManager(AbstractOutputManager):
         Updates the state by reference (without return value), since state is a mutable object.
         """
         for key, value in server_states.items():
-            if state[key] % value > DIFFERENCE_THRESHOLD and value % state[key] > DIFFERENCE_THRESHOLD:
+            if abs(state[key] - value) > DIFFERENCE_THRESHOLD:
                 logger.warning(f"Server state {key} differs from recommended state "
                                f"by more than {DIFFERENCE_THRESHOLD}. Check: Was this intentional?")
             state[key] = value

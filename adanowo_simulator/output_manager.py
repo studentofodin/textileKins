@@ -84,7 +84,7 @@ class SequentialOutputManager(AbstractOutputManager):
                 logger.info(f"Using custom output model path {self._path_to_output_models}.")
                 self._path_to_output_models = temp_path
             else:
-                raise Exception(
+                raise FileNotFoundError(
                     f"Custom output model path {self._path_to_output_models} is not valid.")
 
         # Add model path to sys.path so that the models can be imported.
@@ -106,7 +106,7 @@ class SequentialOutputManager(AbstractOutputManager):
 
     def step(self, state: dict[str, float]) -> dict[str, float]:
         if not self._ready:
-            raise Exception("Cannot call step() before calling reset().")
+            raise RuntimeError("Cannot call step() before calling reset().")
         self._update_model_allocation()
         try:
             mean_pred, var_pred = self._call_models(state)

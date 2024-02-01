@@ -1,0 +1,3 @@
+disturbances:
+  NeedleloomDraftRatioIntake: 10.0 # can be (5.0, 15.0)
+  # ProductWidth: 5.62 # can be e(4.76, 6.00) TODO: enable later

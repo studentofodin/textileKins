@@ -9,7 +9,7 @@ def array_to_dict(array: np.array, keys: list[str],
     """
 
     if array.size != len(keys):
-        raise Exception("Length of array and keys are not the same.")
+        raise ValueError("Length of array and keys are not the same.")
     dictionary = dict()
     for index, key in enumerate(keys):
         if bounds_for_scaling is None:
@@ -25,7 +25,7 @@ def array_to_dict(array: np.array, keys: list[str],
 def dict_to_array(dictionary: dict[str, float], keys: list[str],
                   bounds_for_scaling: dict[str, dict[str, float]] | None = None, mode="min_max") -> np.array:
     if len(dictionary) != len(keys):
-        raise Exception("Length of dictionary and keys are not the same.")
+        raise ValueError("Length of dictionary and keys are not the same.")
     array = np.zeros(len(dictionary))
     for index, key in enumerate(keys):
         if bounds_for_scaling is None:

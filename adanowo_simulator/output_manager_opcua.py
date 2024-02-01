@@ -13,6 +13,8 @@ from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutpu
 
 logger = logging.getLogger(__name__)
 DIFFERENCE_THRESHOLD = 0.1
+INITIAL_USER_FEEDBACK = float(-1)  # -1 means user rejected the recommendation, which we assume as default.
+
 
 class OpcuaOutputManager(AbstractOutputManager):
     """
@@ -70,6 +72,7 @@ class OpcuaOutputManager(AbstractOutputManager):
                 process_outputs_from_server = self._read_agent_inputs(self._config.output_models)
                 only_plausible_process_outputs = self._check_state_plausibility(process_outputs_from_server)
                 outputs = self._update_process_outputs(outputs, only_plausible_process_outputs)
+                outputs[self._config.user_feedback_key] = float(self._agentControlStates["ACCEPTED"].value)
         except Exception as e:
             self.close()
             raise e
@@ -132,10 +135,12 @@ class OpcuaOutputManager(AbstractOutputManager):
                 try:
                     with self._client:
                         return func(self, *args, **kwargs)
-                except (ConnectionError, ua.UaError):
+                except (ConnectionError, ua.UaError) as e:
                     time.sleep(self._config.polling_interval)
                     connection_attempts += 1
-                    logger.warning(f"Connection error. Trying to reconnect... [{connection_attempts}]")
+                    logger.warning(f"Failed to execute server request: {e.__class__.__name__}: {e}")
+                    logger.info(f"Trying to reconnect... [{connection_attempts}]")
+                    time.sleep(self._config.polling_interval)
         return wrapper_ensure_connection
 
     @_ensure_connection
@@ -199,11 +204,12 @@ class OpcuaOutputManager(AbstractOutputManager):
                 logger.warning(f"Server node {node_display_name_str} not found in state dict.")
 
     def _await_user_decision(self) -> str:
+        logger.debug(f"Waiting for user decision")
         while True:
             user_decision_double = ua.uatypes.Double(self.read_node_autoconnect(self._agent_control_state_node))
             for decision in ["ACCEPTED", "REJECTED"]:
                 if user_decision_double == self._agentControlStates[decision].value:
-                    logger.debug(f"Received user decision: {decision}")
+                    logger.info(f"Received user decision: {decision}")
                     return decision
             time.sleep(self._config.polling_interval)
 
@@ -248,7 +254,7 @@ class OpcuaOutputManager(AbstractOutputManager):
         outputs = {}
         for output in self._config.output_models:
             outputs[output] = None
-        outputs[self._config.user_feedback_key] = -1
+        outputs[self._config.user_feedback_key] = float(self._agentControlStates["REJECTED"].value)
         return outputs
 
     @staticmethod

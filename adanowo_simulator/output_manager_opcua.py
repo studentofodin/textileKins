@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Type
 import functools
 import time
+import math
 
 from omegaconf import DictConfig, OmegaConf
 from asyncua.sync import Client, ua, SyncNode, ThreadLoop
@@ -11,7 +12,7 @@ from asyncua.client.ua_client import UASocketProtocol
 from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutputManager
 
 logger = logging.getLogger(__name__)
-
+DIFFERENCE_THRESHOLD = 0.1
 
 class OpcuaOutputManager(AbstractOutputManager):
     """
@@ -47,22 +48,28 @@ class OpcuaOutputManager(AbstractOutputManager):
         if not self._ready:
             raise Exception("Cannot call step() before calling reset().")
         try:
-            # TODO: Implement step method
+            # each step begins with writing a recommendation to server. Can also be initial state at step 0.
             self._write_recommendation_to_output_nodes(state)
+            # indicate that the current recommendation is up to date.
             self._set_agent_control_state("VALID")
+            # wait for user decision. Can take much time.
             user_decision = self._await_user_decision()  # in architecture, move "await dead time" to GUI
-            state_from_server = self._read_agent_inputs(state.keys())
+            #  read process state first after receiving user feedback.
+            state_from_server = self._read_agent_inputs(list(state.keys()))
+            # indicate that the current recommendation is old end thus invalid.
             self._set_agent_control_state("INVALID")
+            # check if the state is plausible. If not, throw warning and use old state.
             only_plausible_states = self._check_state_plausibility(state_from_server)
-            self._write_server_state_to_internal_state(state, only_plausible_states)  # TODO: throw warning when they differ
-
-            outputs = self._set_outputs_to_initial_values()  # TODO: make sure None values get handled properly
+            # update the internal state with the new state from server.
+            self._write_server_state_to_internal_state(state, only_plausible_states)
+            # initialize process outputs to be read from server.
+            outputs = self._set_outputs_to_initial_values()
 
             if user_decision == "ACCEPTED":
-                process_outputs_from_server = self._read_agent_inputs(self._config.output_models) # TODO: translate from server to internal
+                # There are only valid measurements in the process outputs if the user accepted the recommendation.
+                process_outputs_from_server = self._read_agent_inputs(self._config.output_models)
                 only_plausible_process_outputs = self._check_state_plausibility(process_outputs_from_server)
-                outputs = self._compile_output_dict(only_plausible_process_outputs) # TODO: set new output "user preference" to 1
-
+                outputs = self._update_process_outputs(outputs, only_plausible_process_outputs)
         except Exception as e:
             self.close()
             raise e
@@ -80,8 +87,7 @@ class OpcuaOutputManager(AbstractOutputManager):
             self.close()
             raise e
         self._ready = True
-        # outputs = self.step(state) # TODO: uncomment once step method is implemented
-        outputs = {}
+        outputs = self.step(state)
         logger.debug("OPC UA connection set up successfully.")
         return outputs
 
@@ -201,10 +207,60 @@ class OpcuaOutputManager(AbstractOutputManager):
                     return decision
             time.sleep(self._config.polling_interval)
 
+    @_ensure_connection
+    def _read_agent_inputs(self, input_names: list[str]) -> dict[str, float]:
+        state_from_server = {}
+        for node in self._input_nodes:
+            node_display_name_str = str(node.read_display_name().Text)
+            if node_display_name_str in input_names:
+                state_from_server[node_display_name_str] = node.read_value()  # TODO: check datatype correctness
+            else:
+                logger.warning(f"Server node {node_display_name_str} is not used. Please check config.")
+        return state_from_server
+
+    @staticmethod
+    def _check_state_plausibility(state: dict[str, float]) -> dict[str, float]:
+        only_plausible_states = {}
+        for key, value in state.items():
+            if value is None or math.isnan(value):
+                logger.warning(f"Not plausible: Server state {key} is None or NaN.")
+            elif not isinstance(value, float):
+                logger.warning(f"Not plausible: Server state {key} is not a float.")
+            elif value < 0:
+                logger.warning(f"Not plausible: Server state {key} is negative.")
+            else:
+                only_plausible_states[key] = value
+        return only_plausible_states
+
+    @staticmethod
+    def _write_server_state_to_internal_state(state: dict[str, float], server_states: dict[str, float]) -> None:
+        """
+        Updates the internal state with the new state from server.
+        Updates the state by reference (without return value), since state is a mutable object.
+        """
+        for key, value in server_states.items():
+            if state[key] % value > DIFFERENCE_THRESHOLD and value % state[key] > DIFFERENCE_THRESHOLD:
+                logger.warning(f"Server state {key} differs from recommended state "
+                               f"by more than {DIFFERENCE_THRESHOLD}. Check: Was this intentional?")
+            state[key] = value
+
+    def _set_outputs_to_initial_values(self) -> dict[str, float | None]:
+        outputs = {}
+        for output in self._config.output_models:
+            outputs[output] = None
+        outputs[self._config.user_feedback_key] = -1
+        return outputs
+
+    @staticmethod
+    def _update_process_outputs(outputs: dict[str, float | None],
+                                process_outputs: dict[str, float]) -> dict[str, float]:
+        for key, value in process_outputs.items():
+            outputs[key] = value
+        return outputs
+
 
 if __name__ == "__main__":
     test_config = OmegaConf.load("../config/output_setup/opcua_conn.yaml")
     output_manager = OpcuaOutputManager(test_config)
     output_manager.reset({})
-    # output_manager.step({})
     output_manager.close()

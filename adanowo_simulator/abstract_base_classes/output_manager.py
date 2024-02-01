@@ -22,12 +22,12 @@ class AbstractOutputManager(ABC):
         pass
 
     @abstractmethod
-    def step(self, state: dict[str, float]) -> dict[str, float]:
+    def step(self, state: dict[str, float]) -> dict[str, float | None]:
         """Gets outputs (via measurement or models) and returns them."""
         pass
 
     @abstractmethod
-    def reset(self, initial_state: dict[str, float]) -> dict[str, float]:
+    def reset(self, initial_state: dict[str, float]) -> dict[str, float | None]:
         """Resets the output manager to initial values and returns initial outputs."""
         pass
 

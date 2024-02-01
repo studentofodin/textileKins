@@ -21,7 +21,7 @@ class AbstractObjectiveManager(ABC):
         pass
 
     @abstractmethod
-    def step(self, state: dict[str, float], outputs: dict[str, float],
+    def step(self, state: dict[str, float], outputs: dict[str, float | None],
              setpoint_constraints_met: dict[str, bool], dependent_variable_constraints_met: dict[str, bool]) -> \
             tuple[float, dict[str, bool]]:
         """Checks output bound violations and calculates an objective value.
@@ -51,7 +51,7 @@ class AbstractObjectiveManager(ABC):
         pass
 
     @abstractmethod
-    def reset(self, initial_state: dict[str, float], initial_outputs: dict[str, float],
+    def reset(self, initial_state: dict[str, float], initial_outputs: dict[str, float | None],
               setpoint_constraints_met_initially: dict[str, bool],
               dependent_variable_constraints_met_initially: dict[str, bool]) -> tuple[float, dict[str, bool]]:
         """Resets the objective manager to initial values and calculates an initial objective value.

@@ -20,7 +20,7 @@ class ObjectiveManager(AbstractObjectiveManager):
     def config(self, c):
         self._config = c
 
-    def step(self, state: dict[str, float], outputs: dict[str, float], setpoints_okay: dict[str, bool],
+    def step(self, state: dict[str, float], outputs: dict[str, float | None], setpoints_okay: dict[str, bool],
              dependent_variables_okay: dict[str, bool]) -> tuple[float, dict[str, bool]]:
         if self._ready:
             outputs_okay = self._output_constraints_satisfied(outputs)
@@ -33,7 +33,7 @@ class ObjectiveManager(AbstractObjectiveManager):
             raise Exception("Cannot call step() before calling reset().")
         return reward, outputs_okay
 
-    def reset(self, initial_state: dict[str, float], initial_outputs: dict[str, float],
+    def reset(self, initial_state: dict[str, float], initial_outputs: dict[str, float | None],
               setpoints_okay_initially: dict[str, bool],
               dependent_variables_okay_initially: dict[str, bool]) -> tuple[float, dict[str, bool]]:
         self._config = self._initial_config.copy()
@@ -61,8 +61,12 @@ class ObjectiveManager(AbstractObjectiveManager):
                 boundary_value = boundaries.get(boundary_type)
                 if boundary_value is None:
                     continue
-                comparison = outputs[output_name] < boundary_value if boundary_type == "lower" else (
-                        outputs[output_name] > boundary_value)
+                output = outputs[output_name]
+                if output is None:
+                    # if output is None, then it is not available. Then we default to not assuming it is violated.
+                    output_constraints_met[f"{output_name}.{boundary_type}"] = True
+                    continue
+                comparison = output < boundary_value if boundary_type == "lower" else output > boundary_value
                 output_constraints_met[f"{output_name}.{boundary_type}"] = not comparison
 
         return output_constraints_met

@@ -13,7 +13,7 @@ from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutpu
 
 logger = logging.getLogger(__name__)
 DIFFERENCE_THRESHOLD = 0.1
-INITIAL_USER_FEEDBACK = float(-1)  # -1 means user rejected the recommendation, which we assume as default.
+INITIAL_USER_FEEDBACK = float(3)  # 3 means user rejected the recommendation, which we assume as default.
 
 
 class OpcuaOutputManager(AbstractOutputManager):
@@ -118,10 +118,10 @@ class OpcuaOutputManager(AbstractOutputManager):
         state_enum = Enum(
             value="AgentControlState",
             names=[
-                ("INVALID", ua.uatypes.Double(self._config.agent_state_values["invalid"])),
-                ("VALID", ua.uatypes.Double(self._config.agent_state_values["valid"])),
-                ("ACCEPTED", ua.uatypes.Double(self._config.agent_state_values["accepted"])),
-                ("REJECTED", ua.uatypes.Double(self._config.agent_state_values["rejected"]))
+                ("INVALID", ua.uatypes.Int64(self._config.agent_state_values["invalid"])),
+                ("VALID", ua.uatypes.Int64(self._config.agent_state_values["valid"])),
+                ("ACCEPTED", ua.uatypes.Int64(self._config.agent_state_values["accepted"])),
+                ("REJECTED", ua.uatypes.Int64(self._config.agent_state_values["rejected"]))
             ]
         )
         return state_enum
@@ -172,7 +172,7 @@ class OpcuaOutputManager(AbstractOutputManager):
 
     def _set_agent_control_state(self, state: str) -> None:
         self._write_node_autoconnect(self._agent_control_state_node, self._agentControlStates[state].value,
-                                     ua.VariantType.Double)
+                                     ua.VariantType.Int64)
         logger.debug(f"Successfully set agent control state node to {state}.")
 
     @_ensure_connection

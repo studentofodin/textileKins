@@ -1,7 +1,7 @@
 server_url: opc.tcp://localhost:4840/freeopcua/server/
 control_state_node_id: # Node id of the control state
   namespace_index: 2
-  identifier: 52 # 31 for old server
+  identifier: 63 # 31 for old server
 agent_input_node:
   namespace_index: 2
   identifier: 2

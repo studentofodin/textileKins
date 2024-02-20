@@ -215,7 +215,7 @@ class OpcuaOutputManager(AbstractOutputManager):
     def _await_user_decision(self) -> str:
         while True:
             logger.info(f"Waiting for user decision")
-            user_decision_double = ua.uatypes.Double(self.read_node_autoconnect(self._agent_control_state_node))
+            user_decision_double = ua.uatypes.Int64(self.read_node_autoconnect(self._agent_control_state_node))
             for decision in ["ACCEPTED", "REJECTED"]:
                 if user_decision_double == self._agentControlStates[decision].value:
                     logger.info(f"Received user decision: {decision}")

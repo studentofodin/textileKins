@@ -1,8 +1,10 @@
 from pathlib import Path
 
 from hydra import initialize, compose
-import cma
+import cma  # requires https://github.com/CMA-ES/pycma
 import numpy as np
+import hydra
+from omegaconf import DictConfig, OmegaConf
 
 from adanowo_simulator.environment_factory import EnvironmentFactory
 from adanowo_simulator.gym_wrapper import GymWrapper
@@ -10,17 +12,9 @@ from adanowo_simulator.gym_wrapper import GymWrapper
 MAX_ITERATIONS = 100
 initial_std_dev = 0.06  # Adjust based on the variability of actions
 
-# Get the config directory
-CONFIG_NAME = "main"
-config_folder = Path("..") / "config"
 
-
-def optimize():
-    # initialise config
-    with initialize(version_base=None, config_path=str(config_folder)):
-        config = compose(config_name=CONFIG_NAME)
-        config.action_setup.actions_are_relative = False
-
+@hydra.main(version_base=None, config_path="../config", config_name="main")
+def main(config: DictConfig):
     # initialise environment
     factory = EnvironmentFactory(config)
     environment = factory.create_environment()
@@ -35,8 +29,7 @@ def optimize():
     initial_setpoints, _ = environment_wrapped.reset()
 
     # init cma-es
-
-    initial_mean = initial_setpoints  # Adjust based on expected action range
+    initial_mean = initial_setpoints
 
     es = cma.CMAEvolutionStrategy(initial_mean, initial_std_dev)
 
@@ -58,4 +51,4 @@ def optimize():
 
 
 if __name__ == "__main__":
-    optimize()
+    main()

@@ -4,15 +4,15 @@ reward_parameters:
   selling_price: 2.10 # € per sqm
   floor_quality_weight: 50.0
 output_bounds:
-  areaWeight:
+  AreaWeightLane1:
     lower: 180.0
     upper: 500.0
-#  AreaWeightLane2:
-#    lower: 180.0
-#    upper: 500.0
-#  AreaWeightLane3:
-#    lower: 180.0
-#    upper: 500.0
+  AreaWeightLane2:
+    lower: 180.0
+    upper: 500.0
+  AreaWeightLane3:
+    lower: 180.0
+    upper: 500.0
   TensileStrengthCD:
     lower: 320.0
   TensileStrengthMD:

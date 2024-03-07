@@ -13,7 +13,7 @@ from adanowo_simulator.abstract_base_classes.output_manager import AbstractOutpu
 
 logger = logging.getLogger(__name__)
 DIFFERENCE_THRESHOLD = 0.1
-INITIAL_USER_FEEDBACK = float(3)  # 3 means user rejected the recommendation, which we assume as default.
+INITIAL_USER_FEEDBACK = float(2)  # 3 means user rejected the recommendation, which we assume as default.
 
 
 class OpcuaOutputManager(AbstractOutputManager):
@@ -215,9 +215,9 @@ class OpcuaOutputManager(AbstractOutputManager):
     def _await_user_decision(self) -> str:
         while True:
             logger.info(f"Waiting for user decision")
-            user_decision_double = ua.uatypes.Int64(self.read_node_autoconnect(self._agent_control_state_node))
+            user_decision_int = ua.uatypes.Int64(self.read_node_autoconnect(self._agent_control_state_node))
             for decision in ["ACCEPTED", "REJECTED"]:
-                if user_decision_double == self._agentControlStates[decision].value:
+                if user_decision_int == self._agentControlStates[decision].value:
                     logger.info(f"Received user decision: {decision}")
                     return decision
             time.sleep(self._config.polling_interval)
@@ -280,7 +280,7 @@ class OpcuaOutputManager(AbstractOutputManager):
 
 
 if __name__ == "__main__":
-    test_config = OmegaConf.load("../config/output_setup/opcua_conn.yaml")
+    test_config = OmegaConf.load("../config/output_setup/augsburg.yaml")
     output_manager = OpcuaOutputManager(test_config)
     output_manager.reset({})
     output_manager.close()

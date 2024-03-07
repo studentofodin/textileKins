@@ -1,0 +1,6 @@
+name: massThroughputAugsburgCalculation
+model_class: Python_script
+inputs:
+  - CardDeliveryWeightPerArea
+  - CardDeliverySpeed
+output: CardMassThroughput

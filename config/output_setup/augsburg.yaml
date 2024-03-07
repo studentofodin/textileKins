@@ -11,19 +11,19 @@ agent_output_node:
 agent_state_values:
   invalid: 0
   valid: 1
-  rejected: 2
-  accepted: 3
+  accepted: 2
+  rejected_card: 3
+  rejected_other: 4
 polling_interval: 2 # Polling interval in seconds
 output_models:
-  - areaWeight
-#  - AreaWeightLane2
-#  - AreaWeightLane3
-#  - LinePowerConsumption
-  - Energy
+  - AreaWeightLane1
+  - AreaWeightLane2
+  - AreaWeightLane3
+  - LinePowerConsumption
   - TensileStrengthCD
   - TensileStrengthMD
-  - cardWebUnevenness
+  - NonwovenUnevenness
 outputs_always_available:
-  - Energy
-  - cardWebUnevenness
+  - LinePowerConsumption
+  - NonwovenUnevenness
 user_feedback_key: UserFeedback

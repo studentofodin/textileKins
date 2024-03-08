@@ -3,7 +3,6 @@ used_setpoints:
   - v_MainCylinder # m per min
   - v_WorkerMain # m per min
   - v_WorkerPre # m per min
-  - v_TransferRoll # m per min
   - CardDeliveryWeightPerArea # g per sqm
   - CardDeliverySpeed # m per min
   - Cross-lapperProfiling # percent
@@ -17,6 +16,7 @@ used_disturbances:
   - NeedleloomDraftRatioIntake # percent
   - ProductWidth # m
   - Cross-lapperOverlap # mm
+  - ProductionSpeed # m per min
 used_outputs:
   - AreaWeightLane1 # g per sqm
   - AreaWeightLane2 # g per sqm
